@@ -22,7 +22,7 @@ const CombatUnitSchema = z.object({
   creatureId: z.string(),
   side: z.enum(['player', 'enemy']),
   x: z.number().int().min(0).max(6),
-  y: z.number().int().min(0).max(6),
+  y: z.number().int().min(0).max(4),
   star: z.number().int().min(1).max(3).default(1),
   health: z.number().nonnegative(),
   maxHealth: z.number().positive(),
@@ -33,10 +33,10 @@ const CombatEventSchema = z.object({
   type: z.enum(['attack', 'heal', 'move', 'defeat']),
   actorId: z.string(),
   actorX: z.number().int().min(0).max(6),
-  actorY: z.number().int().min(0).max(6),
+  actorY: z.number().int().min(0).max(4),
   targetId: z.string().nullable(),
   targetX: z.number().int().min(0).max(6).nullable(),
-  targetY: z.number().int().min(0).max(6).nullable(),
+  targetY: z.number().int().min(0).max(4).nullable(),
   targetHealth: z.number().nonnegative().nullable(),
   text: z.string(),
 })
@@ -54,10 +54,20 @@ export const BattleResultSchema = z.object({
       maxHealth: z.number().positive(),
     }),
   ),
+  analytics: z.array(z.object({
+    unitId: z.string(),
+    side: z.enum(['player', 'enemy']),
+    damageDone: z.number().nonnegative().default(0),
+    damageTaken: z.number().nonnegative().default(0),
+    damageReduced: z.number().nonnegative().default(0),
+    healingDone: z.number().nonnegative().default(0),
+    healingReceived: z.number().nonnegative().default(0),
+    defeats: z.number().int().nonnegative().default(0),
+  })).default([]),
 })
 
 export const GameStateSchema = z.object({
-  saveVersion: z.literal(4),
+  saveVersion: z.literal(5),
   phase: RunPhaseSchema,
   commanderId: z.enum(['knight', 'paladin', 'sorcerer', 'druid']).nullable(),
   mapNodeId: z.string(),
@@ -86,7 +96,7 @@ export type RunPhase = z.infer<typeof RunPhaseSchema>
 export type BattleSurvivor = BattleResult['survivors'][number]
 
 export const initialGameState: GameState = {
-  saveVersion: 4,
+  saveVersion: 5,
   phase: 'vocation',
   commanderId: null,
   mapNodeId: 'crossroads',
@@ -113,7 +123,7 @@ export function loadSavedGame(): GameState {
     const raw = window.localStorage.getItem('tibia-tactics-save')
     if (!raw) return initialGameState
     const value: unknown = JSON.parse(raw)
-    if (typeof value === 'object' && value !== null && 'saveVersion' in value && (value.saveVersion === 1 || value.saveVersion === 2 || value.saveVersion === 3)) {
+    if (typeof value === 'object' && value !== null && 'saveVersion' in value && (value.saveVersion === 1 || value.saveVersion === 2 || value.saveVersion === 3 || value.saveVersion === 4)) {
       const legacy = value as Record<string, unknown>
       const oldVersion = legacy.saveVersion
       const roster = Array.isArray(legacy.roster) ? legacy.roster.map((unit) => {
@@ -125,8 +135,8 @@ export function loadSavedGame(): GameState {
       if (typeof previousBattle === 'object' && previousBattle !== null && oldVersion === 1) {
         battleResult = { ...previousBattle, units: [], events: [] }
       } else if (typeof previousBattle === 'object' && previousBattle !== null && (oldVersion === 2 || oldVersion === 3)) {
-        const asPoint = (side: 'player' | 'enemy', slot: number) => ({ x: 2 + slot % 3, y: side === 'player' ? 6 - Math.floor(slot / 3) : 2 - Math.floor(slot / 3) })
-        const toRoomPoint = (x: number, y: number) => ({ x: Math.min(6, Math.max(0, x + 2)), y: Math.min(6, Math.max(0, y + (oldVersion === 2 ? 1 : 0))) })
+        const asPoint = (side: 'player' | 'enemy', slot: number) => ({ x: 2 + slot % 3, y: side === 'player' ? 4 - Math.floor(slot / 3) : 2 - Math.floor(slot / 3) })
+        const toRoomPoint = (x: number, y: number) => ({ x: Math.min(6, Math.max(0, x + 2)), y: Math.round(Math.min(6, Math.max(0, y + (oldVersion === 2 ? 1 : 0))) * 4 / 6) })
         const previous = previousBattle as Record<string, unknown>
         const units = Array.isArray(previous.units) ? previous.units.map((unit) => {
           if (typeof unit !== 'object' || unit === null) return unit
@@ -149,13 +159,28 @@ export function loadSavedGame(): GameState {
           return { ...event, actorX: actorPoint.x, actorY: actorPoint.y, targetX: targetPoint.x, targetY: targetPoint.y }
         }) : []
         battleResult = { ...previous, units, events }
+      } else if (typeof previousBattle === 'object' && previousBattle !== null && oldVersion === 4) {
+        const previous = previousBattle as Record<string, unknown>
+        const toFiveRows = (point: unknown) => {
+          if (typeof point !== 'object' || point === null || !('y' in point) || typeof point.y !== 'number') return point
+          return { ...point, y: Math.round(Math.min(6, Math.max(0, point.y)) * 4 / 6) }
+        }
+        const units = Array.isArray(previous.units) ? previous.units.map(toFiveRows) : []
+        const events = Array.isArray(previous.events) ? previous.events.map((event) => {
+          if (typeof event !== 'object' || event === null) return event
+          const mapped = { ...event }
+          if ('actorY' in mapped) mapped.actorY = Math.round(Math.min(6, Math.max(0, mapped.actorY as number)) * 4 / 6)
+          if (typeof mapped.targetY === 'number') mapped.targetY = Math.round(Math.min(6, Math.max(0, mapped.targetY)) * 4 / 6)
+          return mapped
+        }) : []
+        battleResult = { ...previous, units, events }
       }
       const migratedPhase = oldVersion === 1 && legacy.phase === 'battle' &&
         typeof previousBattle === 'object' && previousBattle !== null ? 'preparation' : legacy.phase
-      const parsedLegacy = GameStateSchema.safeParse({ ...legacy, saveVersion: 4, phase: migratedPhase, roster, lives: legacy.lives ?? 3,
-        experience: oldVersion === 3 ? legacy.experience ?? 0 : 0,
-        level: oldVersion === 3 ? legacy.level ?? 1 : 1,
-        pendingLevelUps: oldVersion === 3 ? legacy.pendingLevelUps ?? 0 : 0,
+      const parsedLegacy = GameStateSchema.safeParse({ ...legacy, saveVersion: 5, phase: migratedPhase, roster, lives: legacy.lives ?? 3,
+        experience: oldVersion === 3 || oldVersion === 4 ? legacy.experience ?? 0 : 0,
+        level: oldVersion === 3 || oldVersion === 4 ? legacy.level ?? 1 : 1,
+        pendingLevelUps: oldVersion === 3 || oldVersion === 4 ? legacy.pendingLevelUps ?? 0 : 0,
         battleResult })
       return parsedLegacy.success ? parsedLegacy.data : initialGameState
     }

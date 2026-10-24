@@ -164,7 +164,7 @@ export function simulateBattle(options: {
   const active = createPlayerSynergies(roster, creatures, synergyDefinitions)
   const playerUnits = roster.filter((unit) => unit.slot !== null).map((unit) => {
     const creature = creatures[unit.creatureId]
-    return instantiateUnit(unit.instanceId, creature, 'player', 2 + unit.slot! % 3, 6 - Math.floor(unit.slot! / 3), active, vocation, upgrades, unit.star)
+    return instantiateUnit(unit.instanceId, creature, 'player', 2 + unit.slot! % 3, 4 - Math.floor(unit.slot! / 3), active, vocation, upgrades, unit.star)
   })
   const occupiedEnemySquares = new Set<string>()
   const enemyUnits = enemies.map((creature, index) => {
@@ -178,6 +178,16 @@ export function simulateBattle(options: {
   const units = [...playerUnits, ...enemyUnits]
   const startingUnits = units.map((unit) => ({ id: unit.id, creatureId: unit.creature.id, side: unit.side, x: unit.x, y: unit.y, star: unit.star, health: unit.health, maxHealth: unit.maxHealth }))
   const events: BattleResult['events'] = []
+  const analytics = new Map(units.map((unit) => [unit.id, {
+    unitId: unit.id,
+    side: unit.side,
+    damageDone: 0,
+    damageTaken: 0,
+    damageReduced: 0,
+    healingDone: 0,
+    healingReceived: 0,
+    defeats: 0,
+  }]))
   const log: string[] = []
   const rounds = 10
   let roundsPlayed = 0
@@ -190,7 +200,11 @@ export function simulateBattle(options: {
     roundsPlayed = round
     for (const unit of living(playerUnits)) {
       if (unit.roundStartHeal <= 0 || unit.health >= unit.maxHealth) continue
+      const healed = Math.min(unit.roundStartHeal, unit.maxHealth - unit.health)
       unit.health = Math.min(unit.maxHealth, unit.health + unit.roundStartHeal)
+      const stats = analytics.get(unit.id)!
+      stats.healingDone += healed
+      stats.healingReceived += healed
       record({ round, type: 'heal', actorId: unit.id, actorX: unit.x, actorY: unit.y, targetId: unit.id, targetX: unit.x, targetY: unit.y,
         targetHealth: unit.health, text: `${unit.creature.name} recovers ${Math.round(unit.roundStartHeal)} health.` })
     }
@@ -212,7 +226,10 @@ export function simulateBattle(options: {
           .sort((a, b) => a.health / a.maxHealth - b.health / b.maxHealth)[0]
         if (ally) {
           const amount = actor.attack + actor.healingFlat
+          const healed = Math.min(amount, ally.maxHealth - ally.health)
           ally.health = Math.min(ally.maxHealth, ally.health + amount)
+          analytics.get(actor.id)!.healingDone += healed
+          analytics.get(ally.id)!.healingReceived += healed
           record({ round, type: 'heal', actorId: actor.id, actorX: actor.x, actorY: actor.y, targetId: ally.id, targetX: ally.x, targetY: ally.y,
             targetHealth: ally.health, text: `${actor.creature.name} restores ${Math.round(amount)} health to ${ally.creature.name}.` })
           continue
@@ -229,7 +246,7 @@ export function simulateBattle(options: {
         const steps = [-1, 0, 1].flatMap((dy) => [-1, 0, 1]
           .filter((dx) => dx !== 0 || dy !== 0)
           .map((dx) => [origin.x + dx, origin.y + dy]))
-          .filter(([x, y]) => x !== undefined && y !== undefined && x >= 0 && x <= 6 && y >= 0 && y <= 6)
+          .filter(([x, y]) => x !== undefined && y !== undefined && x >= 0 && x <= 6 && y >= 0 && y <= 4)
           .filter(([x, y]) => !occupied.has(`${x}:${y}`))
           .sort((a, b) => {
             const distanceA = Math.max(Math.abs(a[0]! - target.x), Math.abs(a[1]! - target.y))
@@ -248,9 +265,15 @@ export function simulateBattle(options: {
 
       const bonus = actor.attacksMade === 0 ? actor.firstAttackBonus : 0
       const closeCombatBonus = actor.creature.role === 'fighter' && distance(actor, target) === 1 ? 0.35 + actor.fighterAttackBonus : 0
-      const damage = Math.max(1, Math.round((actor.attack * (1 + bonus + closeCombatBonus) - target.armor) * (1 - target.damageReduction)))
+      const attackPower = actor.attack * (1 + bonus + closeCombatBonus)
+      const damage = Math.max(1, Math.round((attackPower - target.armor) * (1 - target.damageReduction)))
+      const healthLost = Math.min(target.health, damage)
+      analytics.get(actor.id)!.damageDone += healthLost
+      analytics.get(target.id)!.damageTaken += healthLost
+      analytics.get(target.id)!.damageReduced += Math.max(0, Math.round(attackPower) - damage)
       target.health = Math.max(0, target.health - damage)
       actor.attacksMade += 1
+      if (target.health === 0) analytics.get(actor.id)!.defeats += 1
       record({ round, type: target.health === 0 ? 'defeat' : 'attack', actorId: actor.id, actorX: actor.x, actorY: actor.y,
         targetId: target.id, targetX: target.x, targetY: target.y, targetHealth: target.health,
         text: `${actor.creature.name} hits ${target.creature.name} for ${damage}${target.health === 0 ? ' and defeats it' : ''}.` })
@@ -270,5 +293,8 @@ export function simulateBattle(options: {
     events,
     survivors: playerUnits.filter((unit) => unit.health > 0)
       .map((unit) => ({ unitId: unit.id, health: Math.round(unit.health), maxHealth: unit.maxHealth })),
+    analytics: [...analytics.values()].map((stats) => Object.fromEntries(
+      Object.entries(stats).map(([key, value]) => [key, typeof value === 'number' ? Math.round(value) : value]),
+    )) as BattleResult['analytics'],
   })
 }

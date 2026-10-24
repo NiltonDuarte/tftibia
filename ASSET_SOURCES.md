@@ -4,7 +4,7 @@ Creature portraits in `public/assets/creatures/` were downloaded from the TibiaD
 
 The regional triptych in `public/assets/backgrounds/region-triptych.png` is original AI-generated pixel-art environment art used by the campaign and vocation screens.
 
-The square battle backgrounds in `public/assets/backgrounds/battle/` are original AI-generated environment scenes. Their regional references and visual mapping are documented in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md); no Tibia screenshots or map layouts are bundled.
+The landscape battle backgrounds in `public/assets/backgrounds/battle/` are original AI-generated environment scenes, composed from the fixed board guide. The runtime draws the aligned 7×5 SQM board over the center; generation dimensions and prompts are documented in [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md). Regional references are in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md); no Tibia screenshots or map layouts are bundled.
 
 | Local file | TibiaDraptor source |
 |---|---|

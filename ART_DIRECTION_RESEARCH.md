@@ -26,7 +26,7 @@ Search queries used for this pass:
 | Mirrored Nightmare (`crypt`, `mirror`) | [Mirrored Nightmare](https://www.tibiawiki.com.br/wiki/Mirrored_Nightmare), [Druid's Apparition](https://tibia.fandom.com/wiki/Druid%27s_Apparition) | Distorted underground sacred spaces, mirror images, apparition reflections, ruined stone, and cold wind. Blue-black stone, indigo, and spectral cyan. |
 | Fractured Deep (`deep`, `throne`) | Campaign-original region; the game name is not an official Tibia location. The [Mirrored Nightmare](https://www.tibiawiki.com.br/wiki/Mirrored_Nightmare) is a tonal reference only. | A new final arena: cracked obsidian, a distant empty throne, floating fragments, blue fissures, and small braziers. This is an original campaign synthesis rather than a claim about Tibia canon. |
 
-The pages above establish locations, factions, and broad landmarks; specific room arrangements in the generated scenes are original. The reference screenshots were not copied into the project. Generated images use a shared square composition, keep the combat floor open, and reserve stronger detail for the perimeter so creatures remain visible over the sqm board.
+The pages above establish locations, factions, and broad landmarks; specific room arrangements in the generated scenes are original. The reference screenshots were not copied into the project. Battle scenes now use a fixed landscape canvas and a reserved central 7×5 playfield. See [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md) for the guide, dimensions, prompt pattern, and rendering rules.
 
 ## Asset mapping
 
@@ -39,4 +39,4 @@ The pages above establish locations, factions, and broad landmarks; specific roo
 | `deep`, `throne` | `public/assets/backgrounds/battle/fractured-throne.png` |
 | `crossroads` | No battle encounter; keep the neutral campaign art. |
 
-To add a region: verify its location and residents, note its distinct architectural and environmental features, generate a square background with an open center for the sqm formation, add the image locally, then map its campaign theme in `src/App.module.css` and add its sources here.
+To add a region: verify its location and residents, note its distinct architectural and environmental features, follow [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md), map its campaign theme in `src/App.module.css`, and add its sources here.

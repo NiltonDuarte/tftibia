@@ -450,30 +450,32 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
       </div>
       <div className={styles.arenaLabels}><span>HOSTILE · CORAL</span><span>ALLY · CYAN</span></div>
       <div className={styles.arenaGrid} data-theme={battleNode?.theme}>
-        {Array.from({ length: 49 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
-        {shownUnits.map((unit) => {
-          const creature = creatureById[unit.creatureId]
-          if (!creature) return null
-          const point = position(unit)
-          const isActor = currentEvent?.actorId === unit.id
-          const isTarget = currentEvent?.targetId === unit.id && currentEvent.type !== 'heal'
-          const alive = unit.health > 0
-          return (
-            <div
-              key={unit.id}
-              className={`${styles.arenaUnit} ${unit.side === 'player' ? styles.playerArenaUnit : styles.enemyArenaUnit} ${isActor ? styles.actingUnit : ''} ${isTarget ? styles.hitUnit : ''} ${!alive ? styles.defeatedUnit : ''}`}
-              style={{ left: `${point.x * 100 / 7}%`, top: `${point.y * 100 / 7}%` }}
-              title={`${creature.name} · ${Math.ceil(unit.health)} / ${unit.maxHealth} health`}
-            >
-              <CreatureImage creature={creature} className={styles.arenaSprite} />
-              <span className={styles.factionLabel}>{unit.side === 'player' ? 'ALLY' : 'ENEMY'}</span>
-              <span className={styles.arenaUnitName}>{creature.name}</span>
-              {unit.side === 'player' && unit.star > 1 && <span className={styles.arenaStars}>{'★'.repeat(unit.star)}</span>}
-              <span className={styles.healthTrack}><i style={{ width: `${Math.max(0, unit.health / unit.maxHealth * 100)}%` }} /></span>
-              <small>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth}</small>
-            </div>
-          )
-        })}
+        <div className={styles.sqmBoard}>
+          {Array.from({ length: 35 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
+          {shownUnits.map((unit) => {
+            const creature = creatureById[unit.creatureId]
+            if (!creature) return null
+            const point = position(unit)
+            const isActor = currentEvent?.actorId === unit.id
+            const isTarget = currentEvent?.targetId === unit.id && currentEvent.type !== 'heal'
+            const alive = unit.health > 0
+            return (
+              <div
+                key={unit.id}
+                className={`${styles.arenaUnit} ${unit.side === 'player' ? styles.playerArenaUnit : styles.enemyArenaUnit} ${isActor ? styles.actingUnit : ''} ${isTarget ? styles.hitUnit : ''} ${!alive ? styles.defeatedUnit : ''}`}
+                style={{ left: `${point.x * 100 / 7}%`, top: `${point.y * 100 / 5}%` }}
+                title={`${creature.name} · ${Math.ceil(unit.health)} / ${unit.maxHealth} health`}
+              >
+                <CreatureImage creature={creature} className={styles.arenaSprite} />
+                <span className={styles.factionLabel}>{unit.side === 'player' ? 'ALLY' : 'ENEMY'}</span>
+                <span className={styles.arenaUnitName}>{creature.name}</span>
+                {unit.side === 'player' && unit.star > 1 && <span className={styles.arenaStars}>{'★'.repeat(unit.star)}</span>}
+                <span className={styles.healthTrack}><i style={{ width: `${Math.max(0, unit.health / unit.maxHealth * 100)}%` }} /></span>
+                <small>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth}</small>
+              </div>
+            )
+          })}
+        </div>
       </div>
       <div className={`${styles.arenaEvent} ${currentEvent?.type === 'attack' || currentEvent?.type === 'defeat' ? styles.attackEvent : ''}`}>
         <span>{currentEvent?.type === 'move' ? '↗' : currentEvent?.type === 'heal' ? '✚' : currentEvent?.type === 'defeat' ? '✦' : '⚔'}</span>
@@ -491,6 +493,15 @@ function BattleReport() {
   if (!result) return null
   const victoryGold = node ? 3 + node.rewardGold : 3
   const victoryExperience = node ? 25 + node.rewardExperience : 25
+  const unitById = new Map(result.units.map((unit) => [unit.id, unit]))
+  const analytics = (result.analytics ?? []).map((entry) => ({ ...entry, unit: unitById.get(entry.unitId) }))
+  const alliedStats = analytics.filter((entry) => entry.side === 'player')
+  const summary = {
+    damageDone: alliedStats.reduce((total, entry) => total + entry.damageDone, 0),
+    damageTaken: alliedStats.reduce((total, entry) => total + entry.damageTaken, 0),
+    damageReduced: alliedStats.reduce((total, entry) => total + entry.damageReduced, 0),
+    healingDone: alliedStats.reduce((total, entry) => total + entry.healingDone, 0),
+  }
   return (
     <section className={styles.pageSection}>
       <div className={`${styles.battleBanner} ${result.won ? styles.victoryBanner : styles.defeatBanner}`}>
@@ -502,6 +513,38 @@ function BattleReport() {
         </div>
         <div className={styles.bannerMark}>{result.won ? 'W' : 'R'}</div>
       </div>
+
+      <section className={styles.analysisPanel} aria-label="Battle analysis">
+        <div className={styles.panelTopline}>
+          <div><span className={styles.eyebrow}>Battle analysis</span><h2>Formation performance</h2></div>
+          <span className={styles.roundPill}>ALLIES · {alliedStats.length}</span>
+        </div>
+        {analytics.length > 0 ? (
+          <>
+            <div className={styles.analysisSummary}>
+              <div><span>Damage dealt</span><strong>{summary.damageDone.toLocaleString()}</strong></div>
+              <div><span>Damage taken</span><strong>{summary.damageTaken.toLocaleString()}</strong></div>
+              <div><span>Damage reduced</span><strong>{summary.damageReduced.toLocaleString()}</strong></div>
+              <div><span>Healing done</span><strong>{summary.healingDone.toLocaleString()}</strong></div>
+            </div>
+            <div className={styles.analysisTableWrap}>
+              <table className={styles.analysisTable}>
+                <thead><tr><th>Creature</th><th>Side</th><th>Damage dealt</th><th>Damage taken</th><th>Damage reduced</th><th>Healing</th><th>Defeats</th></tr></thead>
+                <tbody>{analytics.map((entry) => {
+                  const creature = entry.unit ? creatureById[entry.unit.creatureId] : undefined
+                  return (
+                    <tr key={entry.unitId}>
+                      <td><span className={styles.analysisCreature}>{creature && <CreatureImage creature={creature} className={styles.analysisSprite} />}{creature?.name ?? 'Unknown creature'}</span></td>
+                      <td><span className={`${styles.analysisSide} ${entry.side === 'player' ? styles.analysisAlly : styles.analysisEnemy}`}>{entry.side === 'player' ? 'Ally' : 'Enemy'}</span></td>
+                      <td>{entry.damageDone.toLocaleString()}</td><td>{entry.damageTaken.toLocaleString()}</td><td>{entry.damageReduced.toLocaleString()}</td><td>{entry.healingDone.toLocaleString()}</td><td>{entry.defeats}</td>
+                    </tr>
+                  )
+                })}</tbody>
+              </table>
+            </div>
+          </>
+        ) : <p className={styles.analysisEmpty}>Detailed metrics are not available for this saved battle.</p>}
+      </section>
 
       <div className={styles.reportGrid}>
         <section className={styles.reportPanel}>
