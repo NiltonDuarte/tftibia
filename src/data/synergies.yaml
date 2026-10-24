@@ -1,0 +1,182 @@
+synergies:
+  - id: role-tank
+    category: role
+    tag: tank
+    label: Frontline
+    breakpoints:
+      - count: 2
+        title: Shield Wall
+        description: Tanks gain 15% more health.
+        effects:
+          healthPct: 0.15
+      - count: 4
+        title: Iron Formation
+        description: Your whole team gains 1 armor.
+        effects:
+          teamArmor: 1
+  - id: role-shooter
+    category: role
+    tag: shooter
+    label: Marksmen
+    breakpoints:
+      - count: 2
+        title: Focused Aim
+        description: Shooters deal 12% more damage.
+        effects:
+          attackPct: 0.12
+      - count: 4
+        title: Volley
+        description: The first shooter attack deals 25% bonus damage.
+        effects:
+          firstAttackBonusPct: 0.25
+  - id: role-mage
+    category: role
+    tag: mage
+    label: Arcanists
+    breakpoints:
+      - count: 2
+        title: Arcane Focus
+        description: Mages deal 15% more damage.
+        effects:
+          attackPct: 0.15
+      - count: 4
+        title: Spell Surge
+        description: All allies deal 6% more damage.
+        effects:
+          teamAttackPct: 0.06
+  - id: role-healer
+    category: role
+    tag: healer
+    label: Healers
+    breakpoints:
+      - count: 2
+        title: Gentle Hands
+        description: Healers restore 4 extra health when they heal.
+        effects:
+          healingFlat: 4
+      - count: 4
+        title: Circle of Renewal
+        description: The whole team recovers 3 health at the start of each round.
+        effects:
+          roundStartHeal: 3
+  - id: family-asuri
+    category: family
+    tag: Asuri
+    label: Asuri
+    breakpoints:
+      - count: 2
+        title: Palace Sorcery
+        description: Asuri gain 10% attack.
+        effects:
+          attackPct: 0.1
+      - count: 3
+        title: Elemental Opening
+        description: Asuri deal 30% bonus damage on their first attack.
+        effects:
+          firstAttackBonusPct: 0.3
+  - id: family-cobra
+    category: family
+    tag: Order of the Cobra
+    label: Cobra Order
+    breakpoints:
+      - count: 2
+        title: Hidden Blades
+        description: Cobra creatures gain 1 armor and 8% attack.
+        effects:
+          attackPct: 0.08
+          armorFlat: 1
+      - count: 3
+        title: Clean Strike
+        description: Cobra creatures deal 25% bonus damage on their first attack.
+        effects:
+          firstAttackBonusPct: 0.25
+  - id: family-falcon
+    category: family
+    tag: Order of the Falcon
+    label: Falcon Order
+    breakpoints:
+      - count: 2
+        title: Oathbound
+        description: Falcon creatures gain 2 armor.
+        effects:
+          armorFlat: 2
+      - count: 3
+        title: Hold the Line
+        description: The whole team takes 8% less damage.
+        effects:
+          teamDamageReductionPct: 0.08
+  - id: family-apparition
+    category: family
+    tag: Goshnar's Apparitions
+    label: Apparitions
+    breakpoints:
+      - count: 2
+        title: Mirror Bond
+        description: Apparitions heal 4 health at the start of each round.
+        effects:
+          roundStartHeal: 4
+      - count: 3
+        title: Shared Essence
+        description: The whole team recovers 3 health at the start of each round.
+        effects:
+          teamRoundStartHeal: 3
+  - id: class-demon
+    category: bestiary
+    tag: Demon
+    label: Demon
+    breakpoints:
+      - count: 3
+        title: Infernal Resilience
+        description: Demons gain 1 armor.
+        effects:
+          armorFlat: 1
+      - count: 5
+        title: Fell Power
+        description: Demons gain 8% attack.
+        effects:
+          attackPct: 0.08
+      - count: 7
+        title: Burning Presence
+        description: Your whole team gains 8% attack.
+        effects:
+          teamAttackPct: 0.08
+  - id: class-human
+    category: bestiary
+    tag: Human
+    label: Human
+    breakpoints:
+      - count: 3
+        title: Adaptable
+        description: Humans gain 1 armor.
+        effects:
+          armorFlat: 1
+      - count: 5
+        title: Prepared
+        description: Humans gain 10% more health.
+        effects:
+          healthPct: 0.1
+      - count: 7
+        title: United Front
+        description: Your whole team gains 5% attack.
+        effects:
+          teamAttackPct: 0.05
+  - id: class-undead
+    category: bestiary
+    tag: Undead
+    label: Undead
+    breakpoints:
+      - count: 3
+        title: Tenacious Dead
+        description: Undead gain 1 armor.
+        effects:
+          armorFlat: 1
+      - count: 5
+        title: Deathless
+        description: Undead gain 10% more health.
+        effects:
+          healthPct: 0.1
+      - count: 7
+        title: Grave Tide
+        description: Your whole team takes 6% less damage.
+        effects:
+          teamDamageReductionPct: 0.06

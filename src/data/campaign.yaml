@@ -1,0 +1,226 @@
+campaign:
+  title: The Shattered Paths
+  startNodeId: crossroads
+  startingGold: 5
+  startingCreatures:
+    - falcon-knight
+    - dawnfire-asura
+    - druids-apparition
+  boardCapacity: 6
+  shopSize: 4
+  nodes:
+    - id: crossroads
+      name: The Old Crossroads
+      region: Thais
+      stage: 0
+      description: Choose a route through the fractured frontier.
+      enemies: []
+      nextNodeIds:
+        - asura-garden
+        - cobra-bastion
+    - id: asura-garden
+      name: The Asura Garden
+      region: Forbidden Gardens
+      stage: 1
+      description: A narrow path opens into a quiet grove where an asura coven waits.
+      enemies:
+        - midnight-asura
+        - frost-flower-asura
+        - cobra-scout
+      nextNodeIds:
+        - falcon-ramparts
+        - apparition-crypt
+    - id: cobra-bastion
+      name: Cobra Bastion
+      region: Ankrahmun
+      stage: 1
+      description: The Order of the Cobra guards a passage through the old city.
+      enemies:
+        - cobra-scout
+        - cobra-assassin
+        - falcon-paladin
+      nextNodeIds:
+        - falcon-ramparts
+        - apparition-crypt
+    - id: falcon-ramparts
+      name: Falcon Ramparts
+      region: Falcon Bastion
+      stage: 2
+      description: Cursed falcons take the walls and fire down from above.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - cobra-scout
+      nextNodeIds:
+        - asura-vault
+        - noxious-court
+    - id: apparition-crypt
+      name: Apparition Crypt
+      region: Mirrored Nightmare
+      stage: 2
+      description: A spectral healer keeps the crypt’s dead from resting.
+      enemies:
+        - druids-apparition
+        - falcon-knight
+        - midnight-asura
+      nextNodeIds:
+        - asura-vault
+        - noxious-court
+    - id: asura-vault
+      name: Asura Vault
+      region: Asura Palace
+      stage: 3
+      description: An elite guard protects the sealed inner vault.
+      enemies:
+        - true-feverbloom-asura
+        - cobra-vizier
+        - cobra-assassin
+      nextNodeIds:
+        - mirror-catacombs
+        - falcon-siege
+    - id: noxious-court
+      name: Noxious Court
+      region: Ankrahmun
+      stage: 3
+      description: The Cobra court turns its strongest defenders against you.
+      enemies:
+        - cobra-vizier
+        - cobra-scout
+        - midnight-asura
+      nextNodeIds:
+        - mirror-catacombs
+        - falcon-siege
+    - id: mirror-catacombs
+      name: Mirror Catacombs
+      region: Mirrored Nightmare
+      stage: 4
+      description: The mirror shard bends the dead into a relentless procession.
+      enemies:
+        - druids-apparition
+        - midnight-asura
+        - frost-flower-asura
+        - falcon-knight
+      nextNodeIds:
+        - blood-sands
+        - eclipsed-garden
+    - id: falcon-siege
+      name: Falcon Siege
+      region: Falcon Bastion
+      stage: 4
+      description: Falcon veterans have gathered to retake the lower keep.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - cobra-assassin
+        - cobra-scout
+      nextNodeIds:
+        - blood-sands
+        - eclipsed-garden
+    - id: blood-sands
+      name: Blood Sands
+      region: Darama
+      stage: 5
+      description: A hot wind carries the sound of an approaching war party.
+      enemies:
+        - true-feverbloom-asura
+        - cobra-vizier
+        - falcon-knight
+        - cobra-scout
+      nextNodeIds:
+        - drowned-vault
+        - black-mirror
+    - id: eclipsed-garden
+      name: Eclipsed Garden
+      region: Forbidden Gardens
+      stage: 5
+      description: The asura coven has been reinforced by its fiercest spellcasters.
+      enemies:
+        - dawnfire-asura
+        - midnight-asura
+        - frost-flower-asura
+        - true-feverbloom-asura
+      nextNodeIds:
+        - drowned-vault
+        - black-mirror
+    - id: drowned-vault
+      name: Drowned Vault
+      region: The Fractured Deep
+      stage: 6
+      description: The flooded vault is held by creatures that refuse to yield.
+      enemies:
+        - cobra-vizier
+        - druids-apparition
+        - true-feverbloom-asura
+        - falcon-paladin
+        - cobra-assassin
+      nextNodeIds:
+        - last-rampart
+        - heart-of-thorns
+    - id: black-mirror
+      name: The Black Mirror
+      region: Mirrored Nightmare
+      stage: 6
+      description: A broken reflection gives the enemy an impossible advantage.
+      enemies:
+        - druids-apparition
+        - midnight-asura
+        - falcon-knight
+        - cobra-scout
+        - frost-flower-asura
+      nextNodeIds:
+        - last-rampart
+        - heart-of-thorns
+    - id: last-rampart
+      name: The Last Rampart
+      region: Falcon Bastion
+      stage: 7
+      description: The final falcon guard locks down the route to the heart.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+        - cobra-vizier
+        - cobra-assassin
+      nextNodeIds:
+        - shattered-throne
+        - the-void-below
+    - id: heart-of-thorns
+      name: Heart of Thorns
+      region: Asura Palace
+      stage: 7
+      description: The coven gathers every remaining force around the heart.
+      enemies:
+        - true-feverbloom-asura
+        - dawnfire-asura
+        - midnight-asura
+        - cobra-vizier
+        - druids-apparition
+      nextNodeIds:
+        - shattered-throne
+        - the-void-below
+    - id: shattered-throne
+      name: The Shattered Throne
+      region: The Fractured Deep
+      stage: 8
+      description: The force behind the broken paths makes its final stand.
+      enemies:
+        - true-feverbloom-asura
+        - cobra-vizier
+        - falcon-knight
+        - druids-apparition
+        - cobra-assassin
+        - midnight-asura
+      nextNodeIds: []
+    - id: the-void-below
+      name: The Void Below
+      region: The Fractured Deep
+      stage: 8
+      description: The paths collapse into a final battle against the frontier’s champions.
+      enemies:
+        - true-feverbloom-asura
+        - cobra-vizier
+        - falcon-paladin
+        - druids-apparition
+        - falcon-knight
+        - frost-flower-asura
+      nextNodeIds: []

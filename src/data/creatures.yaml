@@ -1,0 +1,121 @@
+creatures:
+  - id: dawnfire-asura
+    name: Dawnfire Asura
+    bestiaryClass: Demon
+    family: Asuri
+    role: mage
+    cost: 3
+    health: 54
+    attack: 13
+    armor: 1
+    range: 3
+    image: /assets/creatures/dawnfire-asura.png
+    description: A fire-touched spellcaster that pressures the back line.
+  - id: frost-flower-asura
+    name: Frost Flower Asura
+    bestiaryClass: Demon
+    family: Asuri
+    role: shooter
+    cost: 3
+    health: 48
+    attack: 12
+    armor: 1
+    range: 3
+    image: /assets/creatures/frost-flower-asura.png
+    description: A patient marksman whose icy shots slow the enemy advance.
+  - id: midnight-asura
+    name: Midnight Asura
+    bestiaryClass: Demon
+    family: Asuri
+    role: mage
+    cost: 2
+    health: 46
+    attack: 11
+    armor: 2
+    range: 3
+    image: /assets/creatures/midnight-asura.png
+    description: A nimble caster that weakens whatever stands in its way.
+  - id: true-feverbloom-asura
+    name: True Feverbloom Asura
+    bestiaryClass: Demon
+    family: Asuri
+    role: mage
+    cost: 5
+    health: 76
+    attack: 18
+    armor: 3
+    range: 3
+    image: /assets/creatures/true-feverbloom-asura.png
+    description: An elite asuri that brings overwhelming fire and earth magic.
+  - id: cobra-assassin
+    name: Cobra Assassin
+    bestiaryClass: Human
+    family: Order of the Cobra
+    role: shooter
+    cost: 3
+    health: 52
+    attack: 14
+    armor: 2
+    range: 2
+    image: /assets/creatures/cobra-assassin.png
+    description: A swift ambusher trained to finish weakened targets.
+  - id: cobra-scout
+    name: Cobra Scout
+    bestiaryClass: Human
+    family: Order of the Cobra
+    role: shooter
+    cost: 2
+    health: 44
+    attack: 10
+    armor: 1
+    range: 3
+    image: /assets/creatures/cobra-scout.png
+    description: A keen-eyed marksman who spots openings for the order.
+  - id: cobra-vizier
+    name: Cobra Vizier
+    bestiaryClass: Human
+    family: Order of the Cobra
+    role: tank
+    cost: 4
+    health: 78
+    attack: 11
+    armor: 5
+    range: 2
+    image: /assets/creatures/cobra-vizier.png
+    description: A durable frontline guardian backed by defensive magic.
+  - id: falcon-knight
+    name: Falcon Knight
+    bestiaryClass: Undead
+    family: Order of the Falcon
+    role: tank
+    cost: 3
+    health: 72
+    attack: 12
+    armor: 5
+    range: 1
+    image: /assets/creatures/falcon-knight.png
+    description: A relentless armored guardian that anchors a formation.
+  - id: falcon-paladin
+    name: Falcon Paladin
+    bestiaryClass: Undead
+    family: Order of the Falcon
+    role: shooter
+    cost: 3
+    health: 52
+    attack: 13
+    armor: 2
+    range: 3
+    image: /assets/creatures/falcon-paladin.png
+    description: A disciplined ranged fighter who supports the frontline.
+  - id: druids-apparition
+    name: Druid's Apparition
+    bestiaryClass: Undead
+    family: Goshnar's Apparitions
+    role: healer
+    cost: 4
+    health: 68
+    attack: 10
+    armor: 3
+    range: 3
+    image: /assets/creatures/druids-apparition.png
+    description: A spectral healer that automatically tends to wounded allies.
