@@ -130,6 +130,21 @@ Reply with your picks, or answer in your own words. We can decide one layer at a
 - **Current implementation:** A playable eight-encounter campaign with three route choices between encounters, 10 sample creatures, 12 synergy definitions, four vocations, animated automatic combat on a 7×7 sqm room, rank merges, commander XP/perks, three campaign lives, path-specific rewards, and local saves. Every encounter offers distinct room themes; enemy groups follow their route's creature family or regional theme. Shop and recruit rewards draw from the full creature pool. Combat creatures occupy discrete tiles and step to neighboring tiles, including diagonals. Treat roles, combat numbers, and effects as balance placeholders.
 - **Next design task:** Tune the encounter curve, three-copy merge bonuses, and positioning rules through play; then expand the creature pool.
 
+## Balance test strategies
+
+The balance lab simulates complete campaigns for every selected vocation, strategy, and seed. The default run uses 1,000 sequential seeds starting at 1. Each run records its win/loss, encounters played and cleared, lives, gold, and final roster size. Per-seed rows can be filtered, sorted, and exported as CSV; a grouped view reports win rate by vocation and strategy.
+
+The strategy set uses deliberately different play patterns to expose balance across the implemented rules:
+
+- **Random baseline:** Uses its own seeded random stream to choose routes, purchases, perk rewards, and formation. This supplies a noisy comparison point while remaining replayable.
+- **Synergy builder:** Recruits toward role, family, and Bestiary breakpoints, then arranges units by frontline and backline roles.
+- **Family stack:** Favors adding to the most represented creature family and activating family breakpoints.
+- **Frontline wall:** Prioritizes tanks, fighters, healing, armor, and damage reduction, placing durable units forward.
+- **Ranged burst:** Prioritizes shooters and mages, their range and attack effects, and relevant vocation bonuses.
+- **Vocation specialist:** Drafts toward the selected Knight, Paladin, Sorcerer, or Druid passive and matching upgrades.
+
+The game reducer and simulator share the same seeded state transitions and combat resolver. Each strategy has a separate seeded decision stream; the game seed controls shops and rewards. Re-running the same seed, vocation, and strategy reproduces the same campaign. These policies are diagnostic examples, not claims of optimal play.
+
 ## References
 
 - [TibiaDraptor Bestiary](https://tibiadraptor.com/bestiary) — reference for Tibia creature data and the **Class** filter's Bestiary class list. The site may update over time; check the live filter when defining the roster.

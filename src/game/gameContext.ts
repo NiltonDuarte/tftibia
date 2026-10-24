@@ -1,4 +1,5 @@
 import { createContext } from 'react'
+import type { GameReplay } from './replay'
 import type { GameState } from './stateSchema'
 
 export type GameCommands = {
@@ -15,8 +16,27 @@ export type GameCommands = {
   chooseCreatureReward: (creatureId: string) => void
   chooseUpgradeReward: (upgradeId: string) => void
   newRun: (seed?: number) => void
+  playReplay: (replay: GameReplay) => void
+  pauseReplay: () => void
+  resumeReplay: () => void
+  stopReplay: () => void
+  setReplayDelay: (delayMs: number) => void
+  finishReplayBattle: () => void
 }
 
-export type GameContextValue = { state: GameState; commands: GameCommands }
+export type ReplayPlayback = {
+  replay: GameReplay
+  actionIndex: number
+  actionDelayMs: number
+  playing: boolean
+  waitingForBattle: boolean
+}
+
+export type GameContextValue = {
+  state: GameState
+  commands: GameCommands
+  replayData: GameReplay
+  playback: ReplayPlayback | null
+}
 
 export const GameContext = createContext<GameContextValue | null>(null)

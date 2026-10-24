@@ -102,7 +102,6 @@ export const CampaignSchema = z.object({
   startNodeId: z.string().min(1),
   startingGold: z.number().int().nonnegative(),
   startingCreatures: z.array(z.string()).min(1),
-  boardCapacity: z.number().int().positive(),
   shopSize: z.number().int().positive(),
   nodes: z.array(CampaignNodeSchema).min(1),
 })

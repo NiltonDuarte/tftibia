@@ -1,0 +1,337 @@
+.lab {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: clamp(22px, 4vw, 52px);
+  color: #d9ded8;
+}
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+.heading h1 {
+  margin: 7px 0 9px;
+  color: #f1dfb4;
+  font-size: clamp(28px, 4vw, 42px);
+}
+.heading p {
+  max-width: 640px;
+  margin: 0;
+  color: #a8b0b3;
+  line-height: 1.6;
+}
+.eyebrow {
+  color: #82b7c0;
+  font: 11px var(--mono, monospace);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.backButton,
+.summary button,
+.pagination button {
+  border: 1px solid #485564;
+  border-radius: 7px;
+  padding: 10px 13px;
+  background: #202936;
+  color: #dce6e7;
+  cursor: pointer;
+  font: 12px var(--mono, monospace);
+}
+.controls {
+  display: grid;
+  gap: 20px;
+  padding: clamp(17px, 3vw, 26px);
+  border: 1px solid #394958;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #1b2631, #17212a);
+}
+.numberFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.numberFields label,
+.filters label {
+  display: grid;
+  gap: 7px;
+  color: #adc0c5;
+  font: 11px var(--mono, monospace);
+  text-transform: uppercase;
+}
+.numberFields input,
+.filters select {
+  min-width: 160px;
+  border: 1px solid #4a5d68;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #111a22;
+  color: #e1e7e5;
+  font: 14px var(--mono, monospace);
+}
+.controls fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid #394958;
+  border-radius: 8px;
+}
+.controls legend {
+  padding: 0 7px;
+  color: #c7ad76;
+  font: 11px var(--mono, monospace);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.checkGrid,
+.strategyGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px 13px;
+}
+.checkGrid label,
+.strategyGrid label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #d2d9d8;
+  font-size: 13px;
+}
+.checkGrid input,
+.strategyGrid input {
+  accent-color: #c6a96a;
+  margin-top: 3px;
+}
+.strategyGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.strategyGrid small {
+  display: block;
+  margin-top: 5px;
+  color: #92a1a8;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.runRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.runRow > span {
+  color: #9cabb0;
+  font: 11px var(--mono, monospace);
+}
+.runButton {
+  border: 1px solid #dec181;
+  border-radius: 7px;
+  padding: 12px 16px;
+  background: linear-gradient(125deg, #d2b16b, #b88d4f);
+  color: #18212a;
+  cursor: pointer;
+  font: 700 12px var(--mono, monospace);
+}
+.runButton:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.progressBlock {
+  display: grid;
+  gap: 8px;
+  color: #b5c3c5;
+  font: 11px var(--mono, monospace);
+}
+.progressBlock progress {
+  width: 100%;
+  height: 10px;
+  accent-color: #c9ad71;
+}
+.error {
+  margin: 0;
+  color: #f0a49c;
+}
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 23px 0 17px;
+}
+.summary > div {
+  min-width: 120px;
+  padding: 12px 15px;
+  border: 1px solid #334653;
+  border-radius: 8px;
+  background: #18242d;
+}
+.summary span {
+  display: block;
+  color: #91a5a9;
+  font: 10px var(--mono, monospace);
+  letter-spacing: 0.1em;
+}
+.summary strong {
+  display: block;
+  margin-top: 5px;
+  color: #ead8ad;
+  font-size: 21px;
+}
+.summary button {
+  margin-left: auto;
+}
+.aggregate {
+  margin: 18px 0 23px;
+}
+.aggregate h2 {
+  margin: 0 0 10px;
+  color: #dfd2b1;
+  font-size: 17px;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px;
+  margin: 18px 0;
+}
+.filters select {
+  min-width: 170px;
+  padding: 9px 10px;
+}
+.tableMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #98a8ad;
+  font: 11px var(--mono, monospace);
+}
+.tableScroll {
+  overflow: auto;
+  max-height: min(70vh, 850px);
+  border: 1px solid #354651;
+  border-radius: 9px;
+  background: #131d25;
+}
+.tableScroll table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.tableScroll th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0;
+  border-bottom: 1px solid #485964;
+  background: #202c35;
+  text-align: left;
+}
+.sortButton {
+  width: 100%;
+  border: 0;
+  padding: 12px 13px;
+  background: transparent;
+  color: #c7b27c;
+  cursor: pointer;
+  text-align: left;
+  font: 11px var(--mono, monospace);
+}
+.tableScroll td {
+  padding: 11px 13px;
+  border-bottom: 1px solid rgba(98, 119, 127, 0.2);
+  color: #d3dbd8;
+}
+.inspectButton {
+  border: 1px solid #4b6570;
+  border-radius: 5px;
+  padding: 5px 8px;
+  background: #1b2a33;
+  color: #b5d4d6;
+  cursor: pointer;
+  font: 10px var(--mono, monospace);
+}
+.traceCell {
+  white-space: normal;
+  min-width: 640px;
+  background: #101820 !important;
+  color: #b9c7ca !important;
+}
+.traceCell summary {
+  color: #e0c686;
+  cursor: pointer;
+  font: 11px var(--mono, monospace);
+}
+.traceCell ol {
+  display: grid;
+  gap: 5px;
+  max-height: 340px;
+  overflow: auto;
+  padding-left: 28px;
+  color: #b9c7ca;
+  font: 11px/1.5 var(--mono, monospace);
+}
+.tableScroll tr:nth-child(even) td {
+  background: rgba(47, 62, 70, 0.2);
+}
+.outcome {
+  display: inline-block;
+  min-width: 48px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  text-align: center;
+  font: 10px var(--mono, monospace);
+}
+.win {
+  background: rgba(93, 150, 115, 0.2);
+  color: #9bd2aa;
+}
+.loss {
+  background: rgba(190, 104, 92, 0.2);
+  color: #e6a49b;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 0 8px;
+  color: #a6b3b7;
+  font: 11px var(--mono, monospace);
+}
+.pagination button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 900px) {
+  .checkGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .strategyGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 620px) {
+  .lab {
+    padding: 22px 14px 34px;
+  }
+  .heading {
+    display: grid;
+  }
+  .backButton {
+    justify-self: start;
+  }
+  .strategyGrid,
+  .checkGrid {
+    grid-template-columns: 1fr;
+  }
+  .summary button {
+    margin-left: 0;
+  }
+  .tableMeta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -14,9 +14,9 @@ Implementation choices for the Tibia Tactics browser game. Gameplay rules and cr
 | Game content | YAML | Files under `src/data/`, parsed by `yaml` |
 | Content validation | Zod | Checked by the build script and again at runtime |
 | Combat | Plain TypeScript on the main thread | Kept independent from React UI |
-| Persistence | Browser local storage | Versioned JSON save format; version 4 stores 7×7 sqm combat coordinates and migrates saves from versions 1–3 |
+| Persistence | Browser local storage | Versioned JSON save format; version 6 stores campaign and PRNG state and migrates earlier saves |
 | Backend | None | Client-only MVP |
-| Testing | Vitest + Playwright | Vitest configured; Playwright configuration included |
+| Testing | Vitest + Playwright | Unit tests cover deterministic full-campaign runs; Playwright configuration is available for browser flows |
 | Code quality | ESLint + Prettier | npm scripts in `package.json` |
 | Hosting / CI | GitHub Pages + GitHub Actions | PR checks; deploy main branch after successful build |
 | Offline support | Deferred | Regular website; no service worker/PWA in MVP |
@@ -36,6 +36,7 @@ Versions are pinned by `package-lock.json`; the ranges below are declared in `pa
 | `typescript` | Type checking and compilation | Development |
 | `tsx` | Run the YAML content validation script | Development |
 | `vitest` | Unit test runner | Development |
+| `jsdom` | Browser-like environment for Vitest | Development |
 | `@playwright/test` | Browser end-to-end test runner | Development |
 | `eslint`, `typescript-eslint`, React ESLint plugins | Linting | Development |
 | `prettier` | Formatting | Development |
@@ -50,7 +51,8 @@ Versions are pinned by `package-lock.json`; the ranges below are declared in `pa
 
 ## Implemented MVP architecture
 
-- `src/game/GameContext.tsx` owns the game reducer, commands, and local save effect.
+- `src/game/engine.ts` owns the pure deterministic game reducer; `src/game/GameContext.tsx` binds commands to React and local saves.
+- `src/game/balance.ts` runs full campaigns with seeded strategy policies and records per-seed outcomes for the sortable Balance Lab.
 - `src/game/combat.ts` resolves position-aware automatic battles and calculates active synergies; it returns a structured room-coordinate event timeline for the animated board.
 - `src/content/` parses YAML and validates it against Zod schemas.
 - `src/data/` holds the initial campaign, vocations, upgrades, creatures, and synergy definitions.
@@ -65,6 +67,7 @@ Versions are pinned by `package-lock.json`; the ranges below are declared in `pa
 | 2026-10-24 | YAML content validated by Zod at build time and runtime | Make balancing data editable while guarding against malformed content. |
 | 2026-10-24 | Reducer/context state and versioned local JSON saves | Keep the client-only campaign state predictable and reloadable. |
 | 2026-10-24 | Plain TypeScript automatic combat simulation on discrete sqm coordinates | Keep combat rules independent of rendering; each creature occupies one room tile and advances by neighboring tile steps. |
+| 2026-10-24 | Seeded campaign and strategy decision streams | Make full-run balance comparisons reproducible for a given seed, vocation, and strategy. |
 | 2026-10-24 | GitHub Pages deployment through GitHub Actions | Host the static game and automate PR checks and main-branch deploys. |
 | 2026-10-24 | Local PNG creature portraits with stable slugs | Avoid runtime image dependencies and provide predictable asset paths. |
 

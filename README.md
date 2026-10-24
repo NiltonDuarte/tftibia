@@ -22,4 +22,6 @@ npm run dev
 
 Use **Creature codex** in the top bar to browse the current recruit pool by name, family, and role.
 
+Use **Balance lab** to simulate seeded full campaigns across vocations and strategies. The default run compares 1,000 seeds per combination and provides sortable per-seed results, grouped win rates, and CSV export.
+
 Creature, synergy, vocation, upgrade, and campaign content is stored in `src/data/*.yaml`. It is checked by Zod during build validation and when loaded in the browser. Creature image sources are listed in [ASSET_SOURCES.md](ASSET_SOURCES.md).

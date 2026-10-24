@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BOARD_SLOTS } from './board'
 
 export const RunPhaseSchema = z.enum([
   'vocation',
@@ -13,7 +14,7 @@ export const RunPhaseSchema = z.enum([
 const UnitSchema = z.object({
   instanceId: z.string().min(1),
   creatureId: z.string().min(1),
-  slot: z.number().int().min(0).max(8).nullable(),
+  slot: z.number().int().refine((slot) => BOARD_SLOTS.includes(slot)).nullable(),
   star: z.number().int().min(1).max(3).default(1),
 })
 
