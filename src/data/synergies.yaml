@@ -29,6 +29,21 @@ synergies:
         description: The first shooter attack deals 25% bonus damage.
         effects:
           firstAttackBonusPct: 0.25
+  - id: role-fighter
+    category: role
+    tag: fighter
+    label: Strikers
+    breakpoints:
+      - count: 1
+        title: Close Quarters
+        description: Melee fighters deal 12% more damage when adjacent to a target.
+        effects:
+          fighterAttackPct: 0.12
+      - count: 2
+        title: Relentless Assault
+        description: Melee fighters deal 25% more damage when striking adjacent targets.
+        effects:
+          fighterAttackPct: 0.25
   - id: role-mage
     category: role
     tag: mage

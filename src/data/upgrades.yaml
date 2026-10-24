@@ -3,83 +3,83 @@ upgrades:
     vocation: knight
     name: Veteran's Guard
     description: Your whole team gains 1 armor.
-    icon: 🛡️
+    icon: shield
     effects:
       teamArmor: 1
   - id: knight-bulwark
     vocation: knight
     name: Bulwark Training
     description: Your whole team takes 6% less damage.
-    icon: 🧱
+    icon: wall
     effects:
       teamDamageReductionPct: 0.06
   - id: knight-rally
     vocation: knight
     name: Rallying Presence
     description: Your team deals 6% more damage.
-    icon: ⚔️
+    icon: swords
     effects:
       teamAttackPct: 0.06
   - id: paladin-precision
     vocation: paladin
     name: Sharpshooter
     description: Shooters gain 12% attack.
-    icon: 🎯
+    icon: target
     effects:
       shooterAttackPct: 0.12
   - id: paladin-blessing
     vocation: paladin
     name: Healing Bolts
     description: Your team recovers 3 health each round.
-    icon: ✨
+    icon: spark
     effects:
       teamRoundStartHeal: 3
   - id: paladin-piercing
     vocation: paladin
     name: Piercing Shots
     description: Shooters deal 15% bonus damage on their first attack.
-    icon: 🏹
+    icon: bow
     effects:
       shooterFirstAttackBonusPct: 0.15
   - id: sorcerer-arcana
     vocation: sorcerer
     name: Arcane Mastery
     description: Mages gain 12% attack.
-    icon: 🔮
+    icon: arcane
     effects:
       mageAttackPct: 0.12
   - id: sorcerer-ward
     vocation: sorcerer
     name: Elemental Ward
     description: Your team gains 1 armor.
-    icon: 💠
+    icon: crystal
     effects:
       teamArmor: 1
   - id: sorcerer-overload
     vocation: sorcerer
     name: Overload
     description: All allies deal 8% bonus damage on their first attack.
-    icon: ⚡
+    icon: lightning
     effects:
       firstAttackBonusPct: 0.08
   - id: druid-regrowth
     vocation: druid
     name: Regrowth
     description: Your team recovers 3 extra health each round.
-    icon: 🌱
+    icon: sprout
     effects:
       teamRoundStartHeal: 3
   - id: druid-barkskin
     vocation: druid
     name: Barkskin
     description: Your whole team gains 1 armor.
-    icon: 🌳
+    icon: tree
     effects:
       teamArmor: 1
   - id: druid-thorns
     vocation: druid
     name: Thorned Roots
     description: Tanks gain 15% more health.
-    icon: 🍃
+    icon: leaf
     effects:
       tankHealthPct: 0.15

@@ -80,7 +80,7 @@ function firstEmptySlot(roster: GameState['roster']): number | null {
 }
 
 function finishRewards(state: GameState): GameState {
-  if (!state.selectedCreatureRewardId || !state.selectedUpgradeRewardId || !state.encounterNodeId) return state
+  if (!state.selectedCreatureRewardId || state.pendingLevelUps > 0 || !state.encounterNodeId) return state
   const node = nodeById[state.encounterNodeId]
   const completedNodeIds = [...new Set([...state.completedNodeIds, node.id])]
   return {
@@ -190,12 +190,25 @@ function reducer(state: GameState, action: Action): GameState {
       }
     case 'claim-victory':
       if (state.phase !== 'battle' || !state.battleResult?.won) return state
-      return { ...state, phase: 'reward', gold: state.gold + 3 }
+      if (!state.encounterNodeId) return state
+      {
+        const node = nodeById[state.encounterNodeId]
+        const totalExperience = state.experience + 25 + node.rewardExperience
+        const levelsGained = Math.floor(totalExperience / 100)
+        return {
+          ...state,
+          phase: 'reward',
+          gold: state.gold + 3 + node.rewardGold,
+          experience: totalExperience % 100,
+          level: state.level + levelsGained,
+          pendingLevelUps: levelsGained,
+        }
+      }
     case 'retry':
       if (state.phase !== 'battle' || state.battleResult?.won || state.lives <= 0) return state
       return { ...state, phase: 'preparation', battleResult: null }
     case 'choose-creature-reward': {
-      if (state.phase !== 'reward' || !state.rewardCreatureIds.includes(action.creatureId)) return state
+      if (state.phase !== 'reward' || state.selectedCreatureRewardId || !state.rewardCreatureIds.includes(action.creatureId)) return state
       const creature = creatureById[action.creatureId]
       if (!creature) return state
       const alreadyDeployed = state.roster.some((unit) => unit.creatureId === creature.id && unit.slot !== null)
@@ -206,11 +219,12 @@ function reducer(state: GameState, action: Action): GameState {
       return finishRewards({ ...state, roster, selectedUnitId, selectedCreatureRewardId: action.creatureId })
     }
     case 'choose-upgrade-reward': {
-      if (state.phase !== 'reward' || !state.rewardUpgradeIds.includes(action.upgradeId)) return state
+      if (state.phase !== 'reward' || state.pendingLevelUps <= 0 || !state.rewardUpgradeIds.includes(action.upgradeId)) return state
       return finishRewards({
         ...state,
         upgradeIds: [...state.upgradeIds, action.upgradeId],
         selectedUpgradeRewardId: action.upgradeId,
+        pendingLevelUps: state.pendingLevelUps - 1,
       })
     }
     case 'new-run':
@@ -228,7 +242,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const commands = useMemo<GameCommands>(
     () => ({
       chooseVocation: (vocationId) => dispatch({ type: 'choose-vocation', vocationId }),
-      chooseRoute: (nodeId) => dispatch({ type: 'choose-route', nodeId, shop: drawCreatureOffers(campaign.shopSize) }),
+      chooseRoute: (nodeId) => {
+        const node = nodeById[nodeId]
+        if (!node) return
+        dispatch({ type: 'choose-route', nodeId, shop: drawCreatureOffers(campaign.shopSize + node.shopBonus) })
+      },
       buyCreature: (creatureId) => dispatch({ type: 'buy', creatureId }),
       rerollShop: () => dispatch({ type: 'reroll', shop: drawCreatureOffers(campaign.shopSize) }),
       selectUnit: (unitId) => dispatch({ type: 'select-unit', unitId }),
@@ -252,7 +270,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         dispatch({
           type: 'battle',
           result,
-          creatureRewards: result.won ? drawCreatureOffers(3) : [],
+          creatureRewards: result.won ? drawCreatureOffers(node.creatureOfferCount) : [],
           upgradeRewards: result.won ? drawUpgradeOffers(state.commanderId) : [],
         })
       },

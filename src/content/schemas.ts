@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const RoleSchema = z.enum(['tank', 'shooter', 'mage', 'healer'])
+export const RoleSchema = z.enum(['tank', 'fighter', 'shooter', 'mage', 'healer'])
 export const SynergyCategorySchema = z.enum(['role', 'family', 'bestiary'])
 
 export const CreatureSchema = z.object({
@@ -30,6 +30,7 @@ export const EffectsSchema = z
     shooterAttackPct: z.number().optional(),
     shooterFirstAttackBonusPct: z.number().optional(),
     mageAttackPct: z.number().optional(),
+    fighterAttackPct: z.number().optional(),
     tankHealthPct: z.number().optional(),
     roundStartHeal: z.number().optional(),
     teamRoundStartHeal: z.number().optional(),
@@ -85,6 +86,12 @@ export const CampaignNodeSchema = z.object({
   name: z.string().min(1),
   region: z.string().min(1),
   stage: z.number().int().nonnegative(),
+  theme: z.enum(['crossroads', 'garden', 'desert', 'bastion', 'crypt', 'palace', 'mirror', 'deep', 'throne', 'hunt']),
+  routeReward: z.enum(['gold', 'experience', 'recruit']),
+  rewardGold: z.number().int().nonnegative(),
+  rewardExperience: z.number().int().nonnegative(),
+  shopBonus: z.number().int().nonnegative(),
+  creatureOfferCount: z.number().int().positive(),
   description: z.string().min(1),
   enemies: z.array(z.string()),
   nextNodeIds: z.array(z.string()),

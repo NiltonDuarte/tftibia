@@ -14,7 +14,7 @@ Implementation choices for the Tibia Tactics browser game. Gameplay rules and cr
 | Game content | YAML | Files under `src/data/`, parsed by `yaml` |
 | Content validation | Zod | Checked by the build script and again at runtime |
 | Combat | Plain TypeScript on the main thread | Kept independent from React UI |
-| Persistence | Browser local storage | Versioned JSON save format; version 2 adds lives and creature ranks, with a version 1 migration |
+| Persistence | Browser local storage | Versioned JSON save format; version 4 stores 7×7 sqm combat coordinates and migrates saves from versions 1–3 |
 | Backend | None | Client-only MVP |
 | Testing | Vitest + Playwright | Vitest configured; Playwright configuration included |
 | Code quality | ESLint + Prettier | npm scripts in `package.json` |
@@ -51,7 +51,7 @@ Versions are pinned by `package-lock.json`; the ranges below are declared in `pa
 ## Implemented MVP architecture
 
 - `src/game/GameContext.tsx` owns the game reducer, commands, and local save effect.
-- `src/game/combat.ts` resolves position-aware automatic battles and calculates active synergies; it returns a structured event timeline for the animated battle board.
+- `src/game/combat.ts` resolves position-aware automatic battles and calculates active synergies; it returns a structured room-coordinate event timeline for the animated board.
 - `src/content/` parses YAML and validates it against Zod schemas.
 - `src/data/` holds the initial campaign, vocations, upgrades, creatures, and synergy definitions.
 - `src/App.tsx` renders the vocation selection, branching route map, preparation/shop, battle report, and reward flow.
@@ -64,7 +64,7 @@ Versions are pinned by `package-lock.json`; the ranges below are declared in `pa
 | 2026-10-24 | React + TypeScript + Vite + npm, rendered with HTML/CSS | Browser-first prototype with fast iteration and no dedicated game engine. |
 | 2026-10-24 | YAML content validated by Zod at build time and runtime | Make balancing data editable while guarding against malformed content. |
 | 2026-10-24 | Reducer/context state and versioned local JSON saves | Keep the client-only campaign state predictable and reloadable. |
-| 2026-10-24 | Plain TypeScript automatic combat simulation | Keep game rules testable without coupling them to rendering. |
+| 2026-10-24 | Plain TypeScript automatic combat simulation on discrete sqm coordinates | Keep combat rules independent of rendering; each creature occupies one room tile and advances by neighboring tile steps. |
 | 2026-10-24 | GitHub Pages deployment through GitHub Actions | Host the static game and automate PR checks and main-branch deploys. |
 | 2026-10-24 | Local PNG creature portraits with stable slugs | Avoid runtime image dependencies and provide predictable asset paths. |
 

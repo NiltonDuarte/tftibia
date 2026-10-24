@@ -51,12 +51,12 @@ creatures:
     name: Cobra Assassin
     bestiaryClass: Human
     family: Order of the Cobra
-    role: shooter
+    role: fighter
     cost: 3
     health: 52
     attack: 14
     armor: 2
-    range: 2
+    range: 1
     image: /assets/creatures/cobra-assassin.png
     description: A swift ambusher trained to finish weakened targets.
   - id: cobra-scout

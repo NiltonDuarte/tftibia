@@ -13,196 +13,445 @@ campaign:
       name: The Old Crossroads
       region: Thais
       stage: 0
-      description: Choose a route through the fractured frontier.
+      theme: crossroads
+      routeReward: experience
+      rewardGold: 0
+      rewardExperience: 0
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Choose your first route through the fractured frontier.
       enemies: []
       nextNodeIds:
-        - asura-garden
         - cobra-bastion
-    - id: asura-garden
-      name: The Asura Garden
-      region: Forbidden Gardens
-      stage: 1
-      description: A narrow path opens into a quiet grove where an asura coven waits.
-      enemies:
-        - midnight-asura
-        - frost-flower-asura
-        - cobra-scout
-      nextNodeIds:
-        - falcon-ramparts
-        - apparition-crypt
+        - asura-garden
+        - falcon-hunt
     - id: cobra-bastion
       name: Cobra Bastion
       region: Ankrahmun
       stage: 1
-      description: The Order of the Cobra guards a passage through the old city.
+      theme: desert
+      routeReward: gold
+      rewardGold: 9
+      rewardExperience: 17
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: A Cobra caravan is guarding its supply vault.
       enemies:
+        - cobra-vizier
         - cobra-scout
         - cobra-assassin
+      nextNodeIds:
+        - falcon-ramparts
+        - apparition-crypt
+        - cobra-trail
+    - id: asura-garden
+      name: The Asura Garden
+      region: Forbidden Gardens
+      stage: 1
+      theme: garden
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 61
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Arcane echoes gather around a young asura coven.
+      enemies:
+        - midnight-asura
+        - frost-flower-asura
+        - dawnfire-asura
+      nextNodeIds:
+        - falcon-ramparts
+        - apparition-crypt
+        - cobra-trail
+    - id: falcon-hunt
+      name: Falcon Hunting Grounds
+      region: Northern Steppes
+      stage: 1
+      theme: hunt
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 30
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: Falcon scouts patrol the hunting trails.
+      enemies:
+        - falcon-paladin
+        - falcon-knight
         - falcon-paladin
       nextNodeIds:
         - falcon-ramparts
         - apparition-crypt
+        - cobra-trail
     - id: falcon-ramparts
       name: Falcon Ramparts
       region: Falcon Bastion
       stage: 2
-      description: Cursed falcons take the walls and fire down from above.
+      theme: bastion
+      routeReward: gold
+      rewardGold: 10
+      rewardExperience: 19
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Cursed falcons have locked down the rampart treasury.
       enemies:
         - falcon-knight
         - falcon-paladin
-        - cobra-scout
+        - falcon-knight
       nextNodeIds:
         - asura-vault
         - noxious-court
+        - falcon-outpost
     - id: apparition-crypt
       name: Apparition Crypt
       region: Mirrored Nightmare
       stage: 2
-      description: A spectral healer keeps the crypt’s dead from resting.
+      theme: crypt
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 62
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: A spectral healer tends the restless dead.
       enemies:
         - druids-apparition
-        - falcon-knight
+        - dawnfire-asura
         - midnight-asura
       nextNodeIds:
         - asura-vault
         - noxious-court
+        - falcon-outpost
+    - id: cobra-trail
+      name: The Cobra Trail
+      region: Ankrahmun
+      stage: 2
+      theme: desert
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 32
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: A hidden trail winds through the Cobra patrols of Ankrahmun.
+      enemies:
+        - cobra-scout
+        - cobra-assassin
+        - cobra-vizier
+      nextNodeIds:
+        - asura-vault
+        - noxious-court
+        - falcon-outpost
     - id: asura-vault
       name: Asura Vault
       region: Asura Palace
       stage: 3
-      description: An elite guard protects the sealed inner vault.
+      theme: palace
+      routeReward: gold
+      rewardGold: 11
+      rewardExperience: 21
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: An elite guard stands between you and the vault.
       enemies:
         - true-feverbloom-asura
-        - cobra-vizier
-        - cobra-assassin
+        - dawnfire-asura
+        - midnight-asura
       nextNodeIds:
         - mirror-catacombs
-        - falcon-siege
+        - eclipse-garden
+        - stone-hunters
     - id: noxious-court
       name: Noxious Court
       region: Ankrahmun
       stage: 3
-      description: The Cobra court turns its strongest defenders against you.
+      theme: desert
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 63
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Poisoned magic swirls through the Cobra court.
       enemies:
         - cobra-vizier
         - cobra-scout
-        - midnight-asura
+        - cobra-assassin
       nextNodeIds:
         - mirror-catacombs
-        - falcon-siege
+        - eclipse-garden
+        - stone-hunters
+    - id: falcon-outpost
+      name: Falcon Outpost
+      region: Falcon Bastion
+      stage: 3
+      theme: bastion
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 34
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: Falcon sentries guard a fortified outpost above the steppes.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+      nextNodeIds:
+        - mirror-catacombs
+        - eclipse-garden
+        - stone-hunters
     - id: mirror-catacombs
       name: Mirror Catacombs
       region: Mirrored Nightmare
       stage: 4
-      description: The mirror shard bends the dead into a relentless procession.
+      theme: mirror
+      routeReward: gold
+      rewardGold: 12
+      rewardExperience: 23
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The catacombs are lined with forgotten offerings.
       enemies:
         - druids-apparition
         - midnight-asura
         - frost-flower-asura
-        - falcon-knight
+        - true-feverbloom-asura
       nextNodeIds:
         - blood-sands
-        - eclipsed-garden
-    - id: falcon-siege
-      name: Falcon Siege
-      region: Falcon Bastion
+        - shard-shrine
+        - falcon-kennels
+    - id: eclipse-garden
+      name: Eclipse Garden
+      region: Forbidden Gardens
       stage: 4
-      description: Falcon veterans have gathered to retake the lower keep.
+      theme: garden
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 64
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The asura coven draws power from a darkened moon.
       enemies:
-        - falcon-knight
-        - falcon-paladin
-        - cobra-assassin
-        - cobra-scout
+        - dawnfire-asura
+        - midnight-asura
+        - frost-flower-asura
+        - true-feverbloom-asura
       nextNodeIds:
         - blood-sands
-        - eclipsed-garden
+        - shard-shrine
+        - falcon-kennels
+    - id: stone-hunters
+      name: Stone Hunters
+      region: Northern Steppes
+      stage: 4
+      theme: hunt
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 36
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: Hunters have cornered a dangerous creature pack.
+      enemies:
+        - cobra-assassin
+        - falcon-paladin
+        - cobra-scout
+        - falcon-knight
+      nextNodeIds:
+        - blood-sands
+        - shard-shrine
+        - falcon-kennels
     - id: blood-sands
       name: Blood Sands
       region: Darama
       stage: 5
-      description: A hot wind carries the sound of an approaching war party.
+      theme: desert
+      routeReward: gold
+      rewardGold: 13
+      rewardExperience: 25
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: A war party guards its plunder in the burning sands.
       enemies:
-        - true-feverbloom-asura
         - cobra-vizier
-        - falcon-knight
         - cobra-scout
+        - cobra-assassin
+        - cobra-vizier
       nextNodeIds:
         - drowned-vault
         - black-mirror
-    - id: eclipsed-garden
-      name: Eclipsed Garden
-      region: Forbidden Gardens
+        - crystal-den
+    - id: shard-shrine
+      name: Shard Shrine
+      region: Mirrored Nightmare
       stage: 5
-      description: The asura coven has been reinforced by its fiercest spellcasters.
+      theme: mirror
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 65
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Fragments of the mirror release a surge of experience.
       enemies:
-        - dawnfire-asura
+        - druids-apparition
         - midnight-asura
+        - dawnfire-asura
         - frost-flower-asura
-        - true-feverbloom-asura
       nextNodeIds:
         - drowned-vault
         - black-mirror
+        - crystal-den
+    - id: falcon-kennels
+      name: Falcon Kennels
+      region: Falcon Bastion
+      stage: 5
+      theme: bastion
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 38
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: The keep’s war beasts are ready to be recruited.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+        - falcon-paladin
+      nextNodeIds:
+        - drowned-vault
+        - black-mirror
+        - crystal-den
     - id: drowned-vault
       name: Drowned Vault
       region: The Fractured Deep
       stage: 6
-      description: The flooded vault is held by creatures that refuse to yield.
+      theme: deep
+      routeReward: gold
+      rewardGold: 14
+      rewardExperience: 27
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The submerged vault is stuffed with old coins.
       enemies:
-        - cobra-vizier
         - druids-apparition
         - true-feverbloom-asura
-        - falcon-paladin
-        - cobra-assassin
+        - midnight-asura
+        - frost-flower-asura
+        - dawnfire-asura
       nextNodeIds:
         - last-rampart
         - heart-of-thorns
+        - hollow-hunt
     - id: black-mirror
-      name: The Black Mirror
+      name: The Black Depths
       region: Mirrored Nightmare
       stage: 6
-      description: A broken reflection gives the enemy an impossible advantage.
+      theme: crypt
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 66
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Apparitions and asuras haunt a lightless mirrored vault.
       enemies:
         - druids-apparition
         - midnight-asura
-        - falcon-knight
-        - cobra-scout
         - frost-flower-asura
+        - dawnfire-asura
       nextNodeIds:
         - last-rampart
         - heart-of-thorns
-    - id: last-rampart
-      name: The Last Rampart
-      region: Falcon Bastion
-      stage: 7
-      description: The final falcon guard locks down the route to the heart.
-      enemies:
-        - falcon-knight
-        - falcon-paladin
-        - falcon-knight
-        - cobra-vizier
-        - cobra-assassin
-      nextNodeIds:
-        - shattered-throne
-        - the-void-below
-    - id: heart-of-thorns
-      name: Heart of Thorns
+        - hollow-hunt
+    - id: crystal-den
+      name: Crystal Den
       region: Asura Palace
-      stage: 7
-      description: The coven gathers every remaining force around the heart.
+      stage: 6
+      theme: palace
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 40
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: An asura armory promises valuable recruits.
       enemies:
         - true-feverbloom-asura
         - dawnfire-asura
         - midnight-asura
-        - cobra-vizier
-        - druids-apparition
+        - frost-flower-asura
+        - true-feverbloom-asura
+      nextNodeIds:
+        - last-rampart
+        - heart-of-thorns
+        - hollow-hunt
+    - id: last-rampart
+      name: The Last Rampart
+      region: Falcon Bastion
+      stage: 7
+      theme: bastion
+      routeReward: gold
+      rewardGold: 15
+      rewardExperience: 29
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The last Falcon guard protects the campaign treasury.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
       nextNodeIds:
         - shattered-throne
-        - the-void-below
+        - void-below
+        - beast-king
+    - id: heart-of-thorns
+      name: Heart of Thorns
+      region: Asura Palace
+      stage: 7
+      theme: palace
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 67
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The coven gathers its strongest spellcasters around the heart.
+      enemies:
+        - true-feverbloom-asura
+        - dawnfire-asura
+        - midnight-asura
+        - frost-flower-asura
+        - true-feverbloom-asura
+      nextNodeIds:
+        - shattered-throne
+        - void-below
+        - beast-king
+    - id: hollow-hunt
+      name: Hollow Hunt
+      region: The Fractured Deep
+      stage: 7
+      theme: hunt
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 42
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: A rare creature leads its pack through the hollows.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+      nextNodeIds:
+        - shattered-throne
+        - void-below
+        - beast-king
     - id: shattered-throne
       name: The Shattered Throne
       region: The Fractured Deep
       stage: 8
-      description: The force behind the broken paths makes its final stand.
+      theme: throne
+      routeReward: gold
+      rewardGold: 16
+      rewardExperience: 31
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The forces behind the broken paths defend their hoard.
       enemies:
         - true-feverbloom-asura
         - cobra-vizier
@@ -211,16 +460,41 @@ campaign:
         - cobra-assassin
         - midnight-asura
       nextNodeIds: []
-    - id: the-void-below
+    - id: void-below
       name: The Void Below
       region: The Fractured Deep
       stage: 8
-      description: The paths collapse into a final battle against the frontier’s champions.
+      theme: deep
+      routeReward: experience
+      rewardGold: 1
+      rewardExperience: 68
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The deep releases one last wave of impossible magic.
       enemies:
         - true-feverbloom-asura
-        - cobra-vizier
-        - falcon-paladin
         - druids-apparition
-        - falcon-knight
+        - midnight-asura
         - frost-flower-asura
+        - dawnfire-asura
+        - true-feverbloom-asura
+      nextNodeIds: []
+    - id: beast-king
+      name: The Falcon King's Hold
+      region: Falcon Bastion
+      stage: 8
+      theme: bastion
+      routeReward: recruit
+      rewardGold: 2
+      rewardExperience: 44
+      shopBonus: 2
+      creatureOfferCount: 5
+      description: The last Falcon guardians defend their wind-carved stronghold.
+      enemies:
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+        - falcon-paladin
+        - falcon-knight
+        - falcon-paladin
       nextNodeIds: []

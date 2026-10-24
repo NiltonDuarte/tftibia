@@ -54,8 +54,12 @@ Potential guardrails for a first prototype:
 - **Prototype decision:** Creatures outside attack range advance toward a target and cannot attack that turn. Frontline placement changes which enemies are closest, while range and lane occupancy determine when units can strike.
 - **Prototype decision:** Recruits of the same creature can be held on the bench and merge automatically in groups of three at the same rank. Rank 2 and rank 3 creatures gain stronger combat stats. Only one creature of a given identity may be deployed at a time.
 - **Prototype UI:** The creature codex lists the recruit pool with search and role/family filters.
+- **Prototype decision:** The commander gains experience from encounters and route rewards. At 100 experience the commander levels up and chooses a vocation-specific perk from the reward pool.
+- **Prototype decision:** Every campaign map offers three route rewards: a gold cache, an experience shrine, or a hunt with extra shop and creature offers. Routes use distinct room biomes and enemy groups that fit the biome.
+- **Prototype decision:** Combat rooms use 32-pixel Tibia-style floor squares. Units can move through all six room rows; allies use cyan markers and enemies use coral markers.
+- **Prototype decision:** Cobra Assassin is the first melee fighter. It has one-tile range and deals bonus damage when adjacent to a target.
 
-These are initial difficulty and pacing levers. Tune the encounter curve, loss penalty, and rank multipliers through play.
+These are initial difficulty and pacing levers. Tune the encounter curve, loss penalty, rank multipliers, XP pace, and route rewards through play.
 
 ## Vocation as the player's character
 
@@ -123,10 +127,12 @@ Reply with your picks, or answer in your own words. We can decide one layer at a
 - **Chosen campaign reward:** Player chooses from a selection of creatures
 - **Chosen combat ability control:** Creature abilities are passive or automatic; no manual activations
 - **Working synergy distinction:** Family is specific and stronger at lower counts; Bestiary class is broad and weaker at higher counts
-- **Current implementation:** A playable eight-encounter campaign with 10 sample creatures, 11 synergy definitions, four vocations, animated automatic combat, rank merges, three campaign lives, reward choices, and local saves. Treat roles, combat numbers, and effects as balance placeholders.
+- **Current implementation:** A playable eight-encounter campaign with three route choices between encounters, 10 sample creatures, 12 synergy definitions, four vocations, animated automatic combat on a 7×7 sqm room, rank merges, commander XP/perks, three campaign lives, path-specific rewards, and local saves. Every encounter offers distinct room themes; enemy groups follow their route's creature family or regional theme. Shop and recruit rewards draw from the full creature pool. Combat creatures occupy discrete tiles and step to neighboring tiles, including diagonals. Treat roles, combat numbers, and effects as balance placeholders.
 - **Next design task:** Tune the encounter curve, three-copy merge bonuses, and positioning rules through play; then expand the creature pool.
 
 ## References
 
 - [TibiaDraptor Bestiary](https://tibiadraptor.com/bestiary) — reference for Tibia creature data and the **Class** filter's Bestiary class list. The site may update over time; check the live filter when defining the roster.
 - [TibiaDraptor Bestiary, indexed creature entries](https://tibiadraptor.com/bestiary?kills=5) — source for sample creature class labels. Family groupings and roles in the table are design interpretations, not source fields.
+- [Tibia official controls manual](https://www.tibia.com/gameguides/?section=controls&subtopic=manual) — movement supports eight directions, including diagonals.
+- [SQM definition](https://www.tibiawiki.com.br/wiki/SQM) — each character and creature occupies one sqm, even when its artwork appears larger.

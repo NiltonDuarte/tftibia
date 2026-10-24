@@ -2,28 +2,28 @@ vocations:
   - id: knight
     name: Knight
     title: The steadfast
-    icon: 🛡️
+    icon: shield
     description: Your team starts each fight with extra armor.
     effect:
       teamArmor: 1
   - id: paladin
     name: Paladin
     title: The far-striker
-    icon: 🏹
+    icon: bow
     description: Shooters begin each fight with a stronger first shot.
     effect:
       shooterFirstAttackBonusPct: 0.2
   - id: sorcerer
     name: Sorcerer
     title: The spellweaver
-    icon: 🔥
+    icon: flame
     description: Mages deal more damage with every attack.
     effect:
       mageAttackPct: 0.15
   - id: druid
     name: Druid
     title: The wildkeeper
-    icon: 🌿
+    icon: leaf
     description: Your team recovers health at the start of every combat round.
     effect:
       teamRoundStartHeal: 4

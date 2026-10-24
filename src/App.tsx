@@ -25,6 +25,30 @@ function CreatureImage({ creature, className }: { creature: Creature; className?
   return <img className={className ?? styles.creatureSprite} src={imageUrl(creature.image)} alt={creature.name} />
 }
 
+function GameIcon({ name }: { name: string }) {
+  const icon = name.toLowerCase()
+  const shape = icon.includes('shield') || icon.includes('armor') ? (
+    <><path d="M16 3 26 7v8c0 6.5-4.3 11-10 14-5.7-3-10-7.5-10-14V7l10-4Z" /><path d="m11 16 3 3 7-7" /></>
+  ) : icon.includes('bow') || icon.includes('target') || icon.includes('precision') ? (
+    <><path d="M10 4c10 5 10 19 0 24" /><path d="M5 16h21m-7-7 7 7-7 7" /><circle cx="10" cy="16" r="2" /></>
+  ) : icon.includes('flame') || icon.includes('spark') || icon.includes('arcane') || icon.includes('magic') ? (
+    <><path d="M17 3c2 7-4 7-2 12 1-2 3-3 5-4 4 8 2 15-5 16-6 0-10-4-9-10 1-4 5-7 6-12 2 3 2 5 2 7 3-3 4-6 3-9Z" /><path d="M15 21h.01" /></>
+  ) : icon.includes('leaf') || icon.includes('tree') || icon.includes('sprout') || icon.includes('nature') ? (
+    <><path d="M26 5C14 5 6 9 6 18c0 5 4 8 8 8 9 0 12-9 12-21Z" /><path d="M5 28c4-7 9-11 16-15" /><path d="M11 20c0-3 0-5-2-7m7 2c3 0 5 1 7 3" /></>
+  ) : icon.includes('wall') || icon.includes('bulwark') ? (
+    <><path d="M4 6h10v8H4zm14 0h10v8H18zM4 18h10v8H4zm14 0h10v8H18z" /><path d="M14 10h4m-4 12h4" /></>
+  ) : icon.includes('sword') || icon.includes('attack') || icon.includes('rally') ? (
+    <><path d="m7 25 14-14m-3-5 7 7-5 1-3-3 1-5Z" /><path d="m5 21 6 6m-8 2 5-5" /><path d="m20 22 5 5" /></>
+  ) : icon.includes('crystal') || icon.includes('gem') || icon.includes('diamond') ? (
+    <><path d="m16 3 10 8-10 18L6 11l10-8Z" /><path d="M6 11h20M12 11l4 18 4-18M12 3l-2 8m10-8 2 8" /></>
+  ) : icon.includes('lightning') || icon.includes('overload') ? (
+    <path d="M18 2 7 17h8l-1 13 11-17h-8l1-11Z" />
+  ) : (
+    <><path d="M16 3 19 12l9 4-9 3-3 9-3-9-9-3 9-4 3-9Z" /><path d="m25 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z" /></>
+  )
+  return <svg aria-hidden="true" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{shape}</svg>
+}
+
 function Shell({ children, onOpenCompendium }: { children: ReactNode; onOpenCompendium: () => void }) {
   const { state, commands } = useGame()
   const showBar = state.phase !== 'vocation'
@@ -53,6 +77,17 @@ function Shell({ children, onOpenCompendium }: { children: ReactNode; onOpenComp
           )}
         </div>
       </header>
+      {showBar && state.commanderId && (
+        <div className={styles.commanderProgress}>
+          <div className={styles.commanderIdentity}>
+            <span className={styles.commanderIcon}><GameIcon name={vocationById[state.commanderId].icon} /></span>
+            <strong>{vocationById[state.commanderId].name}</strong>
+            <b>LV {state.level}</b>
+          </div>
+          <div className={styles.expTrack} aria-label={`${state.experience} of 100 experience to next level`}><i style={{ width: `${state.experience}%` }} /></div>
+          <span className={styles.expReadout}>{state.pendingLevelUps > 0 ? 'LEVEL UP · CHOOSE A PERK' : `${state.experience} / 100 XP`}</span>
+        </div>
+      )}
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>A small strategy prototype inspired by the world of Tibia.</footer>
     </div>
@@ -92,7 +127,7 @@ function VocationSelection() {
               type="button"
               onClick={() => commands.chooseVocation(vocation.id)}
             >
-              <span className={styles.vocationIcon}>{vocation.icon}</span>
+              <span className={styles.vocationIcon}><GameIcon name={vocation.icon} /></span>
               <span className={styles.vocationTitle}>{vocation.name}</span>
               <span className={styles.vocationSubtitle}>{vocation.title}</span>
               <span className={styles.vocationDesc}>{vocation.description}</span>
@@ -146,19 +181,24 @@ function CampaignMap() {
         {destinations.map((node, index) => {
           const enemyUnits = node.enemies.map((id) => creatureById[id]).filter(Boolean)
           return (
-            <article className={styles.routeCard} key={node.id}>
-              <div className={styles.routeImage}>
+            <article className={styles.routeCard} key={node.id} data-theme={node.theme}>
+              <div className={styles.routeImage} data-theme={node.theme}>
                 <span className={styles.routeIndex}>0{index + 1}</span>
                 <span className={styles.routeStage}>ENCOUNTER {node.stage}</span>
-                <span className={styles.routeSigil}>{index === 0 ? '✦' : '⚔'}</span>
+                <span className={styles.routeSigil}>{node.routeReward === 'gold' ? '✦' : node.routeReward === 'experience' ? '✧' : '♜'}</span>
               </div>
               <div className={styles.routeBody}>
                 <div className={styles.routeMeta}>{node.region}</div>
                 <h2>{node.name}</h2>
                 <p>{node.description}</p>
+                <div className={`${styles.routeReward} ${styles[`routeReward_${node.routeReward}`]}`}>
+                  {node.routeReward === 'gold' && <>✦ Cache · +{node.rewardGold} gold</>}
+                  {node.routeReward === 'experience' && <>✧ Shrine · +{node.rewardExperience} XP</>}
+                  {node.routeReward === 'recruit' && <>♜ Hunt · +{node.shopBonus} shop offers</>}
+                </div>
                 <div className={styles.enemyPreview}>
-                  {enemyUnits.map((creature) => (
-                    <CreatureImage className={styles.enemyAvatar} creature={creature} key={creature.id} />
+                  {enemyUnits.map((creature, creatureIndex) => (
+                    <CreatureImage className={styles.enemyAvatar} creature={creature} key={`${creature.id}-${creatureIndex}`} />
                   ))}
                   <span>{enemyUnits.length} creatures</span>
                 </div>
@@ -206,7 +246,7 @@ function Preparation() {
             <div><span className={styles.eyebrow}>Formation</span><h2>Set the board</h2></div>
             <span className={styles.boardLegend}><i /> Your side</span>
           </div>
-          <div className={styles.boardFrame}>
+          <div className={`${styles.boardFrame} ${styles.sqmRoom}`} data-theme={node?.theme}>
             <div className={styles.rowLabel}>BACKLINE</div>
             <div className={styles.boardGrid}>
               {Array.from({ length: 9 }, (_, slot) => {
@@ -369,14 +409,15 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
   const result = state.battleResult
   const [eventIndex, setEventIndex] = useState(-1)
   const [paused, setPaused] = useState(false)
+  const [fastMode, setFastMode] = useState(false)
   const events = result?.events ?? []
   const finished = eventIndex >= events.length - 1
 
   useEffect(() => {
     if (!result || paused || finished) return
-    const timer = window.setTimeout(() => setEventIndex((index) => Math.min(events.length - 1, index + 1)), 540)
+    const timer = window.setTimeout(() => setEventIndex((index) => Math.min(events.length - 1, index + 1)), fastMode ? 150 : 320)
     return () => window.clearTimeout(timer)
-  }, [eventIndex, events.length, finished, paused, result])
+  }, [eventIndex, events.length, fastMode, finished, paused, result])
 
   useEffect(() => {
     if (finished) onFinished()
@@ -387,33 +428,33 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
   const shownUnits = result.units.map((unit) => ({ ...unit }))
   for (const event of result.events.slice(0, eventIndex + 1)) {
     const actor = shownUnits.find((unit) => unit.id === event.actorId)
-    if (actor) actor.slot = event.actorSlot
+    if (actor) { actor.x = event.actorX; actor.y = event.actorY }
     const target = event.targetId ? shownUnits.find((unit) => unit.id === event.targetId) : undefined
-    if (target && event.targetSlot !== null) target.slot = event.targetSlot
+    if (target && event.targetX !== null && event.targetY !== null) { target.x = event.targetX; target.y = event.targetY }
     if (target && event.targetHealth !== null) target.health = event.targetHealth
   }
   const currentEvent = result.events[eventIndex]
-  const position = (side: 'player' | 'enemy', slot: number) => ({
-    x: slot % 3,
-    y: side === 'player' ? 5 - Math.floor(slot / 3) : 2 - Math.floor(slot / 3),
-  })
+  const position = (unit: (typeof shownUnits)[number]) => ({ x: unit.x, y: unit.y })
 
+  const battleNode = state.encounterNodeId ? nodeById[state.encounterNodeId] : undefined
   return (
-    <section className={styles.arenaPanel}>
+    <section className={`${styles.arenaPanel} ${styles.sqmRoom}`} data-theme={battleNode?.theme}>
       <div className={styles.panelTopline}>
         <div><span className={styles.eyebrow}>Live combat · round {currentEvent?.round ?? 1} / {result.rounds}</span><h2>The clash</h2></div>
         <div className={styles.playbackControls}>
           <span className={styles.roundPill}>{finished ? 'BATTLE COMPLETE' : `${eventIndex + 1} / ${result.events.length} actions`}</span>
+          {!finished && <button className={styles.textButton} type="button" onClick={() => setFastMode((value) => !value)}>{fastMode ? '2×' : '1×'}</button>}
           {!finished && <button className={styles.textButton} type="button" onClick={() => setPaused((value) => !value)}>{paused ? '▶ Resume' : 'Ⅱ Pause'}</button>}
           {!finished && <button className={styles.textButton} type="button" onClick={() => { setEventIndex(result.events.length - 1); setPaused(true) }}>Skip</button>}
         </div>
       </div>
-      <div className={styles.arenaLabels}><span>ENEMY TERRITORY</span><span>YOUR FORMATION</span></div>
-      <div className={styles.arenaGrid}>
+      <div className={styles.arenaLabels}><span>HOSTILE · CORAL</span><span>ALLY · CYAN</span></div>
+      <div className={styles.arenaGrid} data-theme={battleNode?.theme}>
+        {Array.from({ length: 49 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
         {shownUnits.map((unit) => {
           const creature = creatureById[unit.creatureId]
           if (!creature) return null
-          const point = position(unit.side, unit.slot)
+          const point = position(unit)
           const isActor = currentEvent?.actorId === unit.id
           const isTarget = currentEvent?.targetId === unit.id && currentEvent.type !== 'heal'
           const alive = unit.health > 0
@@ -421,10 +462,11 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
             <div
               key={unit.id}
               className={`${styles.arenaUnit} ${unit.side === 'player' ? styles.playerArenaUnit : styles.enemyArenaUnit} ${isActor ? styles.actingUnit : ''} ${isTarget ? styles.hitUnit : ''} ${!alive ? styles.defeatedUnit : ''}`}
-              style={{ gridColumn: point.x + 1, gridRow: point.y + 1 }}
+              style={{ left: `${point.x * 100 / 7}%`, top: `${point.y * 100 / 7}%` }}
               title={`${creature.name} · ${Math.ceil(unit.health)} / ${unit.maxHealth} health`}
             >
               <CreatureImage creature={creature} className={styles.arenaSprite} />
+              <span className={styles.factionLabel}>{unit.side === 'player' ? 'ALLY' : 'ENEMY'}</span>
               <span className={styles.arenaUnitName}>{creature.name}</span>
               {unit.side === 'player' && unit.star > 1 && <span className={styles.arenaStars}>{'★'.repeat(unit.star)}</span>}
               <span className={styles.healthTrack}><i style={{ width: `${Math.max(0, unit.health / unit.maxHealth * 100)}%` }} /></span>
@@ -447,6 +489,8 @@ function BattleReport() {
   const node = state.encounterNodeId ? nodeById[state.encounterNodeId] : undefined
   const result = state.battleResult
   if (!result) return null
+  const victoryGold = node ? 3 + node.rewardGold : 3
+  const victoryExperience = node ? 25 + node.rewardExperience : 25
   return (
     <section className={styles.pageSection}>
       <div className={`${styles.battleBanner} ${result.won ? styles.victoryBanner : styles.defeatBanner}`}>
@@ -485,7 +529,7 @@ function BattleReport() {
             </div>
           </section>
           {result.won ? (
-            <button className={styles.battleButton} type="button" onClick={commands.claimVictory}>Claim victory + 3 gold <b>→</b></button>
+            <button className={styles.battleButton} type="button" onClick={commands.claimVictory}>Claim spoils · +{victoryGold} gold · +{victoryExperience} XP <b>→</b></button>
           ) : state.lives > 0 ? (
             <div className={styles.retryActions}>
               <p className={styles.mergeHint}>You lost a life and 2 gold. {state.lives} {state.lives === 1 ? 'life' : 'lives'} remain.</p>
@@ -508,11 +552,12 @@ function RewardScreen() {
   const { state, commands } = useGame()
   const selectedCreature = state.selectedCreatureRewardId
   const selectedUpgrade = state.selectedUpgradeRewardId
+  const node = state.encounterNodeId ? nodeById[state.encounterNodeId] : undefined
 
   return (
     <section className={styles.pageSection}>
       <div className={styles.pageTitleRow}>
-        <div><div className={styles.eyebrow}>Victory spoils · +3 gold</div><h1>Choose your rewards</h1><p className={styles.lede}>Take one creature for your roster and one upgrade for your vocation.</p></div>
+        <div><div className={styles.eyebrow}>Victory spoils · +{3 + (node?.rewardGold ?? 0)} gold · +{25 + (node?.rewardExperience ?? 0)} XP</div><h1>Choose your rewards</h1><p className={styles.lede}>Recruit one creature. Level-ups also unlock a vocation perk choice.</p></div>
         <span className={styles.stepBadge}>REWARD CACHE</span>
       </div>
       <div className={styles.rewardBlock}>
@@ -525,7 +570,7 @@ function RewardScreen() {
               <button className={`${styles.rewardCard} ${selectedCreature === id ? styles.rewardSelected : ''}`} key={id} type="button" onClick={() => commands.chooseCreatureReward(id)}>
                 <CreatureImage creature={creature} className={styles.rewardSprite} />
                 <span className={styles.rewardName}>{creature.name}</span>
-                <span className={styles.rewardFamily}>{creature.family}</span>
+                <span className={styles.rewardFamily}>{creature.family} · {[...state.roster, { creatureId: creature.id }].filter((unit) => unit.creatureId === creature.id).length - 1} owned</span>
                 <div className={styles.tagRow}><Tag value={creature.bestiaryClass} /><RoleTag role={creature.role} /></div>
                 <span className={styles.rewardSelect}>{selectedCreature === id ? 'Added to roster ✓' : 'Choose creature →'}</span>
               </button>
@@ -533,24 +578,24 @@ function RewardScreen() {
           })}
         </div>
       </div>
-      <div className={styles.rewardBlock}>
-        <div className={styles.rewardHeading}><span>02</span><div><h2>Improve your vocation</h2><p>Choose an automatic combat upgrade.</p></div>{selectedUpgrade && <b className={styles.chosenMark}>✓ Chosen</b>}</div>
+      {state.pendingLevelUps > 0 && <div className={`${styles.rewardBlock} ${styles.perkRewardBlock}`}>
+        <div className={styles.rewardHeading}><span>LV {state.level}</span><div><h2>Choose a vocation perk</h2><p>Level up unlocked a permanent run upgrade for this commander.</p></div>{selectedUpgrade && <b className={styles.chosenMark}>✓ Chosen</b>}</div>
         <div className={styles.upgradeGrid}>
           {state.rewardUpgradeIds.map((id) => {
             const upgrade = upgradeByIdList().find((item) => item.id === id)
             if (!upgrade) return null
             return (
               <button className={`${styles.upgradeCard} ${selectedUpgrade === id ? styles.rewardSelected : ''}`} key={id} type="button" onClick={() => commands.chooseUpgradeReward(id)}>
-                <span className={styles.upgradeIcon}>{upgrade.icon}</span>
+                <span className={styles.upgradeIcon}><GameIcon name={upgrade.icon} /></span>
                 <strong>{upgrade.name}</strong>
                 <p>{upgrade.description}</p>
-                <span className={styles.rewardSelect}>{selectedUpgrade === id ? 'Upgrade chosen ✓' : 'Choose upgrade →'}</span>
+                <span className={styles.rewardSelect}>{selectedUpgrade === id ? 'Perk chosen ✓' : 'Choose perk →'}</span>
               </button>
             )
           })}
         </div>
-      </div>
-      <div className={styles.rewardFooter}>Choose one creature and one upgrade to continue along the branching campaign.</div>
+      </div>}
+      <div className={styles.rewardFooter}>{state.pendingLevelUps > 0 ? 'Choose one creature and the newly unlocked vocation perk to continue.' : 'Choose one creature to continue. Keep earning experience to unlock a vocation perk.'}</div>
     </section>
   )
 }
@@ -578,7 +623,7 @@ function Tag({ value }: { value: string }) {
   return <span className={styles.tag}>{value}</span>
 }
 
-const roleLabels: Record<Role, string> = { tank: 'Tank', shooter: 'Shooter', mage: 'Mage', healer: 'Healer' }
+const roleLabels: Record<Role, string> = { tank: 'Tank', fighter: 'Melee', shooter: 'Shooter', mage: 'Mage', healer: 'Healer' }
 
 function RoleTag({ role }: { role: Role }) {
   return <span className={`${styles.tag} ${styles[`tag_${role}`]}`}>{roleLabels[role]}</span>

@@ -2,6 +2,10 @@
 
 Creature portraits in `public/assets/creatures/` were downloaded from the TibiaDraptor Bestiary image directory on 2026-10-24. The game loads these local PNG copies and does not request creature art from TibiaDraptor at runtime.
 
+The regional triptych in `public/assets/backgrounds/region-triptych.png` is original AI-generated pixel-art environment art used by the campaign and vocation screens.
+
+The square battle backgrounds in `public/assets/backgrounds/battle/` are original AI-generated environment scenes. Their regional references and visual mapping are documented in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md); no Tibia screenshots or map layouts are bundled.
+
 | Local file | TibiaDraptor source |
 |---|---|
 | `dawnfire-asura.png` | [Dawnfire Asura](https://tibiadraptor.com/images/monsters/Dawnfire_Asura.png) |
