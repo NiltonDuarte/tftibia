@@ -14,7 +14,7 @@ export type GameCommands = {
   retryBattle: () => void
   chooseCreatureReward: (creatureId: string) => void
   chooseUpgradeReward: (upgradeId: string) => void
-  newRun: () => void
+  newRun: (seed?: number) => void
 }
 
 export type GameContextValue = { state: GameState; commands: GameCommands }

@@ -67,7 +67,10 @@ export const BattleResultSchema = z.object({
 })
 
 export const GameStateSchema = z.object({
-  saveVersion: z.literal(5),
+  saveVersion: z.literal(6),
+  seed: z.number().int().min(0).max(0xffffffff),
+  rngState: z.number().int().min(0).max(0xffffffff),
+  nextUnitId: z.number().int().nonnegative(),
   phase: RunPhaseSchema,
   commanderId: z.enum(['knight', 'paladin', 'sorcerer', 'druid']).nullable(),
   mapNodeId: z.string(),
@@ -96,7 +99,10 @@ export type RunPhase = z.infer<typeof RunPhaseSchema>
 export type BattleSurvivor = BattleResult['survivors'][number]
 
 export const initialGameState: GameState = {
-  saveVersion: 5,
+  saveVersion: 6,
+  seed: 1,
+  rngState: 1,
+  nextUnitId: 0,
   phase: 'vocation',
   commanderId: null,
   mapNodeId: 'crossroads',
@@ -123,7 +129,7 @@ export function loadSavedGame(): GameState {
     const raw = window.localStorage.getItem('tibia-tactics-save')
     if (!raw) return initialGameState
     const value: unknown = JSON.parse(raw)
-    if (typeof value === 'object' && value !== null && 'saveVersion' in value && (value.saveVersion === 1 || value.saveVersion === 2 || value.saveVersion === 3 || value.saveVersion === 4)) {
+    if (typeof value === 'object' && value !== null && 'saveVersion' in value && (value.saveVersion === 1 || value.saveVersion === 2 || value.saveVersion === 3 || value.saveVersion === 4 || value.saveVersion === 5)) {
       const legacy = value as Record<string, unknown>
       const oldVersion = legacy.saveVersion
       const roster = Array.isArray(legacy.roster) ? legacy.roster.map((unit) => {
@@ -177,10 +183,11 @@ export function loadSavedGame(): GameState {
       }
       const migratedPhase = oldVersion === 1 && legacy.phase === 'battle' &&
         typeof previousBattle === 'object' && previousBattle !== null ? 'preparation' : legacy.phase
-      const parsedLegacy = GameStateSchema.safeParse({ ...legacy, saveVersion: 5, phase: migratedPhase, roster, lives: legacy.lives ?? 3,
-        experience: oldVersion === 3 || oldVersion === 4 ? legacy.experience ?? 0 : 0,
-        level: oldVersion === 3 || oldVersion === 4 ? legacy.level ?? 1 : 1,
-        pendingLevelUps: oldVersion === 3 || oldVersion === 4 ? legacy.pendingLevelUps ?? 0 : 0,
+      const parsedLegacy = GameStateSchema.safeParse({ ...legacy, saveVersion: 6, seed: 1, rngState: 1,
+        nextUnitId: Array.isArray(roster) ? roster.length : 0, phase: migratedPhase, roster, lives: legacy.lives ?? 3,
+        experience: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 ? legacy.experience ?? 0 : 0,
+        level: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 ? legacy.level ?? 1 : 1,
+        pendingLevelUps: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 ? legacy.pendingLevelUps ?? 0 : 0,
         battleResult })
       return parsedLegacy.success ? parsedLegacy.data : initialGameState
     }

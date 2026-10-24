@@ -70,7 +70,7 @@ function Shell({ children, onOpenCompendium }: { children: ReactNode; onOpenComp
               <span className={styles.phasePill}>{phaseLabels[state.phase]}</span>
               <span className={styles.goldPill}>✦ {state.gold} gold</span>
               <span className={styles.livesPill}>♥ {state.lives}</span>
-              <button className={`${styles.newRunButton} ${styles.restartButton}`} type="button" aria-label="Start a new campaign" onClick={commands.newRun}>
+              <button className={`${styles.newRunButton} ${styles.restartButton}`} type="button" aria-label="Start a new campaign" onClick={() => commands.newRun()}>
                 <span>New campaign</span><b>↻</b>
               </button>
             </>
@@ -577,12 +577,12 @@ function BattleReport() {
             <div className={styles.retryActions}>
               <p className={styles.mergeHint}>You lost a life and 2 gold. {state.lives} {state.lives === 1 ? 'life' : 'lives'} remain.</p>
               <button className={styles.battleButton} type="button" onClick={commands.retryBattle}>Return to preparation <b>↻</b></button>
-              <button className={styles.textButton} type="button" onClick={commands.newRun}>Abandon campaign</button>
+              <button className={styles.textButton} type="button" onClick={() => commands.newRun()}>Abandon campaign</button>
             </div>
           ) : (
             <div className={styles.retryActions}>
               <p className={styles.mergeHint}>No lives remain. This campaign is over.</p>
-              <button className={styles.battleButton} type="button" onClick={commands.newRun}>Begin a new campaign <b>↻</b></button>
+              <button className={styles.battleButton} type="button" onClick={() => commands.newRun()}>Begin a new campaign <b>↻</b></button>
             </div>
           )}
         </aside>
@@ -657,7 +657,7 @@ function CampaignEnd({ victory }: { victory: boolean }) {
       <h1>{victory ? 'The paths are mended.' : 'The paths remain broken.'}</h1>
       <p>{victory ? `Your ${commander?.name ?? 'commander'} and their creatures survived the Shattered Paths.` : 'Build a different formation and try another route through the frontier.'}</p>
       <div className={styles.endStats}><span><b>{state.completedNodeIds.length}</b> encounters cleared</span><span><b>{state.roster.length}</b> creatures recruited</span></div>
-      <button className={styles.battleButton} type="button" onClick={commands.newRun}>Begin a new campaign <b>→</b></button>
+      <button className={styles.battleButton} type="button" onClick={() => commands.newRun()}>Begin a new campaign <b>→</b></button>
     </section>
   )
 }
