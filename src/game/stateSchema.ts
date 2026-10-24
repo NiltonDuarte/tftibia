@@ -134,4 +134,3 @@ export function saveGame(state: GameState): void {
     // A blocked or full browser storage area should not prevent a run from continuing.
   }
 }
-
