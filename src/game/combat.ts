@@ -1,5 +1,6 @@
 import type { Creature, Effects, Synergy, Upgrade, Vocation } from '../content/schemas'
 import { BattleResultSchema, type BattleResult, type UnitInstance } from './stateSchema'
+import { BOARD_LAYOUT } from './board'
 
 type BattleUnit = {
   id: string
@@ -164,7 +165,7 @@ export function simulateBattle(options: {
   const active = createPlayerSynergies(roster, creatures, synergyDefinitions)
   const playerUnits = roster.filter((unit) => unit.slot !== null).map((unit) => {
     const creature = creatures[unit.creatureId]
-    return instantiateUnit(unit.instanceId, creature, 'player', 2 + unit.slot! % 3, 4 - Math.floor(unit.slot! / 3), active, vocation, upgrades, unit.star)
+    return instantiateUnit(unit.instanceId, creature, 'player', 2 + unit.slot! % BOARD_LAYOUT.columns, 4 - Math.floor(unit.slot! / BOARD_LAYOUT.columns), active, vocation, upgrades, unit.star)
   })
   const occupiedEnemySquares = new Set<string>()
   const enemyUnits = enemies.map((creature, index) => {

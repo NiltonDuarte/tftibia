@@ -9,6 +9,13 @@
 .goldPill { color: #75e2c6; background: rgba(214, 183, 107, .08); border-color: rgba(214, 183, 107, .25); }
 .newRunButton { padding: 8px 10px; background: transparent; border: 0; color: #959986; cursor: pointer; font: 10px var(--mono); }
 .newRunButton:hover { color: var(--gold); }
+.hiddenInput { display: none; }
+.replayToolButton { color: #b8d4d6; }
+.replayPlaybackBar { display: flex; align-items: center; gap: 8px; color: #c7b27c; font: 9px var(--mono); }
+.replayPlaybackBar label { display: flex; align-items: center; gap: 4px; }
+.replayPlaybackBar input { width: 75px; accent-color: #c7b27c; }
+.replayPlaybackBar small { white-space: nowrap; color: #aab5b4; font: 9px var(--mono); }
+.replayError { color: #f19a8f; font: 9px var(--mono); }
 .main { width: min(1200px, 100%); margin: 0 auto; padding: 36px clamp(16px, 4vw, 56px) 64px; flex: 1; }
 .footer { text-align: center; border-top: 1px solid rgba(173, 176, 143, .1); padding: 19px; color: #737966; font: 10px var(--mono); letter-spacing: .04em; }
 
@@ -86,6 +93,7 @@
 .boardLegend { color: #929781; font: 9px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
 .boardLegend i { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #7aa3b2; }
 .boardFrame { padding: 13px; border: 1px solid #38454a; background: linear-gradient(145deg, #232b30, #1e2327); box-shadow: inset 0 0 0 5px rgba(18, 21, 15, .14); }
+.boardRows { display: grid; gap: 9px; }
 .rowLabel { padding: 0 3px 6px; color: #737a66; font: 8px var(--mono); letter-spacing: .15em; }
 .rowLabel:last-child { padding: 6px 3px 0; }
 .boardGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }

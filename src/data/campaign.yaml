@@ -6,7 +6,6 @@ campaign:
     - falcon-knight
     - dawnfire-asura
     - druids-apparition
-  boardCapacity: 6
   shopSize: 4
   nodes:
     - id: crossroads

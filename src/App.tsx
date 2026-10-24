@@ -3,9 +3,13 @@ import { getActiveSynergies } from './game/combat'
 import { GameProvider } from './game/GameContext'
 import { useGame } from './game/useGame'
 import type { Creature, Role, Vocation } from './content/schemas'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import styles from './App.module.css'
+import { parseGameReplay, type GameReplay } from './game/replay'
+import { BOARD_CAPACITY, BOARD_LAYOUT, BOARD_SLOTS } from './game/board'
+
+const BalanceLab = lazy(() => import('./BalanceLab').then((module) => ({ default: module.BalanceLab })))
 
 const phaseLabels: Record<string, string> = {
   vocation: 'Choose vocation',
@@ -19,6 +23,17 @@ const phaseLabels: Record<string, string> = {
 
 function imageUrl(path: string): string {
   return `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
+}
+
+function downloadReplay(replay: GameReplay): void {
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(replay, null, 2)], { type: 'application/json' }),
+  )
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `tibia-replay-${replay.seed}.json`
+  link.click()
+  URL.revokeObjectURL(url)
 }
 
 function CreatureImage({ creature, className }: { creature: Creature; className?: string }) {
@@ -49,9 +64,23 @@ function GameIcon({ name }: { name: string }) {
   return <svg aria-hidden="true" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{shape}</svg>
 }
 
-function Shell({ children, onOpenCompendium }: { children: ReactNode; onOpenCompendium: () => void }) {
-  const { state, commands } = useGame()
+function Shell({ children, onOpenCompendium, onOpenBalance }: { children: ReactNode; onOpenCompendium: () => void; onOpenBalance: () => void }) {
+  const { state, commands, replayData, playback } = useGame()
+  const replayInput = useRef<HTMLInputElement>(null)
+  const [replayError, setReplayError] = useState<string | null>(null)
   const showBar = state.phase !== 'vocation'
+
+  const importReplay = async (file: File | undefined) => {
+    if (!file) return
+    try {
+      const parsed: unknown = JSON.parse(await file.text())
+      commands.playReplay(parseGameReplay(parsed))
+      setReplayError(null)
+    } catch (error) {
+      setReplayError(error instanceof Error ? error.message : 'Invalid replay file.')
+    }
+    if (replayInput.current) replayInput.current.value = ''
+  }
 
   return (
     <div className={styles.appShell}>
@@ -65,6 +94,42 @@ function Shell({ children, onOpenCompendium }: { children: ReactNode; onOpenComp
         </a>
         <div className={styles.headerStatus}>
           <button className={`${styles.newRunButton} ${styles.codexButton}`} type="button" onClick={onOpenCompendium}>Creature codex</button>
+          <button className={`${styles.newRunButton} ${styles.codexButton}`} type="button" onClick={onOpenBalance}>Balance lab</button>
+          {replayData.actions.length > 0 && (
+            <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={() => downloadReplay(replayData)}>Export replay</button>
+          )}
+          <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={() => replayInput.current?.click()}>Import replay</button>
+          <input
+            ref={replayInput}
+            className={styles.hiddenInput}
+            type="file"
+            accept="application/json,.json"
+            onChange={(event) => void importReplay(event.currentTarget.files?.[0])}
+          />
+          {playback && (
+            <div className={styles.replayPlaybackBar} aria-label="Replay playback controls">
+              <span>{playback.replay.source === 'simulation' ? 'SIM' : 'REPLAY'} {Math.min(playback.actionIndex, playback.replay.actions.length)}/{playback.replay.actions.length}</span>
+              <label title="Delay between game actions">
+                <input
+                  aria-label="Replay action delay"
+                  type="range"
+                  min="100"
+                  max="2000"
+                  step="100"
+                  value={playback.actionDelayMs}
+                  onChange={(event) => commands.setReplayDelay(Number(event.target.value))}
+                />
+                <small>{playback.actionDelayMs} ms</small>
+              </label>
+              {playback.playing ? (
+                <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={commands.pauseReplay}>Pause</button>
+              ) : playback.actionIndex < playback.replay.actions.length ? (
+                <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={commands.resumeReplay}>Resume</button>
+              ) : <span>Finished</span>}
+              <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={commands.stopReplay}>Stop</button>
+            </div>
+          )}
+          {replayError && <span className={styles.replayError} role="alert" title={replayError}>Replay import failed</span>}
           {showBar && (
             <>
               <span className={styles.phasePill}>{phaseLabels[state.phase]}</span>
@@ -235,7 +300,7 @@ function Preparation() {
           <p className={styles.lede}>{node?.description} Your creatures act automatically once battle begins.</p>
         </div>
         <div className={styles.prepHeaderStats}>
-          <span><b>{boardUnits.length}</b> / {campaign.boardCapacity} deployed</span>
+          <span><b>{boardUnits.length}</b> / {BOARD_CAPACITY} deployed</span>
           <span><b>{state.roster.length}</b> creatures recruited</span>
         </div>
       </div>
@@ -247,9 +312,15 @@ function Preparation() {
             <span className={styles.boardLegend}><i /> Your side</span>
           </div>
           <div className={`${styles.boardFrame} ${styles.sqmRoom}`} data-theme={node?.theme}>
-            <div className={styles.rowLabel}>BACKLINE</div>
-            <div className={styles.boardGrid}>
-              {Array.from({ length: 9 }, (_, slot) => {
+            <div className={styles.boardRows}>
+            {BOARD_LAYOUT.rows.map((row, rowIndex) => (
+            <div key={row.id}>
+            <div className={styles.rowLabel}>{row.label.toUpperCase()}</div>
+            <div className={styles.boardGrid} style={{ gridTemplateColumns: `repeat(${BOARD_LAYOUT.columns}, minmax(0, 1fr))` }}>
+              {BOARD_SLOTS.slice(
+                rowIndex * BOARD_LAYOUT.columns,
+                (rowIndex + 1) * BOARD_LAYOUT.columns,
+              ).map((slot) => {
                 const unit = state.roster.find((candidate) => candidate.slot === slot)
                 const creature = unit ? creatureById[unit.creatureId] : undefined
                 const isSelected = unit?.instanceId === state.selectedUnitId
@@ -281,7 +352,9 @@ function Preparation() {
                 )
               })}
             </div>
-            <div className={styles.rowLabel}>FRONTLINE</div>
+            </div>
+            ))}
+            </div>
           </div>
 
           <div className={styles.benchPanel}>
@@ -405,7 +478,7 @@ function SynergyPanel({ active, boardCount }: { active: ReturnType<typeof getAct
 }
 
 function BattlePlayback({ onFinished }: { onFinished: () => void }) {
-  const { state } = useGame()
+  const { state, playback, commands } = useGame()
   const result = state.battleResult
   const [eventIndex, setEventIndex] = useState(-1)
   const [paused, setPaused] = useState(false)
@@ -414,14 +487,16 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
   const finished = eventIndex >= events.length - 1
 
   useEffect(() => {
-    if (!result || paused || finished) return
-    const timer = window.setTimeout(() => setEventIndex((index) => Math.min(events.length - 1, index + 1)), fastMode ? 150 : 320)
+    if (!result || paused || finished || (playback && !playback.playing)) return
+    const timer = window.setTimeout(() => setEventIndex((index) => Math.min(events.length - 1, index + 1)), playback?.actionDelayMs ?? (fastMode ? 150 : 320))
     return () => window.clearTimeout(timer)
-  }, [eventIndex, events.length, fastMode, finished, paused, result])
+  }, [eventIndex, events.length, fastMode, finished, paused, playback, result])
 
   useEffect(() => {
-    if (finished) onFinished()
-  }, [finished, onFinished])
+    if (!finished) return
+    onFinished()
+    if (playback?.waitingForBattle) commands.finishReplayBattle()
+  }, [commands, finished, onFinished, playback?.waitingForBattle])
 
   if (!result) return null
 
@@ -716,13 +791,22 @@ function CreatureCodex({ onBack }: { onBack: () => void }) {
 }
 
 function GameScreen() {
-  const { state } = useGame()
+  const { state, commands, playback } = useGame()
   const [showCodex, setShowCodex] = useState(false)
+  const [showBalance, setShowBalance] = useState(false)
   const [battlePlayed, setBattlePlayed] = useState(false)
   useEffect(() => setBattlePlayed(false), [state.battleResult])
   return (
-    <Shell onOpenCompendium={() => setShowCodex(true)}>
-      {showCodex ? <CreatureCodex onBack={() => setShowCodex(false)} /> : <>
+    <Shell onOpenCompendium={() => { setShowCodex(true); setShowBalance(false) }} onOpenBalance={() => { setShowBalance(true); setShowCodex(false) }}>
+      {playback ? <>
+        {(state.phase === 'battle' || (state.battleResult && !battlePlayed && state.phase === 'defeat')) && <><BattlePlayback onFinished={() => setBattlePlayed(true)} />{battlePlayed && state.phase === 'battle' && <BattleReport />}</>}
+        {state.phase === 'vocation' && <VocationSelection />}
+        {state.phase === 'map' && <CampaignMap />}
+        {state.phase === 'preparation' && <Preparation />}
+        {state.phase === 'reward' && <RewardScreen />}
+        {state.phase === 'complete' && <CampaignEnd victory />}
+        {state.phase === 'defeat' && (battlePlayed || !state.battleResult) && <CampaignEnd victory={false} />}
+      </> : showBalance ? <Suspense fallback={<section className={styles.pageSection}><p>Opening balance lab…</p></section>}><BalanceLab onBack={() => setShowBalance(false)} onPlayReplay={(replay) => { setShowBalance(false); commands.playReplay(replay) }} /></Suspense> : showCodex ? <CreatureCodex onBack={() => setShowCodex(false)} /> : <>
         {state.phase === 'vocation' && <VocationSelection />}
         {state.phase === 'map' && <CampaignMap />}
         {state.phase === 'preparation' && <Preparation />}
