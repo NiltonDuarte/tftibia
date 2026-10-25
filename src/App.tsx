@@ -4,7 +4,7 @@ import { GameProvider } from './game/GameContext'
 import { useGame } from './game/useGame'
 import type { Creature, GameItem, Role, Vocation } from './content/schemas'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import type { DragEvent, ReactNode } from 'react'
+import type { DragEvent, FormEvent, ReactNode } from 'react'
 import styles from './App.module.css'
 import { parseGameReplay, type GameReplay } from './game/replay'
 import { BOARD_CAPACITY, BOARD_LAYOUT, BOARD_SLOTS, DEPLOYMENT_LIMIT_ITEM_COST } from './game/board'
@@ -93,23 +93,9 @@ function GameIcon({ name }: { name: string }) {
   return <svg aria-hidden="true" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{shape}</svg>
 }
 
-function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki }: { children: ReactNode; onOpenCompendium: () => void; onOpenBalance: () => void; onOpenWiki: () => void }) {
+function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki, onOpenReplayExport, onOpenReplayImport }: { children: ReactNode; onOpenCompendium: () => void; onOpenBalance: () => void; onOpenWiki: () => void; onOpenReplayExport: () => void; onOpenReplayImport: () => void }) {
   const { state, commands, replayData, playback } = useGame()
-  const replayInput = useRef<HTMLInputElement>(null)
-  const [replayError, setReplayError] = useState<string | null>(null)
   const showBar = state.phase !== 'vocation'
-
-  const importReplay = async (file: File | undefined) => {
-    if (!file) return
-    try {
-      const parsed: unknown = JSON.parse(await file.text())
-      commands.playReplay(parseGameReplay(parsed))
-      setReplayError(null)
-    } catch (error) {
-      setReplayError(error instanceof Error ? error.message : 'Invalid replay file.')
-    }
-    if (replayInput.current) replayInput.current.value = ''
-  }
 
   return (
     <div className={styles.appShell}>
@@ -126,16 +112,9 @@ function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki }: { chil
           <button className={`${styles.newRunButton} ${styles.codexButton} ${styles.wikiButton}`} type="button" onClick={onOpenWiki}>Game wiki</button>
           <button className={`${styles.newRunButton} ${styles.codexButton} ${styles.balanceButton}`} type="button" onClick={onOpenBalance}>Balance lab</button>
           {replayData.actions.length > 0 && (
-            <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={() => downloadReplay(replayData)}>Export replay</button>
+            <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={onOpenReplayExport}>Export replay</button>
           )}
-          <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={() => replayInput.current?.click()}>Import replay</button>
-          <input
-            ref={replayInput}
-            className={styles.hiddenInput}
-            type="file"
-            accept="application/json,.json"
-            onChange={(event) => void importReplay(event.currentTarget.files?.[0])}
-          />
+          <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={onOpenReplayImport}>Import replay</button>
           {playback && (
             <div className={styles.replayPlaybackBar} aria-label="Replay playback controls">
               <span>{playback.replay.source === 'simulation' ? 'SIM' : 'REPLAY'} {Math.min(playback.actionIndex, playback.replay.actions.length)}/{playback.replay.actions.length}</span>
@@ -159,7 +138,6 @@ function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki }: { chil
               <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={commands.stopReplay}>Stop</button>
             </div>
           )}
-          {replayError && <span className={styles.replayError} role="alert" title={replayError}>Replay import failed: {replayError}</span>}
           {showBar && (
             <>
               <span className={styles.phasePill}>{phaseLabels[state.phase]}</span>
@@ -193,16 +171,15 @@ function VocationSelection() {
   return (
     <section className={styles.introScreen}>
       <div className={styles.introCopy}>
-        <div className={styles.eyebrow}>A creature tactics campaign</div>
-        <h1>Build your team.<br /><em>Survive the frontier.</em></h1>
+        <div className={styles.eyebrow}>The Shattered Paths</div>
+        <h1>Campaign setup</h1>
         <p>
-          Choose a vocation, recruit creatures, and send your formation into automatic battles. Every route changes the
-          fight ahead.
+          Choose a vocation, follow the route map, and prepare your creature party for each encounter.
         </p>
         <div className={styles.introFacts}>
-          <span><b>01</b> Pick a path</span>
-          <span><b>02</b> Shape your formation</span>
-          <span><b>03</b> Watch the clash</span>
+          <span><b>01</b> Vocation</span>
+          <span><b>02</b> Route map</span>
+          <span><b>03</b> Formation</span>
         </div>
       </div>
       <div className={styles.vocationPanel}>
@@ -241,18 +218,67 @@ function vocationByIdList(): Vocation[] {
 
 function CampaignMap() {
   const { state, commands } = useGame()
-  const location = nodeById[state.mapNodeId]
-  const destinations = (state.routeEdges[state.mapNodeId] ?? location.nextNodeIds).map((id) => nodeById[id]).filter(Boolean)
-  const encounterCount = state.completedNodeIds.length
-  const graphIds = [...new Set([campaign.startNodeId, ...Object.entries(state.routeEdges).flatMap(([from, to]) => [from, ...to])])]
-  const graphNodes = graphIds.map((id) => nodeById[id]).filter(Boolean)
-  const graphLayers = Array.from({ length: 11 }, (_, stage) => graphNodes.filter((node) => node.stage === stage))
-  const graphPosition = (id: string) => {
+  const [focusedRouteId, setFocusedRouteId] = useState<string | null>(null)
+  const location = nodeById[state.mapNodeId] ?? nodeById[campaign.startNodeId]
+  const hasSavedRouteGraph = Object.hasOwn(state.routeEdges, campaign.startNodeId)
+  const outgoingFor = (node: typeof campaign.nodes[number]) => {
+    const configured = state.routeEdges[node.id]
+    const candidates = configured ?? (hasSavedRouteGraph ? [] : node.nextNodeIds)
+    const valid = candidates.filter((id) => Boolean(nodeById[id]))
+    return configured !== undefined && valid.length === 0
+      ? node.nextNodeIds.filter((id) => Boolean(nodeById[id]))
+      : valid
+  }
+  const reachableIds = new Set<string>([campaign.startNodeId])
+  const pendingNodeIds = [campaign.startNodeId]
+  while (pendingNodeIds.length > 0) {
+    const currentId = pendingNodeIds.shift()
+    const currentNode = currentId ? nodeById[currentId] : undefined
+    if (!currentNode) continue
+    for (const nextId of outgoingFor(currentNode)) {
+      if (reachableIds.has(nextId)) continue
+      reachableIds.add(nextId)
+      pendingNodeIds.push(nextId)
+    }
+  }
+  const routeNodes = campaign.nodes.filter((node) => reachableIds.has(node.id))
+  const routeEdges = Object.fromEntries(routeNodes.map((node) => [node.id, outgoingFor(node)]))
+  const destinations = (routeEdges[location.id] ?? []).flatMap((id) => {
     const node = nodeById[id]
-    if (!node) return { x: 0, y: 0 }
-    const layer = graphLayers[node.stage] ?? []
-    const index = layer.findIndex((entry) => entry.id === id)
-    return { x: 42 + node.stage * 99, y: layer.length <= 1 ? 145 : 28 + index * (234 / (layer.length - 1)) }
+    return node ? [node] : []
+  })
+  const encounterCount = state.completedNodeIds.length
+  const mapPosition = (nodeId: string) => {
+    const node = nodeById[nodeId]
+    const stageNodes = routeNodes.filter((entry) => entry.stage === node.stage)
+    const lane = stageNodes.findIndex((entry) => entry.id === nodeId)
+    const y = stageNodes.length === 1 ? 188 : stageNodes.length === 2 ? [92, 284][lane] ?? 188 : [72, 188, 304][lane] ?? 188
+    return { x: 105 + node.stage * 108, y }
+  }
+  const currentPoint = mapPosition(location.id)
+  const routeHistory = [campaign.startNodeId, ...state.completedNodeIds.filter((id) => Boolean(nodeById[id]))]
+  const takenEdges = new Set(routeHistory.slice(0, -1).map((from, index) => `${from}->${routeHistory[index + 1]}`))
+  const routeConnections = routeNodes.flatMap((from) => (routeEdges[from.id] ?? []).flatMap((toId) => {
+    const to = nodeById[toId]
+    return to && to.stage === from.stage + 1 ? [{ from, to }] : []
+  }))
+  const focusedNodeIds = new Set<string>()
+  const focusedEdgeIds = new Set<string>()
+  if (focusedRouteId) {
+    const focusedPending = [focusedRouteId]
+    focusedNodeIds.add(focusedRouteId)
+    if (destinations.some((node) => node.id === focusedRouteId)) focusedEdgeIds.add(`${location.id}->${focusedRouteId}`)
+    while (focusedPending.length > 0) {
+      const fromId = focusedPending.shift()
+      if (!fromId) continue
+      for (const toId of routeEdges[fromId] ?? []) {
+        const edgeId = `${fromId}->${toId}`
+        focusedEdgeIds.add(edgeId)
+        if (focusedNodeIds.has(toId)) continue
+        focusedNodeIds.add(toId)
+        focusedPending.push(toId)
+      }
+    }
   }
 
   return (
@@ -261,7 +287,7 @@ function CampaignMap() {
         <div>
           <div className={styles.eyebrow}>Campaign · {campaign.title}</div>
           <h1>Choose your next route</h1>
-          <p className={styles.lede}>The paths are unstable. Pick a region and prepare for what waits there.</p>
+          <p className={styles.lede}>Follow each road to its destination. Every marker shows what waits at that stop.</p>
         </div>
         <div className={styles.progressCard}>
           <span>CAMPAIGN PROGRESS</span>
@@ -281,37 +307,118 @@ function CampaignMap() {
         <span className={styles.routeCount}>{destinations.length} routes ahead</span>
       </div>
 
-      <div className={styles.routeMapViewport} aria-label="Generated ten-encounter route map">
-        <svg className={styles.routeMapSvg} viewBox="0 0 1050 290" role="img" aria-labelledby="route-map-title">
-          <title id="route-map-title">Random sparse campaign map with visible encounters and rewards</title>
-          {Object.entries(state.routeEdges).flatMap(([from, nextIds]) => nextIds.map((to) => {
-            const start = graphPosition(from)
-            const end = graphPosition(to)
-            return <path key={`${from}-${to}`} className={state.completedNodeIds.includes(from) || from === state.mapNodeId ? styles.routeMapPathActive : styles.routeMapPath} d={`M ${start.x + 10} ${start.y} C ${start.x + 48} ${start.y}, ${end.x - 48} ${end.y}, ${end.x - 10} ${end.y}`} />
-          }))}
-          {graphNodes.map((node) => {
-            const point = graphPosition(node.id)
-            const isCurrent = node.id === state.mapNodeId
-            const isDone = state.completedNodeIds.includes(node.id)
-            const canChoose = destinations.some((entry) => entry.id === node.id)
-            const rewardLabel = node.bossId ? 'BOSS' : node.routeReward === 'gold' ? 'GOLD' : node.routeReward === 'experience' ? 'XP' : 'HUNT'
-            return <g key={node.id} className={canChoose ? styles.routeMapNodeAvailable : styles.routeMapNode}>
-              <circle cx={point.x} cy={point.y} r={isCurrent ? 11 : 8} />
-              <text x={point.x} y={point.y - 15} textAnchor="middle">{node.stage === 0 ? 'START' : `${node.stage} · ${rewardLabel}`}</text>
-              <title>{node.name} — encounter {node.stage}, {rewardLabel.toLowerCase()}{node.bossId ? ' boss' : ''}</title>
-              {isDone && <text className={styles.routeMapDone} x={point.x} y={point.y + 25} textAnchor="middle">CLEARED</text>}
-              {isCurrent && <text className={styles.routeMapDone} x={point.x} y={point.y + 25} textAnchor="middle">CURRENT</text>}
+      <section className={styles.clientWindow} aria-label="Campaign route map">
+        <header className={styles.clientWindowTitle}><span>Cyclopedia Map</span><small>STAGE-BY-STAGE · CAMPAIGN ROUTES</small></header>
+        <div className={styles.routeMapViewport} aria-label="Campaign map showing reachable routes and destinations">
+        <svg className={styles.routeMapSvg} viewBox="0 0 1260 390" role="group" aria-labelledby="route-map-title">
+          <title id="route-map-title">Campaign map showing the routes reachable in this run, their destinations, and each encounter type</title>
+          <defs>
+            <pattern id="route-label-stone" width="8" height="8" patternUnits="userSpaceOnUse">
+              <rect width="8" height="8" fill="#42484a" />
+              <path d="M0 2h3M5 1h3M2 6h4" stroke="#505658" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <image href={imageUrl('/assets/backgrounds/campaign-world-map.png')} x="-126" y="-39" width="1512" height="468" preserveAspectRatio="xMidYMid slice" />
+          <rect className={styles.routeMapTint} width="1260" height="390" />
+          {routeConnections.map(({ from, to }) => {
+            const start = mapPosition(from.id)
+            const end = mapPosition(to.id)
+            const available = from.id === location.id && destinations.some((node) => node.id === to.id)
+            const taken = takenEdges.has(`${from.id}->${to.id}`)
+            const focused = focusedEdgeIds.has(`${from.id}->${to.id}`)
+            const dimmed = focusedRouteId !== null && !focused
+            const middleX = (start.x + end.x) / 2
+            const d = `M ${start.x + 15} ${start.y} C ${middleX} ${start.y}, ${middleX} ${end.y}, ${end.x - 15} ${end.y}`
+            return <path
+              key={`${from.id}->${to.id}`}
+              className={dimmed ? styles.mapRouteDimmed : focused ? styles.mapRouteFocus : available ? styles.mapRouteAvailable : taken ? styles.mapRouteTaken : styles.mapRouteFuture}
+              d={d}
+              aria-label={`${from.name} to ${to.name}${available ? ', available now' : ''}`}
+            />
+          })}
+          {routeNodes.map((node) => {
+            if (node.id === location.id) return null
+            const point = mapPosition(node.id)
+            const available = destinations.some((entry) => entry.id === node.id)
+            const completed = state.completedNodeIds.includes(node.id)
+            const kind = node.bossId ? 'boss' : node.routeReward === 'gold' ? 'cache' : node.routeReward === 'experience' ? 'shrine' : 'hunt'
+            const kindLabel = node.bossId ? 'BOSS BATTLE' : kind === 'cache' ? 'GOLD CACHE' : kind === 'shrine' ? 'XP SHRINE' : 'CREATURE HUNT'
+            const icon = kind === 'boss' ? '★' : kind === 'cache' ? '◈' : kind === 'shrine' ? '✧' : '⚔'
+            const focused = focusedNodeIds.has(node.id)
+            const visit = () => { if (available) commands.chooseRoute(node.id) }
+            return <g
+              key={node.id}
+              className={`${styles.mapNode} ${available ? styles.mapNodeAvailable : completed ? styles.mapNodeCompleted : styles.mapNodeFuture} ${focused ? styles.mapNodeFocused : ''}`}
+              data-kind={kind}
+              transform={`translate(${point.x} ${point.y})`}
+              role={available ? 'button' : undefined}
+              tabIndex={available ? 0 : undefined}
+              aria-label={available ? `Travel to ${node.name}, ${kindLabel.toLowerCase()}, encounter ${node.stage}` : undefined}
+              onClick={visit}
+              onMouseEnter={() => { if (available) setFocusedRouteId(node.id) }}
+              onMouseLeave={() => { if (available) setFocusedRouteId(null) }}
+              onFocus={() => { if (available) setFocusedRouteId(node.id) }}
+              onBlur={() => { if (available) setFocusedRouteId(null) }}
+              onKeyDown={(event) => {
+                if (available && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault()
+                  visit()
+                }
+              }}
+              style={{ cursor: available ? 'pointer' : 'default' }}
+            >
+              <title>{node.name} — encounter {node.stage} — {kindLabel}</title>
+              {available && <circle className={styles.mapNodeHit} r="28" />}
+              <text className={styles.mapNodeStage} textAnchor="middle" dominantBaseline="central" y="-25">{String(node.stage).padStart(2, '0')}</text>
+              <circle className={styles.mapNodeRim} r={available ? 23 : 21} />
+              <circle className={styles.mapNodeCore} r={available ? 19 : 17} />
+              <text className={styles.mapNodeIcon} textAnchor="middle" dominantBaseline="central">{icon}</text>
+              <g className={styles.mapNodeLabel} transform="translate(0 24)">
+                <rect className={styles.mapNodeLabelRim} x="-55" y="-2" width="110" height="38" />
+                <rect className={styles.mapNodeLabelPlate} x="-53" y="0" width="106" height="34" />
+                <path className={styles.mapNodeLabelBevel} d="M-52 1H52M-52 33H52" />
+                <rect className={styles.mapNodeTypeBand} x="-52" y="19" width="104" height="14" />
+                <text className={styles.mapNodeName} textAnchor="middle" dominantBaseline="central" y="10">{node.name}</text>
+                <text className={styles.mapNodeKind} textAnchor="middle" dominantBaseline="central" y="26">{kindLabel}</text>
+              </g>
             </g>
           })}
+          <g className={styles.mapCurrentMarker} transform={`translate(${currentPoint.x} ${currentPoint.y})`} aria-label={`Current location: ${location.name}`}>
+            <circle r="12" />
+            <path d="M-7 0h14M0-7v14" />
+          </g>
+          <g className={styles.mapCurrentLabel} transform={`translate(${currentPoint.x} ${currentPoint.y + 20})`}>
+            <rect x="-53" y="0" width="106" height="25" />
+            <text textAnchor="middle" dominantBaseline="middle" y="13">YOU · {location.name}</text>
+          </g>
         </svg>
-      </div>
+        </div>
+        <div className={styles.routeMapLegend} aria-label="Map legend">
+          <span><i className={styles.mapLegendCurrent} /> Your position</span>
+          <span><i className={styles.mapLegendAvailable} /> Available road</span>
+          <span><i className={styles.mapLegendFuture} /> Later road</span>
+          <span>Hover or focus a destination to trace it onward</span>
+          <span><b className={styles.mapLegendType} data-kind="cache">◈</b> Gold cache</span>
+          <span><b className={styles.mapLegendType} data-kind="shrine">✧</b> XP shrine</span>
+          <span><b className={styles.mapLegendType} data-kind="hunt">⚔</b> Creature hunt</span>
+          <span><b className={styles.mapLegendType} data-kind="boss">★</b> Boss battle</span>
+        </div>
+      </section>
 
+      <section className={styles.routeChoices} aria-label="Available routes">
+      <header className={styles.clientWindowTitle}><span>Available Routes</span><small>{destinations.length} DESTINATIONS</small></header>
       <div className={styles.routeGrid}>
         {destinations.map((node, index) => {
           const enemyUnits = node.enemies.map((id) => creatureById[id]).filter(Boolean)
           const totalEnemies = enemyUnits.length + (node.bossId ? 1 : 0)
           return (
-            <article className={styles.routeCard} key={node.id} data-theme={node.theme}>
+            <article
+              className={styles.routeCard}
+              key={node.id}
+              data-theme={node.theme}
+              onMouseEnter={() => setFocusedRouteId(node.id)}
+              onMouseLeave={() => setFocusedRouteId(null)}
+            >
               <div className={styles.routeImage} data-theme={node.theme}>
                 <span className={styles.routeIndex}>0{index + 1}</span>
                 <span className={styles.routeStage}>ENCOUNTER {node.stage} {node.bossId ? '· BOSS' : ''}</span>
@@ -347,6 +454,7 @@ function CampaignMap() {
           )
         })}
       </div>
+      </section>
 
       <div className={styles.mapTip}><span>✧</span> Ten encounters. Bosses appear at milestones. Ferumbras guards the final node.</div>
     </section>
@@ -725,6 +833,7 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
   const [tickIndex, setTickIndex] = useState(-1)
   const [paused, setPaused] = useState(false)
   const [tickDuration, setTickDuration] = useState(320)
+  const [showPlayableGrid, setShowPlayableGrid] = useState(false)
   const ticks = result ? Array.from({ length: result.rounds }, (_, index) => index + 1) : []
   const finished = ticks.length === 0 || tickIndex >= ticks.length - 1
 
@@ -767,6 +876,7 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
         {battleNode?.bossSprite && <img className={styles.bossSprite} src={battleNode.bossSprite} alt={`${battleNode.name} boss`} />}
         <div className={styles.playbackControls}>
           <span className={styles.roundPill}>{finished ? 'BATTLE COMPLETE' : `TICK ${currentTick} · ${eventsThisTick.length} actions`}</span>
+          <button className={styles.textButton} type="button" aria-label={showPlayableGrid ? 'Hide playable grid' : 'Show playable grid'} aria-pressed={showPlayableGrid} onClick={() => setShowPlayableGrid((visible) => !visible)}>{showPlayableGrid ? 'Grid: on' : 'Grid: off'}</button>
           {!finished && <label className={styles.tickSpeed}>Tick {tickDuration}ms<input aria-label="Combat tick duration" type="range" min="120" max="800" step="20" value={tickDuration} onChange={(event) => setTickDuration(Number(event.currentTarget.value))} /></label>}
           {!finished && <button className={styles.textButton} type="button" onClick={() => setPaused((value) => !value)}>{paused ? '▶ Resume' : 'Ⅱ Pause'}</button>}
           {!finished && <button className={styles.textButton} type="button" onClick={() => { setTickIndex(ticks.length - 1); setPaused(true) }}>Skip</button>}
@@ -786,45 +896,68 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
         )}
       </div>}
       <div className={styles.arenaLabels}><span>HOSTILE · CORAL</span><span>ALLY · CYAN</span></div>
-      <div className={styles.arenaGrid} data-theme={battleNode?.theme}>
-        <div className={styles.sqmBoard}>
-          {Array.from({ length: 49 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
-          <div className={styles.combatEffects} aria-hidden="true">
-            {eventsThisTick.map((event, index) => {
-              if (event.targetX === null || event.targetY === null || (event.type !== 'attack' && event.type !== 'defeat' && event.type !== 'heal')) return null
-              const actor = shownUnits.find((unit) => unit.id === event.actorId)
-              const actorCreature = actor ? creatureById[actor.creatureId] ?? bossById[actor.creatureId] : undefined
-              if (!actorCreature) return null
-              const kind = event.type === 'heal' ? 'heal' : actorCreature.role === 'shooter' ? 'arrow' : actorCreature.role === 'mage' || actorCreature.role === 'healer' ? 'spell' : 'melee'
-              return <CombatProjectile key={`${event.round}-${event.actorId}-${event.targetId}-${index}`} event={event} kind={kind} durationMs={Math.max(140, Math.round(tickDuration * 0.85))} paused={paused} />
+      <div className={styles.battleStage}>
+        <div className={styles.arenaGrid} data-theme={battleNode?.theme} data-grid-visible={showPlayableGrid} aria-label="Live tactical battlefield">
+          <div className={styles.sqmBoard}>
+            {Array.from({ length: 49 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
+            <div className={styles.combatEffects} aria-hidden="true">
+              {eventsThisTick.map((event, index) => {
+                if (event.targetX === null || event.targetY === null || (event.type !== 'attack' && event.type !== 'defeat' && event.type !== 'heal')) return null
+                const actor = shownUnits.find((unit) => unit.id === event.actorId)
+                const actorCreature = actor ? creatureById[actor.creatureId] ?? bossById[actor.creatureId] : undefined
+                if (!actorCreature) return null
+                const kind = event.type === 'heal' ? 'heal' : actorCreature.role === 'shooter' ? 'arrow' : actorCreature.role === 'mage' || actorCreature.role === 'healer' ? 'spell' : 'melee'
+                return <CombatProjectile key={`${event.round}-${event.actorId}-${event.targetId}-${index}`} event={event} kind={kind} durationMs={Math.max(140, Math.round(tickDuration * 0.85))} paused={paused} />
+              })}
+            </div>
+            {shownUnits.map((unit) => {
+              const creature = creatureById[unit.creatureId] ?? bossById[unit.creatureId]
+              if (!creature) return null
+              const point = position(unit)
+              const isActor = currentEvent?.actorId === unit.id
+              const isTarget = currentEvent?.targetId === unit.id && currentEvent.type !== 'heal'
+              const alive = unit.health > 0
+              const lastAttackTick = shownEvents.filter((event) => event.actorId === unit.id && (event.type === 'attack' || event.type === 'defeat' || (event.type === 'heal' && event.targetId !== unit.id))).at(-1)?.round ?? currentTick - 2
+              return (
+                <div
+                  key={unit.id}
+                  className={`${styles.arenaUnit} ${unit.side === 'player' ? styles.playerArenaUnit : styles.enemyArenaUnit} ${isActor ? styles.actingUnit : ''} ${isTarget ? styles.hitUnit : ''} ${!alive ? styles.defeatedUnit : ''}`}
+                  style={{ left: `${point.x * 100 / 7}%`, top: `${point.y * 100 / 7}%`, transitionDuration: `${tickDuration}ms` }}
+                  title={`${creature.name} · ${Math.ceil(unit.health)} / ${unit.maxHealth} health`}
+                >
+                  <CreatureImage creature={creature} className={styles.arenaSprite} />
+                  <span className={styles.factionLabel}>{unit.side === 'player' ? 'ALLY' : 'ENEMY'}</span>
+                  <span className={styles.arenaUnitName}>{creature.name}</span>
+                  {unit.side === 'player' && unit.star > 1 && <span className={styles.arenaStars}>{'★'.repeat(unit.star)}</span>}
+                  <span className={styles.healthTrack}><i style={{ width: `${Math.max(0, unit.health / unit.maxHealth * 100)}%` }} /></span>
+                  <span className={styles.attackCooldownTrack} title="Action cooldown · two ticks"><i key={lastAttackTick} className={lastAttackTick > 0 ? styles.cooldownCharging : undefined} style={lastAttackTick > 0 ? { animationDuration: `${tickDuration * 2}ms`, animationPlayState: paused ? 'paused' : 'running' } : { width: '100%' }} /></span>
+                  <small>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth}</small>
+                </div>
+              )
             })}
           </div>
-          {shownUnits.map((unit) => {
-            const creature = creatureById[unit.creatureId] ?? bossById[unit.creatureId]
-            if (!creature) return null
-            const point = position(unit)
-            const isActor = currentEvent?.actorId === unit.id
-            const isTarget = currentEvent?.targetId === unit.id && currentEvent.type !== 'heal'
-            const alive = unit.health > 0
-            const lastAttackTick = shownEvents.filter((event) => event.actorId === unit.id && (event.type === 'attack' || event.type === 'defeat' || (event.type === 'heal' && event.targetId !== unit.id))).at(-1)?.round ?? currentTick - 2
-            return (
-              <div
-                key={unit.id}
-                className={`${styles.arenaUnit} ${unit.side === 'player' ? styles.playerArenaUnit : styles.enemyArenaUnit} ${isActor ? styles.actingUnit : ''} ${isTarget ? styles.hitUnit : ''} ${!alive ? styles.defeatedUnit : ''}`}
-                style={{ left: `${point.x * 100 / 7}%`, top: `${point.y * 100 / 7}%`, transitionDuration: `${tickDuration}ms` }}
-                title={`${creature.name} · ${Math.ceil(unit.health)} / ${unit.maxHealth} health`}
-              >
-                <CreatureImage creature={creature} className={styles.arenaSprite} />
-                <span className={styles.factionLabel}>{unit.side === 'player' ? 'ALLY' : 'ENEMY'}</span>
-                <span className={styles.arenaUnitName}>{creature.name}</span>
-                {unit.side === 'player' && unit.star > 1 && <span className={styles.arenaStars}>{'★'.repeat(unit.star)}</span>}
-                <span className={styles.healthTrack}><i style={{ width: `${Math.max(0, unit.health / unit.maxHealth * 100)}%` }} /></span>
-                <span className={styles.attackCooldownTrack} title="Action cooldown · two ticks"><i key={lastAttackTick} className={lastAttackTick > 0 ? styles.cooldownCharging : undefined} style={lastAttackTick > 0 ? { animationDuration: `${tickDuration * 2}ms`, animationPlayState: paused ? 'paused' : 'running' } : { width: '100%' }} /></span>
-                <small>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth}</small>
-              </div>
-            )
-          })}
         </div>
+        <aside className={styles.battleRoster} aria-label="Combatant status">
+          {(['player', 'enemy'] as const).map((side) => {
+            const roster = shownUnits.filter((unit) => unit.side === side)
+            const active = roster.filter((unit) => unit.health > 0).length
+            return <section className={styles.battleSide} key={side}>
+              <header><span>{side === 'player' ? 'Your party' : 'Opposition'}</span><b>{active} / {roster.length}</b></header>
+              <div className={styles.battleSideList}>
+                {roster.map((unit) => {
+                  const creature = creatureById[unit.creatureId] ?? bossById[unit.creatureId]
+                  if (!creature) return null
+                  const healthPercent = Math.max(0, unit.health / unit.maxHealth * 100)
+                  return <div className={`${styles.battleRosterUnit} ${unit.health <= 0 ? styles.battleRosterDefeated : ''}`} key={unit.id}>
+                    <CreatureImage creature={creature} className={styles.battleRosterSprite} />
+                    <div><strong>{creature.name}</strong><span>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth} health</span><i><b style={{ width: `${healthPercent}%` }} /></i></div>
+                    {unit.side === 'player' && unit.star > 1 && <em>{'★'.repeat(unit.star)}</em>}
+                  </div>
+                })}
+              </div>
+            </section>
+          })}
+        </aside>
       </div>
       <div className={`${styles.arenaEvent} ${currentEvent?.type === 'attack' || currentEvent?.type === 'defeat' ? styles.attackEvent : ''}`}>
         <span>{currentEvent?.type === 'move' ? '↗' : currentEvent?.type === 'heal' ? '✚' : currentEvent?.type === 'defeat' ? '✦' : '⚔'}</span>
@@ -1136,13 +1269,14 @@ function CreatureCodex({ onBack }: { onBack: () => void }) {
 
 function GameWiki({ onBack }: { onBack: () => void }) {
   return (
-    <section className={styles.pageSection}>
+    <section className={`${styles.pageSection} ${styles.gameWiki}`} aria-label="Game wiki manual">
       <div className={styles.pageTitleRow}>
-        <div><div className={styles.eyebrow}>Field manual</div><h1>Game rules</h1><p className={styles.lede}>How to build a formation, earn rewards, and resolve battles.</p></div>
+        <div><div className={styles.eyebrow}>Field manual</div><h1>Game wiki</h1><p className={styles.lede}>Rules and references for routes, creatures, equipment, and combat.</p></div>
         <button className={styles.secondaryButton} type="button" onClick={onBack}>← Return to campaign</button>
       </div>
-      <div className={styles.reportGrid}>
-        <section className={styles.reportPanel}><h2>Campaign loop</h2><ol>
+      <div className={styles.wikiGrid}>
+        <div className={styles.wikiColumn}>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Campaign loop</h2><ol>
           <li>Choose one of four vocations. Its passive applies automatically in every battle.</li>
           <li>Choose from a randomly generated sparse route map. Each node previews its encounter and reward type before you commit.</li>
           <li>Prepare before the encounter: buy creatures, reroll creature offers for 1 gold, buy Formation Permits, and arrange units.</li>
@@ -1150,15 +1284,7 @@ function GameWiki({ onBack }: { onBack: () => void }) {
           <li>After victory, choose one free creature. XP is also paid only on victory. Every 100 XP grants a level and one vocation perk choice.</li>
           <li>Complete ten encounters to reach the canonical ending: the final battle against Ferumbras.</li>
         </ol></section>
-        <section className={styles.reportPanel}><h2>Bosses, loot, and equipment</h2><ul>
-          <li>Boss battles appear at encounters 3, 6, and 9. The Cobra family is led by Scarlett Etzel, Falcon by Grand Master Oberon, and Asura by The Moonsnow Magnolia. Ferumbras is the final boss at encounter 10.</li>
-          <li>The family bosses are the only source of equipment. Each family boss victory randomly drops one item from that boss's drop pool; it is added to the backpack automatically. Defeat grants no item. Defeating Ferumbras ends the campaign without loot.</li>
-          <li>Items occupy one equipment slot per creature. Move loot freely between the backpack and any eligible creature. Equipping an item into an occupied slot returns the old item to the backpack.</li>
-          <li>Druid gear is for healers, Sorcerer gear for mages, Paladin gear for shooters, and Monk gear for fighters. Knight weapons of either hand type and shields are tank-only; Knight armor and amulets can be used by tanks or fighters. The Cobra Amulet and Ferumbras' Hat are universal.</li>
-          <li>Item YAML preserves Tibia attack, defense, armor, range, skill, protection, critical, leech, duration, level, and weight values. The game uses these as combat bonuses: weapon attack can replace lower creature attack, armor and defense add to armor, range extends attacks, protection reduces damage, and critical/leech values apply as expected-value bonuses.</li>
-          {items.map((item) => <li key={item.id}><b>{item.name}</b> ({item.slot}; {item.universal ? 'all roles' : item.allowedRoles.join(', ')}): dropped by {item.bossId}. Tibia stats: {itemStatSummary(item)}.</li>)}
-        </ul></section>
-        <section className={styles.reportPanel}><h2>Recruitment and formation</h2><ul>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Recruitment and formation</h2><ul>
           <li>You begin with 5 gold, three creatures, and a deployment limit of five. The reserve has no size limit.</li>
           <li>The player formation is three rows by seven columns. The combat room is seven by seven tiles.</li>
           <li>Only one copy of a creature can be deployed at a time. Extra copies stay on the bench.</li>
@@ -1168,15 +1294,7 @@ function GameWiki({ onBack }: { onBack: () => void }) {
           <li>Creature offers are weighted away from the current phase's main enemy family. In boss encounters, the boss's family is the phase family.</li>
           <li>Hunt routes add two shop offers and offer five victory recruits instead of three.</li>
         </ul></section>
-        <section className={styles.reportPanel}><h2>Roles and synergies</h2><ul>
-          <li><b>Tank:</b> durable frontline. <b>Fighter:</b> melee attacker with bonus damage when adjacent. <b>Shooter</b> and <b>Mage:</b> ranged damage dealers. <b>Healer:</b> heals the most wounded ally instead of attacking when possible.</li>
-          <li>Each creature contributes one count to its role, family, and Bestiary class synergies while deployed. Benched units do not count. A creature can count once in each of those three categories.</li>
-          {synergies.map((synergy) => <li key={synergy.id}><b>{synergy.label}</b> ({synergy.category}: {synergy.tag})<ul>{synergy.breakpoints.map((tier) => <li key={tier.count}>{tier.count} units — {tier.title}: {tier.description}</li>)}</ul></li>)}
-          <li>Vocation passives, owned perks, and active synergies apply automatically. Perks stack; when multiple levels are earned together, a fresh set of three choices appears for each level. The same perk can be chosen more than once.</li>
-          {vocations.map((vocation) => <li key={vocation.id}><b>{vocation.name}:</b> {vocation.description}</li>)}
-          {upgrades.map((upgrade) => <li key={upgrade.id}><b>{upgrade.name} ({upgrade.vocation}):</b> {upgrade.description}</li>)}
-        </ul></section>
-        <section className={styles.reportPanel}><h2>Battle rules</h2><ul>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Battle rules</h2><ul>
           <li>All units start each encounter at full health. Health does not carry between encounters.</li>
           <li>Boss encounters include the boss and the themed creatures shown on that route card. The boss is included in the displayed enemy count.</li>
           <li>Combat advances in shared ticks. Every unit acts on the same clock, and the tick duration can be adjusted during playback.</li>
@@ -1187,27 +1305,131 @@ function GameWiki({ onBack }: { onBack: () => void }) {
           <li>Periodic healing resolves every two ticks. Healers use their action cooldown to heal the living ally with the lowest health percentage instead of attacking when possible. Healing cannot exceed max health.</li>
           <li>Combat ends when a side is eliminated or after 60 ticks. If both sides remain, compare the sum of each side's survivors' health percentages. The higher total wins; a tie is a defeat.</li>
         </ul></section>
-        <section className={styles.reportPanel}><h2>Rewards and retries</h2><ul>
+        </div>
+        <div className={styles.wikiColumn}>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Bosses, loot, and equipment</h2><ul>
+          <li>Boss battles appear at encounters 3, 6, and 9. The Cobra family is led by Scarlett Etzel, Falcon by Grand Master Oberon, and Asura by The Moonsnow Magnolia. Ferumbras is the final boss at encounter 10.</li>
+          <li>The family bosses are the only source of equipment. Each family boss victory randomly drops one item from that boss's drop pool; it is added to the backpack automatically. Defeat grants no item. Defeating Ferumbras ends the campaign without loot.</li>
+          <li>Items occupy one equipment slot per creature. Move loot freely between the backpack and any eligible creature. Equipping an item into an occupied slot returns the old item to the backpack.</li>
+          <li>Druid gear is for healers, Sorcerer gear for mages, Paladin gear for shooters, and Monk gear for fighters. Knight weapons of either hand type and shields are tank-only; Knight armor and amulets can be used by tanks or fighters. The Cobra Amulet and Ferumbras' Hat are universal.</li>
+          <li>Item YAML preserves Tibia attack, defense, armor, range, skill, protection, critical, leech, duration, level, and weight values. The game uses these as combat bonuses: weapon attack can replace lower creature attack, armor and defense add to armor, range extends attacks, protection reduces damage, and critical/leech values apply as expected-value bonuses.</li>
+          <li className={styles.wikiDisclosureItem}>
+            <details className={styles.wikiDetails}>
+              <summary>Equipment drop table <small>{items.length} items</small></summary>
+              <div className={styles.wikiItemRows}>
+                {items.map((item) => <article className={styles.wikiItemRow} key={item.id}>
+                  <b>{item.name}</b>
+                  <span>{item.slot} · {item.universal ? 'all roles' : item.allowedRoles.join(', ')} · dropped by {item.bossId}</span>
+                  <p>Tibia stats: {itemStatSummary(item)}</p>
+                </article>)}
+              </div>
+            </details>
+          </li>
+        </ul></section>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Roles and synergies</h2><ul>
+          <li><b>Tank:</b> durable frontline. <b>Fighter:</b> melee attacker with bonus damage when adjacent. <b>Shooter</b> and <b>Mage:</b> ranged damage dealers. <b>Healer:</b> heals the most wounded ally instead of attacking when possible.</li>
+          <li>Each creature contributes one count to its role, family, and Bestiary class synergies while deployed. Benched units do not count. A creature can count once in each of those three categories.</li>
+          {synergies.map((synergy) => <li className={`${styles.wikiDisclosureItem} ${styles.wikiSynergyItem}`} key={synergy.id}>
+            <details className={styles.wikiDetails}>
+              <summary>{synergy.label}<small>{synergy.category} · {synergy.tag} · {synergy.breakpoints.length} tiers</small></summary>
+              <ul className={styles.wikiTierList}>{synergy.breakpoints.map((tier) => <li key={tier.count}><b>{tier.count} units · {tier.title}</b><span>{tier.description}</span></li>)}</ul>
+            </details>
+          </li>)}
+          <li>Vocation passives, owned perks, and active synergies apply automatically. Perks stack; when multiple levels are earned together, a fresh set of three choices appears for each level. The same perk can be chosen more than once.</li>
+          <li className={styles.wikiDisclosureItem}>
+            <details className={styles.wikiDetails}>
+              <summary>Vocation passives <small>{vocations.length} vocations</small></summary>
+              <ul className={styles.wikiTierList}>{vocations.map((vocation) => <li key={vocation.id}><b>{vocation.name}</b><span>{vocation.description}</span></li>)}</ul>
+            </details>
+          </li>
+          <li className={styles.wikiDisclosureItem}>
+            <details className={styles.wikiDetails}>
+              <summary>Vocation perks <small>{upgrades.length} upgrades</small></summary>
+              <ul className={styles.wikiTierList}>{upgrades.map((upgrade) => <li key={upgrade.id}><b>{upgrade.name} · {upgrade.vocation}</b><span>{upgrade.description}</span></li>)}</ul>
+            </details>
+          </li>
+        </ul></section>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Rewards and retries</h2><ul>
           <li>Victory rewards include 3 base gold plus route gold, 25 base XP plus route XP, and one creature choice. These are all granted only after victory.</li>
           <li>Every loss grants no rewards and allows an unlimited retry of the same encounter.</li>
           <li>A retry keeps the same encounter and current shop state. Preparation actions remain available.</li>
           <li>Experience rolls over at 100. Each level grants one perk choice from the selected vocation's upgrades.</li>
-        </ul></section>
+        </ul></section>        </div>
       </div>
     </section>
   )
 }
 
+function ReplayExportPage({ replay, onBack }: { replay: GameReplay; onBack: () => void }) {
+  const replayText = JSON.stringify(replay, null, 2)
+  return (
+    <section className={`${styles.pageSection} ${styles.replayPage}`} aria-label="Replay export">
+      <div className={styles.pageTitleRow}>
+        <div><div className={styles.eyebrow}>Campaign record</div><h1>Export replay</h1><p className={styles.lede}>Copy this replay data or download it as a JSON file.</p></div>
+        <button className={styles.secondaryButton} type="button" onClick={onBack}>← Return to campaign</button>
+      </div>
+      <section className={`${styles.reportPanel} ${styles.replayDataPanel}`}>
+        <div className={styles.replayDataHeader}><strong>Replay data</strong><span>{replay.actions.length} actions · seed {replay.seed}</span></div>
+        <textarea aria-label="Replay export data" readOnly spellCheck={false} value={replayText} />
+        <button className={styles.secondaryButton} type="button" onClick={() => downloadReplay(replay)} aria-label="Download replay JSON">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m0 0 4-4m-4 4L6 8M3 13v4h14v-4" /></svg>
+          Download JSON
+        </button>
+      </section>
+    </section>
+  )
+}
+
+function ReplayImportPage({ onBack, onImport }: { onBack: () => void; onImport: (replay: GameReplay) => void }) {
+  const [replayText, setReplayText] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    try {
+      const parsed: unknown = JSON.parse(replayText)
+      onImport(parseGameReplay(parsed))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Invalid replay data.')
+    }
+  }
+
+  return (
+    <section className={`${styles.pageSection} ${styles.replayPage}`} aria-label="Replay import">
+      <div className={styles.pageTitleRow}>
+        <div><div className={styles.eyebrow}>Campaign record</div><h1>Import replay</h1><p className={styles.lede}>Paste replay JSON below to validate and play it.</p></div>
+        <button className={styles.secondaryButton} type="button" onClick={onBack}>← Return to campaign</button>
+      </div>
+      <form className={`${styles.reportPanel} ${styles.replayDataPanel}`} onSubmit={submit}>
+        <label className={styles.replayDataHeader} htmlFor="replay-import-data"><strong>Replay data</strong><span>Paste the complete JSON replay</span></label>
+        <button className={styles.secondaryButton} type="submit" disabled={!replayText.trim()}>Import replay</button>
+        <textarea id="replay-import-data" aria-label="Replay import data" autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false} placeholder="Paste replay JSON here…" value={replayText} onChange={(event) => { setReplayText(event.target.value); setError(null) }} />
+        {error && <p className={styles.replayImportError} role="alert">Replay import failed: {error}</p>}
+      </form>
+    </section>
+  )
+}
+
 function GameScreen() {
-  const { state, commands, playback } = useGame()
+  const { state, commands, replayData, playback } = useGame()
   const [showCodex, setShowCodex] = useState(false)
   const [showBalance, setShowBalance] = useState(false)
   const [showWiki, setShowWiki] = useState(false)
+  const [showReplayExport, setShowReplayExport] = useState(false)
+  const [showReplayImport, setShowReplayImport] = useState(false)
   const [battlePlayed, setBattlePlayed] = useState(false)
   useEffect(() => setBattlePlayed(false), [state.battleResult])
   return (
-    <Shell onOpenCompendium={() => { setShowCodex(true); setShowBalance(false); setShowWiki(false) }} onOpenBalance={() => { setShowBalance(true); setShowCodex(false); setShowWiki(false) }} onOpenWiki={() => { setShowWiki(true); setShowCodex(false); setShowBalance(false) }}>
-      {playback ? <>
+    <Shell
+      onOpenCompendium={() => { setShowCodex(true); setShowBalance(false); setShowWiki(false); setShowReplayExport(false); setShowReplayImport(false) }}
+      onOpenBalance={() => { setShowBalance(true); setShowCodex(false); setShowWiki(false); setShowReplayExport(false); setShowReplayImport(false) }}
+      onOpenWiki={() => { setShowWiki(true); setShowCodex(false); setShowBalance(false); setShowReplayExport(false); setShowReplayImport(false) }}
+      onOpenReplayExport={() => { setShowReplayExport(true); setShowReplayImport(false); setShowCodex(false); setShowBalance(false); setShowWiki(false) }}
+      onOpenReplayImport={() => { setShowReplayImport(true); setShowReplayExport(false); setShowCodex(false); setShowBalance(false); setShowWiki(false) }}
+    >
+      {showReplayExport ? <ReplayExportPage replay={replayData} onBack={() => setShowReplayExport(false)} />
+        : showReplayImport ? <ReplayImportPage onBack={() => setShowReplayImport(false)} onImport={(replay) => { commands.playReplay(replay); setShowReplayImport(false) }} />
+        : playback ? <>
         {(state.phase === 'battle' || (state.battleResult && !battlePlayed && state.phase === 'defeat')) && <><BattlePlayback onFinished={() => setBattlePlayed(true)} />{battlePlayed && state.phase === 'battle' && <BattleReport />}</>}
         {state.phase === 'vocation' && <VocationSelection />}
         {state.phase === 'map' && <CampaignMap />}

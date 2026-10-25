@@ -13,6 +13,27 @@ function preparationState(seed: number) {
   return gameReducer(chosenVocation, { type: "choose-route", nodeId: routeId });
 }
 
+describe("stale campaign routes", () => {
+  it("falls back to the campaign start when a saved map node no longer exists", () => {
+    const staleState = {
+      ...initialGameState,
+      phase: "map" as const,
+      commanderId: "knight" as const,
+      mapNodeId: "retired-location",
+      routeEdges: { "retired-location": ["missing-route"] },
+    };
+
+    const next = gameReducer(staleState, {
+      type: "choose-route",
+      nodeId: "cobra-bastion",
+    });
+
+    expect(next.phase).toBe("preparation");
+    expect(next.encounterNodeId).toBe("cobra-bastion");
+    expect(next.mapNodeId).toBe(campaign.startNodeId);
+  });
+});
+
 describe("unequip-item action", () => {
   it("ignores inherited property names instead of adding them to the backpack", () => {
     const state = {

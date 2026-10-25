@@ -295,9 +295,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "choose-route": {
       if (state.phase !== "map") return state;
-      const origin = nodeById[state.mapNodeId];
+      const savedOrigin = nodeById[state.mapNodeId];
+      const origin = savedOrigin ?? nodeById[campaign.startNodeId];
       const node = nodeById[action.nodeId];
-      const outgoing = state.routeEdges[state.mapNodeId] ?? origin?.nextNodeIds ?? [];
+      const configuredOutgoing = savedOrigin ? state.routeEdges[savedOrigin.id] : undefined;
+      const validOutgoing = configuredOutgoing?.filter((id) => Boolean(nodeById[id]));
+      const outgoing = validOutgoing && validOutgoing.length > 0 ? validOutgoing : origin.nextNodeIds;
       if (!outgoing.includes(action.nodeId) || !node) return state;
       const draw = drawCreatureOffers(
         campaign.shopSize + node.shopBonus,
@@ -307,6 +310,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         phase: "preparation",
+        mapNodeId: origin.id,
         encounterNodeId: action.nodeId,
         shopCreatureIds: draw.offers,
         rngState: draw.rngState,
