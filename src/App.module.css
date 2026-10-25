@@ -1191,22 +1191,39 @@
 .routeMapSvg {
   display: block;
   width: 100%;
-  min-width: 760px;
+  min-width: 1260px;
   height: auto;
   overflow: hidden;
   image-rendering: auto;
 }
 .routeMapSvg > image { image-rendering: pixelated; }
 .routeMapTint { fill: #11150f; opacity: .18; }
-.mapRouteFuture { fill: none; stroke: #e4d9bb; stroke-width: 1.2; stroke-linecap: round; opacity: .34; }
-.mapRouteTaken { fill: none; stroke: #d7c27b; stroke-width: 2.5; stroke-linecap: round; opacity: .92; }
-.mapRouteAvailable { fill: none; stroke: #f3d66c; stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 6 4; }
-.mapNodeFuture circle { fill: #354a3a; stroke: #d1d7b2; stroke-width: 1; }
-.mapNodeFuture text { fill: #f0e7c9; font: 700 6px Tahoma,Verdana,sans-serif; }
-.mapNodeCompleted circle { fill: #8b9970; stroke: #e5dfbc; stroke-width: 1.2; }
-.mapNodeCompleted text { fill: #1d271d; font: 700 6px Tahoma,Verdana,sans-serif; }
-.mapNodeAvailable circle { fill: #e0bd54; stroke: #fff0a5; stroke-width: 2; }
-.mapNodeAvailable text { fill: #302813; font: 700 7px Tahoma,Verdana,sans-serif; }
+.mapRouteFuture { fill: none; stroke: #e4d9bb; stroke-width: 2; stroke-linecap: round; opacity: .48; }
+.mapRouteTaken { fill: none; stroke: #d7c27b; stroke-width: 4; stroke-linecap: round; opacity: .96; }
+.mapRouteAvailable { fill: none; stroke: #ffe06f; stroke-width: 5; stroke-linecap: round; opacity: 1; }
+.mapRouteFocus { fill: none; stroke: #fff0a0; stroke-width: 5.5; stroke-linecap: round; opacity: 1; }
+.mapRouteDimmed { fill: none; stroke: #bbb5a0; stroke-width: 1; stroke-linecap: round; opacity: .12; }
+.mapNode { cursor: default; }
+.mapNodeFocused .mapNodeCore { stroke: #fff3ad !important; stroke-width: 3 !important; filter: brightness(1.35); }
+.mapNodeFocused .mapNodeLabel rect { stroke: #fff0a0; stroke-width: 2; }
+.mapNodeCore { stroke-width: 2; }
+.mapNodeFuture .mapNodeCore { fill: #354a3a; stroke: #d1d7b2; }
+.mapNodeCompleted .mapNodeCore { fill: #8b9970; stroke: #e5dfbc; stroke-width: 2; }
+.mapNodeAvailable .mapNodeCore { fill: #e0bd54; stroke: #fff0a5; stroke-width: 2.5; }
+.mapNode[data-kind='cache'] .mapNodeCore { fill: #705824; stroke: #e7c363; }
+.mapNode[data-kind='shrine'] .mapNodeCore { fill: #4e426b; stroke: #bba5ef; }
+.mapNode[data-kind='hunt'] .mapNodeCore { fill: #385c43; stroke: #a4cd8d; }
+.mapNode[data-kind='boss'] .mapNodeCore { fill: #713d35; stroke: #f0a18a; }
+.mapNodeAvailable[data-kind] .mapNodeCore { filter: brightness(1.25); }
+.mapNodeStage { fill: #fff0c0; font: 700 8px Tahoma,Verdana,sans-serif; paint-order: stroke; stroke: #1b211d; stroke-width: 3px; }
+.mapNodeIcon { fill: #fff4d3; font: 700 13px Tahoma,Verdana,sans-serif; pointer-events: none; }
+.mapNodeLabel rect { fill: #262b2c; fill-opacity: .96; stroke: #a7a18a; stroke-width: 1; }
+.mapNodeName { fill: #f3ebce; font: 700 7px Tahoma,Verdana,sans-serif; }
+.mapNodeKind { fill: #d5d0bd; font: 700 6px Tahoma,Verdana,sans-serif; letter-spacing: .06em; }
+.mapNode[data-kind='cache'] .mapNodeKind { fill: #efd07a; }
+.mapNode[data-kind='shrine'] .mapNodeKind { fill: #d4c2ff; }
+.mapNode[data-kind='hunt'] .mapNodeKind { fill: #c5e0a9; }
+.mapNode[data-kind='boss'] .mapNodeKind { fill: #ffb29d; }
 .mapCurrentMarker circle { fill: #10140f; stroke: #eee5c1; stroke-width: 3; }
 .mapCurrentMarker path { fill: none; stroke: #f2e8c6; stroke-width: 2; }
 .mapCurrentLabel rect, .mapDestinationMarker g rect { fill: #1c211b; fill-opacity: .9; stroke: #988553; stroke-width: 1; }
@@ -1214,9 +1231,10 @@
 .mapDestinationMarker text { fill: #f1e5be; font: 700 9px Tahoma,Verdana,sans-serif; letter-spacing: .02em; }
 .routeMapLegend {
   display: flex;
+  flex-wrap: wrap;
   min-height: 27px;
   align-items: center;
-  gap: 16px;
+  gap: 6px 12px;
   padding: 4px 9px;
   border-top: 1px solid #1e2325;
   color: #bac0b9;
@@ -1228,6 +1246,11 @@
 .mapLegendCurrent { border: 2px solid #eee5c1; background: #10140f; }
 .mapLegendAvailable { border: 2px solid #fff0a5; background: #e0bd54; }
 .mapLegendFuture { width: 14px !important; height: 2px !important; border-radius: 0 !important; background: #b3b795; }
+.mapLegendType { display: inline-grid; width: 14px; height: 14px; place-items: center; border: 1px solid currentColor; font: 700 10px Tahoma,Verdana,sans-serif; }
+.mapLegendType[data-kind='cache'] { color: #efd07a; }
+.mapLegendType[data-kind='shrine'] { color: #d4c2ff; }
+.mapLegendType[data-kind='hunt'] { color: #c5e0a9; }
+.mapLegendType[data-kind='boss'] { color: #ffb29d; }
 @media (max-width: 620px) {
   .routeMapLegend { flex-wrap: wrap; gap: 5px 12px; font-size: 9px; }
 }

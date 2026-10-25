@@ -240,33 +240,68 @@ function vocationByIdList(): Vocation[] {
 
 function CampaignMap() {
   const { state, commands } = useGame()
+  const [focusedRouteId, setFocusedRouteId] = useState<string | null>(null)
   const location = nodeById[state.mapNodeId] ?? nodeById[campaign.startNodeId]
-  const routeEdges = Object.fromEntries(campaign.nodes.map((node) => {
-    const configured = state.routeEdges[node.id] ?? node.nextNodeIds
-    const valid = configured.filter((id) => Boolean(nodeById[id]))
-    return [node.id, valid.length > 0 ? valid : node.nextNodeIds]
-  }))
-  const destinations = routeEdges[location.id].flatMap((id) => {
+  const hasSavedRouteGraph = Object.hasOwn(state.routeEdges, campaign.startNodeId)
+  const outgoingFor = (node: typeof campaign.nodes[number]) => {
+    const configured = state.routeEdges[node.id]
+    const candidates = configured ?? (hasSavedRouteGraph ? [] : node.nextNodeIds)
+    const valid = candidates.filter((id) => Boolean(nodeById[id]))
+    return configured !== undefined && valid.length === 0
+      ? node.nextNodeIds.filter((id) => Boolean(nodeById[id]))
+      : valid
+  }
+  const reachableIds = new Set<string>([campaign.startNodeId])
+  const pendingNodeIds = [campaign.startNodeId]
+  while (pendingNodeIds.length > 0) {
+    const currentId = pendingNodeIds.shift()
+    const currentNode = currentId ? nodeById[currentId] : undefined
+    if (!currentNode) continue
+    for (const nextId of outgoingFor(currentNode)) {
+      if (reachableIds.has(nextId)) continue
+      reachableIds.add(nextId)
+      pendingNodeIds.push(nextId)
+    }
+  }
+  const routeNodes = campaign.nodes.filter((node) => reachableIds.has(node.id))
+  const routeEdges = Object.fromEntries(routeNodes.map((node) => [node.id, outgoingFor(node)]))
+  const destinations = (routeEdges[location.id] ?? []).flatMap((id) => {
     const node = nodeById[id]
     return node ? [node] : []
   })
   const encounterCount = state.completedNodeIds.length
-  const routeNodes = campaign.nodes
   const mapPosition = (nodeId: string) => {
     const node = nodeById[nodeId]
     const stageNodes = routeNodes.filter((entry) => entry.stage === node.stage)
     const lane = stageNodes.findIndex((entry) => entry.id === nodeId)
-    const y = stageNodes.length === 1 ? 160 : [74, 160, 246][lane] ?? 160
-    return { x: 80 + node.stage * 89, y }
+    const y = stageNodes.length === 1 ? 188 : stageNodes.length === 2 ? [92, 284][lane] ?? 188 : [72, 188, 304][lane] ?? 188
+    return { x: 105 + node.stage * 108, y }
   }
   const currentPoint = mapPosition(location.id)
   const routeHistory = [campaign.startNodeId, ...state.completedNodeIds.filter((id) => Boolean(nodeById[id]))]
   const takenEdges = new Set(routeHistory.slice(0, -1).map((from, index) => `${from}->${routeHistory[index + 1]}`))
-  const stagePaths = [...new Set(routeNodes.map((node) => node.stage))].map((stage) => {
-    const sources = routeNodes.filter((node) => node.stage === stage && routeEdges[node.id].length > 0).map((node) => node.id)
-    const targets = [...new Set(sources.flatMap((from) => routeEdges[from]))]
-    return { stage, sources, targets }
-  })
+  const routeConnections = routeNodes.flatMap((from) => (routeEdges[from.id] ?? []).flatMap((toId) => {
+    const to = nodeById[toId]
+    return to && to.stage === from.stage + 1 ? [{ from, to }] : []
+  }))
+  const focusedNodeIds = new Set<string>()
+  const focusedEdgeIds = new Set<string>()
+  if (focusedRouteId) {
+    const focusedPending = [focusedRouteId]
+    focusedNodeIds.add(focusedRouteId)
+    if (destinations.some((node) => node.id === focusedRouteId)) focusedEdgeIds.add(`${location.id}->${focusedRouteId}`)
+    while (focusedPending.length > 0) {
+      const fromId = focusedPending.shift()
+      if (!fromId) continue
+      for (const toId of routeEdges[fromId] ?? []) {
+        const edgeId = `${fromId}->${toId}`
+        focusedEdgeIds.add(edgeId)
+        if (focusedNodeIds.has(toId)) continue
+        focusedNodeIds.add(toId)
+        focusedPending.push(toId)
+      }
+    }
+  }
 
   return (
     <section className={styles.pageSection}>
@@ -274,7 +309,7 @@ function CampaignMap() {
         <div>
           <div className={styles.eyebrow}>Campaign · {campaign.title}</div>
           <h1>Choose your next route</h1>
-          <p className={styles.lede}>The paths are unstable. Pick a region and prepare for what waits there.</p>
+          <p className={styles.lede}>Follow each road to its destination. Every marker shows what waits at that stop.</p>
         </div>
         <div className={styles.progressCard}>
           <span>CAMPAIGN PROGRESS</span>
@@ -296,47 +331,50 @@ function CampaignMap() {
 
       <section className={styles.clientWindow} aria-label="Campaign route map">
         <header className={styles.clientWindowTitle}><span>Cyclopedia Map</span><small>STAGE-BY-STAGE · CAMPAIGN ROUTES</small></header>
-        <div className={styles.routeMapViewport} aria-label="Campaign minimap showing the current location and available routes">
-        <svg className={styles.routeMapSvg} viewBox="0 0 1050 320" role="group" aria-labelledby="route-map-title">
-          <title id="route-map-title">Campaign minimap showing every possible route, current progress, and reachable destinations</title>
-          <image href="/assets/backgrounds/campaign-world-map.png" x="-105" y="-32" width="1260" height="384" preserveAspectRatio="xMidYMid slice" />
-          <rect className={styles.routeMapTint} width="1050" height="320" />
-          {stagePaths.flatMap(({ stage, sources, targets }) => {
-            const firstSource = sources[0]
-            if (!firstSource) return []
-            const hubX = mapPosition(firstSource).x + 44.5
-            const hubY = 160
-            const sourcePaths = sources.map((from) => {
-              const start = mapPosition(from)
-              const wasTaken = routeHistory.slice(0, -1).includes(from)
-              const available = from === location.id
-              const d = `M ${start.x + 9} ${start.y} L ${hubX} ${hubY}`
-              return <path key={`${from}-junction`} className={available ? styles.mapRouteAvailable : wasTaken ? styles.mapRouteTaken : styles.mapRouteFuture} d={d} />
-            })
-            const targetPaths = targets.map((to) => {
-              const end = mapPosition(to)
-              const wasTaken = takenEdges.has(`${routeHistory[stage]}->${to}`)
-              const available = destinations.some((node) => node.id === to)
-              const d = `M ${hubX} ${hubY} L ${end.x - 9} ${end.y}`
-              return <path key={`${stage}-junction-${to}`} className={available ? styles.mapRouteAvailable : wasTaken ? styles.mapRouteTaken : styles.mapRouteFuture} d={d} />
-            })
-            return [...sourcePaths, ...targetPaths]
+        <div className={styles.routeMapViewport} aria-label="Campaign map showing reachable routes and destinations">
+        <svg className={styles.routeMapSvg} viewBox="0 0 1260 390" role="group" aria-labelledby="route-map-title">
+          <title id="route-map-title">Campaign map showing the routes reachable in this run, their destinations, and each encounter type</title>
+          <image href="/assets/backgrounds/campaign-world-map.png" x="-126" y="-39" width="1512" height="468" preserveAspectRatio="xMidYMid slice" />
+          <rect className={styles.routeMapTint} width="1260" height="390" />
+          {routeConnections.map(({ from, to }) => {
+            const start = mapPosition(from.id)
+            const end = mapPosition(to.id)
+            const available = from.id === location.id && destinations.some((node) => node.id === to.id)
+            const taken = takenEdges.has(`${from.id}->${to.id}`)
+            const focused = focusedEdgeIds.has(`${from.id}->${to.id}`)
+            const dimmed = focusedRouteId !== null && !focused
+            const middleX = (start.x + end.x) / 2
+            const d = `M ${start.x + 15} ${start.y} C ${middleX} ${start.y}, ${middleX} ${end.y}, ${end.x - 15} ${end.y}`
+            return <path
+              key={`${from.id}->${to.id}`}
+              className={dimmed ? styles.mapRouteDimmed : focused ? styles.mapRouteFocus : available ? styles.mapRouteAvailable : taken ? styles.mapRouteTaken : styles.mapRouteFuture}
+              d={d}
+              aria-label={`${from.name} to ${to.name}${available ? ', available now' : ''}`}
+            />
           })}
           {routeNodes.map((node) => {
             if (node.id === location.id) return null
             const point = mapPosition(node.id)
             const available = destinations.some((entry) => entry.id === node.id)
             const completed = state.completedNodeIds.includes(node.id)
-            const labelWidth = Math.min(190, Math.max(112, node.name.length * 6 + 20))
+            const kind = node.bossId ? 'boss' : node.routeReward === 'gold' ? 'cache' : node.routeReward === 'experience' ? 'shrine' : 'hunt'
+            const kindLabel = node.bossId ? 'BOSS BATTLE' : kind === 'cache' ? 'GOLD CACHE' : kind === 'shrine' ? 'XP SHRINE' : 'CREATURE HUNT'
+            const icon = kind === 'boss' ? '★' : kind === 'cache' ? '◈' : kind === 'shrine' ? '✧' : '⚔'
+            const focused = focusedNodeIds.has(node.id)
             const visit = () => { if (available) commands.chooseRoute(node.id) }
             return <g
               key={node.id}
-              className={available ? styles.mapNodeAvailable : completed ? styles.mapNodeCompleted : styles.mapNodeFuture}
+              className={`${styles.mapNode} ${available ? styles.mapNodeAvailable : completed ? styles.mapNodeCompleted : styles.mapNodeFuture} ${focused ? styles.mapNodeFocused : ''}`}
+              data-kind={kind}
               transform={`translate(${point.x} ${point.y})`}
               role={available ? 'button' : undefined}
               tabIndex={available ? 0 : undefined}
-              aria-label={available ? `Travel to ${node.name}` : undefined}
+              aria-label={available ? `Travel to ${node.name}, ${kindLabel.toLowerCase()}, encounter ${node.stage}` : undefined}
               onClick={visit}
+              onMouseEnter={() => { if (available) setFocusedRouteId(node.id) }}
+              onMouseLeave={() => { if (available) setFocusedRouteId(null) }}
+              onFocus={() => { if (available) setFocusedRouteId(node.id) }}
+              onBlur={() => { if (available) setFocusedRouteId(null) }}
               onKeyDown={(event) => {
                 if (available && (event.key === 'Enter' || event.key === ' ')) {
                   event.preventDefault()
@@ -345,31 +383,37 @@ function CampaignMap() {
               }}
               style={{ cursor: available ? 'pointer' : 'default' }}
             >
-              <title>{node.name} — encounter {node.stage}, {node.bossId ? 'boss' : node.routeReward}</title>
+              <title>{node.name} — encounter {node.stage} — {kindLabel}</title>
               {available && <circle className={styles.mapNodeHit} r="22" />}
-              <circle className={styles.mapNodeCore} r={available ? 10 : completed ? 7 : 6} />
-              <text textAnchor="middle" dominantBaseline="central">{String(node.stage).padStart(2, '0')}</text>
-              {available && <g className={styles.mapNodeLabel} transform="translate(0 23)">
-                <rect x={-labelWidth / 2} y="-10" width={labelWidth} height="20" />
-                <text textAnchor="middle" dominantBaseline="middle">{node.name.toUpperCase()}</text>
-              </g>}
+              <text className={styles.mapNodeStage} textAnchor="middle" dominantBaseline="central" y="-20">{String(node.stage).padStart(2, '0')}</text>
+              <circle className={styles.mapNodeCore} r={available ? 14 : completed ? 12 : 11} />
+              <text className={styles.mapNodeIcon} textAnchor="middle" dominantBaseline="central">{icon}</text>
+              <g className={styles.mapNodeLabel} transform="translate(0 19)">
+                <rect x="-53" y="0" width="106" height="34" />
+                <text className={styles.mapNodeName} textAnchor="middle" dominantBaseline="central" y="11" textLength="98" lengthAdjust="spacingAndGlyphs">{node.name}</text>
+                <text className={styles.mapNodeKind} textAnchor="middle" dominantBaseline="central" y="25">{kindLabel}</text>
+              </g>
             </g>
           })}
           <g className={styles.mapCurrentMarker} transform={`translate(${currentPoint.x} ${currentPoint.y})`} aria-label={`Current location: ${location.name}`}>
             <circle r="12" />
             <path d="M-7 0h14M0-7v14" />
           </g>
-          <g className={styles.mapCurrentLabel} transform={`translate(${currentPoint.x} ${currentPoint.y - 23})`}>
-            <rect x="-24" y="-10" width="48" height="20" />
-            <text textAnchor="middle" dominantBaseline="middle">YOU</text>
+          <g className={styles.mapCurrentLabel} transform={`translate(${currentPoint.x} ${currentPoint.y + 20})`}>
+            <rect x="-53" y="0" width="106" height="25" />
+            <text textAnchor="middle" dominantBaseline="middle" y="13">YOU · {location.name}</text>
           </g>
         </svg>
         </div>
         <div className={styles.routeMapLegend} aria-label="Map legend">
           <span><i className={styles.mapLegendCurrent} /> Your position</span>
-          <span><i className={styles.mapLegendAvailable} /> Gold branches · choose now</span>
-          <span><i className={styles.mapLegendFuture} /> Pale branches · later</span>
-          <span>Node number · encounter stage</span>
+          <span><i className={styles.mapLegendAvailable} /> Available road</span>
+          <span><i className={styles.mapLegendFuture} /> Later road</span>
+          <span>Hover or focus a destination to trace it onward</span>
+          <span><b className={styles.mapLegendType} data-kind="cache">◈</b> Gold cache</span>
+          <span><b className={styles.mapLegendType} data-kind="shrine">✧</b> XP shrine</span>
+          <span><b className={styles.mapLegendType} data-kind="hunt">⚔</b> Creature hunt</span>
+          <span><b className={styles.mapLegendType} data-kind="boss">★</b> Boss battle</span>
         </div>
       </section>
 
@@ -380,7 +424,13 @@ function CampaignMap() {
           const enemyUnits = node.enemies.map((id) => creatureById[id]).filter(Boolean)
           const totalEnemies = enemyUnits.length + (node.bossId ? 1 : 0)
           return (
-            <article className={styles.routeCard} key={node.id} data-theme={node.theme}>
+            <article
+              className={styles.routeCard}
+              key={node.id}
+              data-theme={node.theme}
+              onMouseEnter={() => setFocusedRouteId(node.id)}
+              onMouseLeave={() => setFocusedRouteId(null)}
+            >
               <div className={styles.routeImage} data-theme={node.theme}>
                 <span className={styles.routeIndex}>0{index + 1}</span>
                 <span className={styles.routeStage}>ENCOUNTER {node.stage} {node.bossId ? '· BOSS' : ''}</span>
