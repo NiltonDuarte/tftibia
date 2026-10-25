@@ -318,7 +318,7 @@ function CampaignMap() {
               <path d="M0 2h3M5 1h3M2 6h4" stroke="#505658" strokeWidth="1" />
             </pattern>
           </defs>
-          <image href="/assets/backgrounds/campaign-world-map.png" x="-126" y="-39" width="1512" height="468" preserveAspectRatio="xMidYMid slice" />
+          <image href={imageUrl('/assets/backgrounds/campaign-world-map.png')} x="-126" y="-39" width="1512" height="468" preserveAspectRatio="xMidYMid slice" />
           <rect className={styles.routeMapTint} width="1260" height="390" />
           {routeConnections.map(({ from, to }) => {
             const start = mapPosition(from.id)

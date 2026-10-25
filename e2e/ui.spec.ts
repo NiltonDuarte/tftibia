@@ -13,6 +13,11 @@ test('world map branches lead to playable full-room battles', async ({ page }) =
 
   await expect(page.getByRole('heading', { name: 'Choose your next route' })).toBeVisible()
   const campaignMap = page.locator('[aria-label="Campaign route map"]')
+  const worldMapImage = campaignMap.locator('svg image').first()
+  const worldMapHref = await worldMapImage.getAttribute('href')
+  if (!worldMapHref) throw new Error('The campaign map background must have a URL.')
+  const worldMapResponse = await page.request.get(new URL(worldMapHref, page.url()).href)
+  expect(worldMapResponse.ok()).toBe(true)
   await expect(campaignMap.getByText('GOLD CACHE', { exact: true }).first()).toBeVisible()
   await expect(campaignMap.getByText('XP SHRINE', { exact: true }).first()).toBeVisible()
   await expect(campaignMap.getByText('CREATURE HUNT', { exact: true }).first()).toBeVisible()
