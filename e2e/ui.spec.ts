@@ -63,6 +63,13 @@ test('world map branches lead to playable full-room battles', async ({ page }) =
   const sqmTile = page.locator('[class*="sqmTile"]').first()
   await expect(sqmTile).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await expect(sqmTile).toHaveCSS('border-top-width', '0px')
+  const gridToggle = page.getByRole('button', { name: 'Show playable grid' })
+  await expect(gridToggle).toHaveAttribute('aria-pressed', 'false')
+  await gridToggle.click()
+  await expect(page.getByRole('button', { name: 'Hide playable grid' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(sqmTile).toHaveCSS('border-top-width', '1px')
+  await page.getByRole('button', { name: 'Hide playable grid' }).click()
+  await expect(sqmTile).toHaveCSS('border-top-width', '0px')
 })
 
 test('creature codex search and filters remain usable', async ({ page }) => {

@@ -795,6 +795,7 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
   const [tickIndex, setTickIndex] = useState(-1)
   const [paused, setPaused] = useState(false)
   const [tickDuration, setTickDuration] = useState(320)
+  const [showPlayableGrid, setShowPlayableGrid] = useState(false)
   const ticks = result ? Array.from({ length: result.rounds }, (_, index) => index + 1) : []
   const finished = ticks.length === 0 || tickIndex >= ticks.length - 1
 
@@ -837,6 +838,7 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
         {battleNode?.bossSprite && <img className={styles.bossSprite} src={battleNode.bossSprite} alt={`${battleNode.name} boss`} />}
         <div className={styles.playbackControls}>
           <span className={styles.roundPill}>{finished ? 'BATTLE COMPLETE' : `TICK ${currentTick} · ${eventsThisTick.length} actions`}</span>
+          <button className={styles.textButton} type="button" aria-label={showPlayableGrid ? 'Hide playable grid' : 'Show playable grid'} aria-pressed={showPlayableGrid} onClick={() => setShowPlayableGrid((visible) => !visible)}>{showPlayableGrid ? 'Grid: on' : 'Grid: off'}</button>
           {!finished && <label className={styles.tickSpeed}>Tick {tickDuration}ms<input aria-label="Combat tick duration" type="range" min="120" max="800" step="20" value={tickDuration} onChange={(event) => setTickDuration(Number(event.currentTarget.value))} /></label>}
           {!finished && <button className={styles.textButton} type="button" onClick={() => setPaused((value) => !value)}>{paused ? '▶ Resume' : 'Ⅱ Pause'}</button>}
           {!finished && <button className={styles.textButton} type="button" onClick={() => { setTickIndex(ticks.length - 1); setPaused(true) }}>Skip</button>}
@@ -857,7 +859,7 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
       </div>}
       <div className={styles.arenaLabels}><span>HOSTILE · CORAL</span><span>ALLY · CYAN</span></div>
       <div className={styles.battleStage}>
-        <div className={styles.arenaGrid} data-theme={battleNode?.theme} aria-label="Live tactical battlefield">
+        <div className={styles.arenaGrid} data-theme={battleNode?.theme} data-grid-visible={showPlayableGrid} aria-label="Live tactical battlefield">
           <div className={styles.sqmBoard}>
             {Array.from({ length: 49 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
             <div className={styles.combatEffects} aria-hidden="true">

@@ -1144,6 +1144,11 @@
   background: transparent;
   box-shadow: none;
 }
+.appShell .arenaGrid[data-grid-visible='true'] .sqmBoard > .sqmTile {
+  border: 1px solid rgba(255, 235, 170, .82);
+  background-color: rgba(20, 24, 20, .13);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .42);
+}
 .appShell .playerArenaUnit { background-color: rgba(33,167,196,.08); }
 .appShell .enemyArenaUnit { background-color: rgba(211,93,92,.08); }
 .appShell .healthTrack i { background-color: #a65c4e; }
