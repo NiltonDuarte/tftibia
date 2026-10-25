@@ -4,7 +4,11 @@ Creature portraits in `public/assets/creatures/` were downloaded from the TibiaD
 
 The regional triptych in `public/assets/backgrounds/region-triptych.png` is original AI-generated pixel-art environment art used by the campaign and vocation screens.
 
-The landscape battle backgrounds in `public/assets/backgrounds/battle/` are original AI-generated environment scenes, composed from the fixed board guide. The runtime draws the aligned 7×5 SQM board over the center; generation dimensions and prompts are documented in [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md). Regional references are in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md); no Tibia screenshots or map layouts are bundled.
+The battle backgrounds in `public/assets/backgrounds/battle/` are original AI-generated environment scenes. The runtime draws the 7×7 SQM board over the center; generation dimensions and prompts are documented in [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md). Regional references are in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md); no Tibia screenshots or map layouts are bundled.
+
+The item sprites in `public/assets/items/` are local 32×32 copies from the item file pages on Tibia Wiki. Each item's data entry links to its source page and references the corresponding local image.
+
+Boss portraits in `public/assets/bosses/` are local 64×64 copies from TibiaDraptor's Bosstiary image directory. Boss data keeps the source URL for attribution; gameplay uses the local image paths.
 
 | Local file | TibiaDraptor source |
 |---|---|
@@ -18,3 +22,10 @@ The landscape battle backgrounds in `public/assets/backgrounds/battle/` are orig
 | `falcon-knight.png` | [Falcon Knight](https://tibiadraptor.com/images/monsters/Falcon_Knight.png) |
 | `falcon-paladin.png` | [Falcon Paladin](https://tibiadraptor.com/images/monsters/Falcon_Paladin.png) |
 | `druids-apparition.png` | [Druid's Apparition](https://tibiadraptor.com/images/monsters/Druid%27s_Apparition.png) |
+
+| Local boss file | TibiaDraptor source |
+|---|---|
+| `scarlett-etzel.png` | [Scarlett Etzel](https://tibiadraptor.com/images/bosses/Scarlett_Etzel.png) |
+| `grand-master-oberon.png` | [Grand Master Oberon](https://tibiadraptor.com/images/bosses/Grand_Master_Oberon.png) |
+| `moonsnow-magnolia.png` | [The Moonsnow Magnolia](https://tibiadraptor.com/images/bosses/The_Moonsnow_Magnolia.png) |
+| `ferumbras.png` | [Ferumbras](https://tibiadraptor.com/images/bosses/Ferumbras.png) |

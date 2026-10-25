@@ -1,7 +1,7 @@
 import type { Role } from "../content/schemas";
 
 export const BOARD_LAYOUT = {
-  columns: 3,
+  columns: 7,
   rows: [
     { id: "backline", label: "Backline" },
     { id: "midline", label: "Midline" },
@@ -17,6 +17,8 @@ export const BOARD_SLOTS = BOARD_LAYOUT.rows.flatMap((_, rowIndex) =>
 );
 export const BOARD_SLOT_IDS = new Set(BOARD_SLOTS);
 export const BOARD_CAPACITY = BOARD_SLOTS.length;
+export const INITIAL_DEPLOYMENT_LIMIT = 5;
+export const DEPLOYMENT_LIMIT_ITEM_COST = 5;
 
 const rowPreference: Record<Role, string[]> = {
   tank: ["frontline", "midline", "backline"],

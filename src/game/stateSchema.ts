@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { BOARD_SLOTS } from './board'
+import { BOARD_SLOTS, INITIAL_DEPLOYMENT_LIMIT } from './board'
+import { EquipmentSlotSchema } from '../content/schemas'
 
 export const RunPhaseSchema = z.enum([
   'vocation',
@@ -16,6 +17,7 @@ const UnitSchema = z.object({
   creatureId: z.string().min(1),
   slot: z.number().int().refine((slot) => BOARD_SLOTS.includes(slot)).nullable(),
   star: z.number().int().min(1).max(3).default(1),
+  equippedItems: z.partialRecord(EquipmentSlotSchema, z.string()).default({}),
 })
 
 const CombatUnitSchema = z.object({
@@ -23,7 +25,7 @@ const CombatUnitSchema = z.object({
   creatureId: z.string(),
   side: z.enum(['player', 'enemy']),
   x: z.number().int().min(0).max(6),
-  y: z.number().int().min(0).max(4),
+  y: z.number().int().min(0).max(6),
   star: z.number().int().min(1).max(3).default(1),
   health: z.number().nonnegative(),
   maxHealth: z.number().positive(),
@@ -34,10 +36,10 @@ const CombatEventSchema = z.object({
   type: z.enum(['attack', 'heal', 'move', 'defeat']),
   actorId: z.string(),
   actorX: z.number().int().min(0).max(6),
-  actorY: z.number().int().min(0).max(4),
+  actorY: z.number().int().min(0).max(6),
   targetId: z.string().nullable(),
   targetX: z.number().int().min(0).max(6).nullable(),
-  targetY: z.number().int().min(0).max(4).nullable(),
+  targetY: z.number().int().min(0).max(6).nullable(),
   targetHealth: z.number().nonnegative().nullable(),
   text: z.string(),
 })
@@ -68,13 +70,15 @@ export const BattleResultSchema = z.object({
 })
 
 export const GameStateSchema = z.object({
-  saveVersion: z.literal(6),
+  saveVersion: z.literal(8),
   seed: z.number().int().min(0).max(0xffffffff),
   rngState: z.number().int().min(0).max(0xffffffff),
   nextUnitId: z.number().int().nonnegative(),
+  deploymentLimit: z.number().int().min(1).max(BOARD_SLOTS.length),
   phase: RunPhaseSchema,
   commanderId: z.enum(['knight', 'paladin', 'sorcerer', 'druid']).nullable(),
   mapNodeId: z.string(),
+  routeEdges: z.record(z.string(), z.array(z.string())),
   encounterNodeId: z.string().nullable(),
   gold: z.number().int().nonnegative(),
   roster: z.array(UnitSchema),
@@ -91,6 +95,9 @@ export const GameStateSchema = z.object({
   level: z.number().int().positive(),
   pendingLevelUps: z.number().int().nonnegative(),
   battleResult: BattleResultSchema.nullable(),
+  backpackItemIds: z.array(z.string()),
+  rewardItemIds: z.array(z.string()),
+  selectedItemRewardId: z.string().nullable(),
 })
 
 export type GameState = z.infer<typeof GameStateSchema>
@@ -100,13 +107,15 @@ export type RunPhase = z.infer<typeof RunPhaseSchema>
 export type BattleSurvivor = BattleResult['survivors'][number]
 
 export const initialGameState: GameState = {
-  saveVersion: 6,
+  saveVersion: 8,
   seed: 1,
   rngState: 1,
   nextUnitId: 0,
+  deploymentLimit: INITIAL_DEPLOYMENT_LIMIT,
   phase: 'vocation',
   commanderId: null,
   mapNodeId: 'crossroads',
+  routeEdges: {},
   encounterNodeId: null,
   gold: 0,
   roster: [],
@@ -123,19 +132,22 @@ export const initialGameState: GameState = {
   level: 1,
   pendingLevelUps: 0,
   battleResult: null,
+  backpackItemIds: [],
+  rewardItemIds: [],
+  selectedItemRewardId: null,
 }
 
-export function loadSavedGame(): GameState {
+export function migrateSavedGame(value: unknown): GameState | null {
   try {
-    const raw = window.localStorage.getItem('tibia-tactics-save')
-    if (!raw) return initialGameState
-    const value: unknown = JSON.parse(raw)
-    if (typeof value === 'object' && value !== null && 'saveVersion' in value && (value.saveVersion === 1 || value.saveVersion === 2 || value.saveVersion === 3 || value.saveVersion === 4 || value.saveVersion === 5)) {
+    if (typeof value === 'object' && value !== null && 'saveVersion' in value && (value.saveVersion === 1 || value.saveVersion === 2 || value.saveVersion === 3 || value.saveVersion === 4 || value.saveVersion === 5 || value.saveVersion === 6 || value.saveVersion === 7)) {
       const legacy = value as Record<string, unknown>
       const oldVersion = legacy.saveVersion
       const roster = Array.isArray(legacy.roster) ? legacy.roster.map((unit) => {
         if (typeof unit !== 'object' || unit === null) return unit
-        return { ...unit, star: 'star' in unit ? unit.star : 1 }
+        const migratedSlot = 'slot' in unit && typeof unit.slot === 'number'
+          ? Math.floor(unit.slot / 3) * 7 + 2 + unit.slot % 3
+          : 'slot' in unit ? unit.slot : undefined
+        return { ...unit, ...(migratedSlot !== undefined ? { slot: migratedSlot } : {}), star: 'star' in unit ? unit.star : 1, equippedItems: 'equippedItems' in unit ? unit.equippedItems : {} }
       }) : legacy.roster
       const previousBattle = legacy.battleResult
       let battleResult = previousBattle
@@ -184,16 +196,33 @@ export function loadSavedGame(): GameState {
       }
       const migratedPhase = oldVersion === 1 && legacy.phase === 'battle' &&
         typeof previousBattle === 'object' && previousBattle !== null ? 'preparation' : legacy.phase
-      const parsedLegacy = GameStateSchema.safeParse({ ...legacy, saveVersion: 6, seed: 1, rngState: 1,
-        nextUnitId: Array.isArray(roster) ? roster.length : 0, phase: migratedPhase, roster, lives: legacy.lives ?? 3,
-        experience: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 ? legacy.experience ?? 0 : 0,
-        level: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 ? legacy.level ?? 1 : 1,
-        pendingLevelUps: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 ? legacy.pendingLevelUps ?? 0 : 0,
-        battleResult })
-      return parsedLegacy.success ? parsedLegacy.data : initialGameState
+      const parsedLegacy = GameStateSchema.safeParse({ ...legacy, saveVersion: 8,
+        seed: oldVersion === 6 || oldVersion === 7 ? legacy.seed : 1, rngState: oldVersion === 6 || oldVersion === 7 ? legacy.rngState : 1,
+        nextUnitId: oldVersion === 6 || oldVersion === 7 ? legacy.nextUnitId ?? (Array.isArray(roster) ? roster.length : 0) : Array.isArray(roster) ? roster.length : 0,
+        phase: migratedPhase, roster, lives: legacy.lives ?? 3,
+        deploymentLimit: Math.max(INITIAL_DEPLOYMENT_LIMIT, Array.isArray(roster) ? roster.filter((unit) => typeof unit === 'object' && unit !== null && 'slot' in unit && unit.slot !== null).length : 0),
+        experience: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 || oldVersion === 6 || oldVersion === 7 ? legacy.experience ?? 0 : 0,
+        level: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 || oldVersion === 6 || oldVersion === 7 ? legacy.level ?? 1 : 1,
+        pendingLevelUps: oldVersion === 3 || oldVersion === 4 || oldVersion === 5 || oldVersion === 6 || oldVersion === 7 ? legacy.pendingLevelUps ?? 0 : 0,
+        battleResult, backpackItemIds: legacy.backpackItemIds ?? [], rewardItemIds: legacy.rewardItemIds ?? [], selectedItemRewardId: legacy.selectedItemRewardId ?? null,
+        routeEdges: legacy.routeEdges ?? {} })
+      return parsedLegacy.success ? parsedLegacy.data : null
     }
     const parsed = GameStateSchema.safeParse(value)
-    return parsed.success ? parsed.data : initialGameState
+    return parsed.success ? parsed.data : null
+  } catch {
+    return null
+  }
+}
+
+export function parseSavedGame(value: unknown): GameState {
+  return migrateSavedGame(value) ?? initialGameState
+}
+
+export function loadSavedGame(): GameState {
+  try {
+    const raw = window.localStorage.getItem('tibia-tactics-save')
+    return raw ? parseSavedGame(JSON.parse(raw)) : initialGameState
   } catch {
     return initialGameState
   }

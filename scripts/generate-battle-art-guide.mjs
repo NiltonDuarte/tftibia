@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const width = 1280
-const height = 1024
-const board = { x: 192, y: 192, columns: 7, rows: 5, tile: 128 }
+const height = 1280
+const board = { x: 192, y: 192, columns: 7, rows: 7, tile: 128 }
 const pixels = Buffer.alloc(width * height * 3)
 
 function color(hex) {

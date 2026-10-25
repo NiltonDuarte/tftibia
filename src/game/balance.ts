@@ -1,12 +1,15 @@
 import {
+  bossById,
   creatureById,
+  itemById,
+  items,
   nodeById,
   synergies,
   upgradeById,
   vocationById,
 } from "../content/content";
-import type { Creature, Upgrade } from "../content/schemas";
-import { BOARD_CAPACITY, BOARD_SLOTS, preferredSlotsForRole } from "./board";
+import type { Creature, GameItem, Upgrade } from "../content/schemas";
+import { BOARD_CAPACITY, BOARD_SLOTS, DEPLOYMENT_LIMIT_ITEM_COST, preferredSlotsForRole } from "./board";
 import {
   createGame,
   gameReducer,
@@ -126,6 +129,37 @@ function baseCreatureValue(creature: Creature): number {
   );
 }
 
+function itemValue(item: GameItem, creature: Creature): number {
+  const stats = item.tibiaStats;
+  const attack = (stats.attack ?? 0) + (stats.elementalAttack ?? 0) + (stats.averageAttack ?? 0);
+  const defense = (stats.armor ?? 0) + (stats.defense ?? 0) + (stats.defenseBonus ?? 0) + (stats.skillBonuses.shielding ?? 0);
+  const skill = Object.values(stats.skillBonuses).reduce((sum, value) => sum + value, 0);
+  const magic = (stats.magicLevel ?? 0) + Object.values(stats.elementMagicLevel).reduce((sum, value) => sum + value, 0);
+  const offense = attack * (["fighter", "shooter", "mage"].includes(creature.role) ? 1.5 : 0.8) + skill * (creature.role === "fighter" || creature.role === "tank" ? 1.2 : 0.5) + magic * (creature.role === "mage" || creature.role === "healer" ? 1.5 : 0.5);
+  const protection = Object.values(stats.protectionPercent).reduce((sum, value) => sum + value, 0) * 0.08;
+  return offense + defense * (creature.role === "tank" || creature.role === "healer" ? 1.3 : 0.7) + protection + (stats.lifeLeechChancePercent ?? 0) * (stats.lifeLeechAmountPercent ?? 0) / 100 + (stats.criticalChancePercent ?? 0) * 0.15 + (stats.range ?? 0) * 0.5;
+}
+
+function equipBackpackItems(getState: () => GameState, apply: (action: GameAction) => void, trace?: string[]): void {
+  for (const itemId of [...getState().backpackItemIds]) {
+    const item = itemById[itemId];
+    if (!item) continue;
+    const candidate = getState().roster
+      .map((unit) => ({ unit, creature: creatureById[unit.creatureId] }))
+      .filter(({ creature }) => creature && (item.universal || item.allowedRoles.includes(creature.role)))
+      .map(({ unit, creature }) => {
+        if (!creature) return { unit, score: -Infinity };
+        const oldId = unit.equippedItems[item.slot];
+        const oldItem = oldId ? itemById[oldId] : undefined;
+        return { unit, score: itemValue(item, creature) - (oldItem ? itemValue(oldItem, creature) : 0) };
+      })
+      .sort((a, b) => b.score - a.score)[0];
+    if (!candidate || candidate.score <= 0) continue;
+    apply({ type: "equip-item", unitId: candidate.unit.instanceId, itemId });
+    trace?.push(`Equip: ${item.name} → ${creatureById[candidate.unit.creatureId]?.name ?? candidate.unit.creatureId}`);
+  }
+}
+
 function routeValue(nodeId: string, state: GameState): number {
   const node = nodeById[nodeId];
   if (!node) return -Infinity;
@@ -134,7 +168,7 @@ function routeValue(nodeId: string, state: GameState): number {
     : undefined;
   const goldNeed = Math.max(
     0,
-    BOARD_CAPACITY - state.roster.filter((unit) => unit.slot !== null).length,
+    state.deploymentLimit - state.roster.filter((unit) => unit.slot !== null).length,
   );
   const rewardValue =
     node.routeReward === "gold"
@@ -148,16 +182,30 @@ function routeValue(nodeId: string, state: GameState): number {
       total + (enemy ? enemy.attack + enemy.health * 0.08 + enemy.armor : 0)
     );
   }, 0);
+  const bossPressure = node.bossId
+    ? (bossById[node.bossId]?.attack ?? 0) + (bossById[node.bossId]?.health ?? 0) * 0.08
+    : 0;
   const currentPower = deployedCreatures(state).reduce(
     (total, creature) =>
       total + creature.attack + creature.health * 0.08 + creature.armor,
     0,
   );
-  const routeRisk = enemyPressure / Math.max(1, currentPower);
+  const routeRisk = (enemyPressure + bossPressure) / Math.max(1, currentPower);
+  const bossLootPotential = node.bossId && node.bossId !== "ferumbras"
+    ? Math.max(0, ...items.filter((item) => item.bossId === node.bossId).flatMap((item) =>
+        state.roster.flatMap((unit) => {
+          const creature = creatureById[unit.creatureId];
+          return creature && (item.universal || item.allowedRoles.includes(creature.role))
+            ? [itemValue(item, creature)]
+            : [];
+        }),
+      ))
+    : 0;
   const commanderAffinity =
     vocation?.id === "druid" && node.routeReward === "experience" ? 0.3 : 0;
   return (
     rewardValue +
+    bossLootPotential * 0.2 +
     goldNeed * (node.routeReward === "gold" ? 0.4 : 0) -
     routeRisk +
     commanderAffinity
@@ -430,6 +478,7 @@ function roleFormation(
     slot: unit.slot!,
   }));
   for (const unit of byRole) {
+    if (assignments.length >= state.deploymentLimit) break;
     const creature = creatureById[unit.creatureId];
     if (!creature) continue;
     const slot =
@@ -541,6 +590,7 @@ export type FormationDiagnostic = {
   deployedCount: number;
   eligibleUnitCount: number;
   boardCapacity: number;
+  deploymentLimit: number;
   unassignedUnitIds: string[];
   assignments: Array<{
     instanceId: string;
@@ -602,6 +652,9 @@ export function runCampaign(
   let encountersPlayed = 0;
   let purchasesMade = 0;
   let rerollsUsed = 0;
+  let retriesAtEncounter = 0;
+  let simulationDefeat = false;
+  const encounteredNodeIds = new Set<string>();
   const apply = (action: GameAction) => {
     capture?.actions?.push(action);
     state = gameReducer(state, action);
@@ -620,13 +673,15 @@ export function runCampaign(
   ) {
     if (state.phase === "map") {
       const origin = nodeById[state.mapNodeId];
-      if (!origin || origin.nextNodeIds.length === 0) break;
-      const routeId = strategy.chooseRoute(origin.nextNodeIds, state, random);
+      const outgoing = state.routeEdges[state.mapNodeId] ?? origin?.nextNodeIds ?? [];
+      if (!origin || outgoing.length === 0) break;
+      const routeId = strategy.chooseRoute(outgoing, state, random);
       trace?.push(`Route: ${nodeById[routeId]?.name ?? routeId}`);
       apply({ type: "choose-route", nodeId: routeId });
       continue;
     }
     if (state.phase === "preparation") {
+      equipBackpackItems(() => state, apply, trace);
       const pinnedUnitIds = new Set(
         state.roster
           .filter(
@@ -648,6 +703,19 @@ export function runCampaign(
             `Buy: ${creatureById[creatureId]?.name ?? creatureId} (${goldBefore} → ${state.gold} gold)`,
           );
           continue;
+        }
+        const uniqueRosterCount = deployableUnits(state, new Set()).length;
+        if (
+          state.deploymentLimit < BOARD_CAPACITY &&
+          uniqueRosterCount > state.deploymentLimit &&
+          state.gold >= DEPLOYMENT_LIMIT_ITEM_COST
+        ) {
+          const before = state;
+          apply({ type: "buy-deployment-upgrade" });
+          if (before !== state) {
+            trace?.push(`Formation Permit: capacity ${state.deploymentLimit} (${state.gold} gold left)`);
+            continue;
+          }
         }
         if (
           rerollsThisVisit >= 3 ||
@@ -727,6 +795,7 @@ export function runCampaign(
         deployedCount,
         eligibleUnitCount,
         boardCapacity: BOARD_CAPACITY,
+        deploymentLimit: state.deploymentLimit,
         unassignedUnitIds,
         assignments,
       });
@@ -734,24 +803,39 @@ export function runCampaign(
         `Formation decisions: ${assignments.map((assignment) => `${assignment.decision} ${creatureById[assignment.creatureId]?.name ?? assignment.creatureId} at ${assignment.slot}`).join("; ") || "none"}${unassignedUnitIds.length ? `; unassigned ${unassignedUnitIds.join(", ")}` : ""}`,
       );
       trace?.push(
-        `Formation capacity: ${deployedCount}/${Math.min(eligibleUnitCount, BOARD_CAPACITY)} eligible units deployed`,
+        `Formation capacity: ${deployedCount}/${Math.min(eligibleUnitCount, state.deploymentLimit)} eligible units deployed`,
       );
       apply({ type: "start-battle" });
       if (state.phase === "battle" || state.phase === "defeat") {
-        encountersPlayed += 1;
+        const nodeId = state.encounterNodeId;
+        if (nodeId && !encounteredNodeIds.has(nodeId)) {
+          encounteredNodeIds.add(nodeId);
+          encountersPlayed += 1;
+        }
         const node = state.encounterNodeId
           ? nodeById[state.encounterNodeId]
           : undefined;
         trace?.push(
-          `Battle ${node?.name ?? state.encounterNodeId}: ${state.battleResult?.won ? "WIN" : "LOSS"}, ${state.battleResult?.rounds ?? 0} rounds; ${state.lives} lives, ${state.gold} gold`,
+          `Battle ${node?.name ?? state.encounterNodeId}: ${state.battleResult?.won ? "WIN" : "LOSS"}, ${state.battleResult?.rounds ?? 0} ticks; ${state.lives} lives, ${state.gold} gold`,
         );
+        const droppedItemId = state.battleResult?.won ? state.rewardItemIds[0] : undefined;
+        if (droppedItemId) trace?.push(`Boss item drop: ${itemById[droppedItemId]?.name ?? droppedItemId}`);
       }
       continue;
     }
     if (state.phase === "battle") {
       if (state.battleResult?.won) {
+        retriesAtEncounter = 0;
         apply({ type: "claim-victory" });
       } else {
+        if (retriesAtEncounter >= 3) {
+          simulationDefeat = true;
+          trace?.push(
+            "Simulation records a loss after three retries; players may continue retrying this encounter.",
+          );
+          break;
+        }
+        retriesAtEncounter += 1;
         trace?.push("Retry: return to preparation and adjust the team");
         apply({ type: "retry" });
       }
@@ -806,12 +890,12 @@ export function runCampaign(
     }
     break;
   }
-  if (state.phase !== "complete" && state.phase !== "defeat") {
+  if (state.phase !== "complete" && state.phase !== "defeat" && !simulationDefeat) {
     throw new Error(
-      `Campaign did not reach an ending for seed ${seed}, vocation ${vocationId}, strategy ${strategy.id}.`,
+      `Campaign did not reach an ending for seed ${seed}, vocation ${vocationId}, strategy ${strategy.id} (phase ${state.phase}, encounter ${state.encounterNodeId ?? "none"}, cleared ${state.completedNodeIds.length}, gold ${state.gold}, rewards ${state.rewardCreatureIds.length}/${state.rewardUpgradeIds.length}).`,
     );
   }
-  const outcome: CampaignOutcome = state.phase === "complete" ? "win" : "lose";
+  const outcome: CampaignOutcome = state.phase === "complete" && !simulationDefeat ? "win" : "lose";
   trace?.push(
     `END: ${outcome.toUpperCase()} after ${state.completedNodeIds.length} cleared encounters; ${state.lives} lives, ${state.gold} gold, ${purchasesMade} purchases, ${rerollsUsed} rerolls`,
   );

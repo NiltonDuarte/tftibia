@@ -10,6 +10,14 @@
 - Add focused tests for meaningful game-rule, state-transition, and migration changes. Run the relevant checks available in `package.json` (`npm run build`, `npm run lint`, and `npm test`) when validating a change.
 - Keep changes within the requested scope and update the relevant game, architecture, asset, or workflow documentation when behavior or conventions change.
 
+## Game change regression checks
+
+- For every change to gameplay, campaign state, content that affects play, or game UI flows, add or update regression tests and run the relevant tests before finishing.
+- Verify that a player run can be exported to JSON, imported again, and replayed to the same resulting state. Include schema validation and legacy replay migrations when the change affects saved or replayed state.
+- Verify that the Balance Lab completes seeded campaigns and uses the same current rules, content, rewards, and state transitions as the game. Update its simulation and diagnostics whenever gameplay changes.
+- Review every existing balance strategy against each new or changed feature. Update strategies or add a focused new strategy when needed so simulations exercise the feature; cover those decisions in tests.
+- Run `npm test` and the relevant build or lint checks after game changes. Report any check that could not be run and why.
+
 ## Commit messages
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) for every commit:

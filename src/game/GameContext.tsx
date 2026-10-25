@@ -150,9 +150,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
         sendAction({ type: "choose-vocation", vocationId }),
       chooseRoute: (nodeId) => sendAction({ type: "choose-route", nodeId }),
       buyCreature: (creatureId) => sendAction({ type: "buy", creatureId }),
+      sellCreature: (unitId) => sendAction({ type: "sell-unit", unitId }),
       rerollShop: () => sendAction({ type: "reroll" }),
+      buyDeploymentUpgrade: () => sendAction({ type: "buy-deployment-upgrade" }),
+      equipItem: (unitId, itemId) => sendAction({ type: "equip-item", unitId, itemId }),
+      unequipItem: (unitId, slot) => sendAction({ type: "unequip-item", unitId, slot }),
       selectUnit: (unitId) => sendAction({ type: "select-unit", unitId }),
       placeUnit: (slot) => sendAction({ type: "place-unit", slot }),
+      moveUnit: (unitId, slot) => sendAction({ type: "move-unit", unitId, slot }),
       benchSelected: () => sendAction({ type: "bench-unit" }),
       startBattle: () => sendAction({ type: "start-battle" }),
       claimVictory: () => sendAction({ type: "claim-victory" }),
@@ -161,6 +166,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         sendAction({ type: "choose-creature-reward", creatureId }),
       chooseUpgradeReward: (upgradeId) =>
         sendAction({ type: "choose-upgrade-reward", upgradeId }),
+      chooseItemReward: (itemId) => sendAction({ type: "choose-item-reward", itemId }),
       newRun: (seed = (state.seed + 0x9e3779b9) >>> 0) =>
         sendAction({ type: "new-run", seed }),
       playReplay,

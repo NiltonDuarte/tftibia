@@ -1,0 +1,442 @@
+items:
+  # Scarlett Etzel / Cobra items
+
+  - id: cobra-axe
+    name: Cobra Axe
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Axe
+    image: /assets/items/cobra-axe.gif
+    slot: weapon
+    allowedRoles: [tank]
+    description: Knight one-handed axe; adapted for tank creatures.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 220
+      attack: 8
+      elementalAttack: 44
+      element: ice
+      defense: 29
+      defenseBonus: 2
+      weaponHands: 1
+      skillBonuses: {axe: 2}
+      weightOz: 40
+  - id: cobra-club
+    name: Cobra Club
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Club
+    image: /assets/items/cobra-club.gif
+    slot: weapon
+    allowedRoles: [tank]
+    description: Knight one-handed club; adapted for tank creatures.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 220
+      attack: 8
+      elementalAttack: 44
+      element: fire
+      defense: 29
+      defenseBonus: 2
+      weaponHands: 1
+      skillBonuses: {club: 2}
+      weightOz: 25
+  - id: cobra-bo
+    name: Cobra Bo
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Bo
+    image: /assets/items/cobra-bo.gif
+    slot: weapon
+    allowedRoles: [fighter]
+    description: Monk two-handed weapon adapted for fighter creatures.
+    tibiaStats:
+      sourceClasses: [monk]
+      requiredLevel: 250
+      attack: 42
+      defense: 20
+      weaponHands: 2
+      skillBonuses: {fist: 4}
+      element: earth
+      weightOz: 56
+  - id: cobra-crossbow
+    name: Cobra Crossbow
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Crossbow
+    image: /assets/items/cobra-crossbow.gif
+    slot: weapon
+    allowedRoles: [shooter]
+    description: Paladin two-handed crossbow adapted for shooter creatures.
+    tibiaStats:
+      sourceClasses: [paladin]
+      requiredLevel: 220
+      attack: 7
+      range: 6
+      hitPercent: 6
+      weaponHands: 2
+      skillBonuses: {distance: 1}
+      weightOz: 40
+  - id: cobra-hood
+    name: Cobra Hood
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Hood
+    image: /assets/items/cobra-hood.gif
+    slot: head
+    allowedRoles: [tank, fighter]
+    description: Knight head equipment adapted for tank and fighter creatures.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 270
+      armor: 9
+      skillBonuses: {sword: 1, club: 1, axe: 1}
+      protectionPercent: {physical: 5}
+      weightOz: 27
+  - id: cobra-rod
+    name: Cobra Rod
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Rod
+    image: /assets/items/cobra-rod.gif
+    slot: weapon
+    allowedRoles: [healer]
+    description: Druid rod adapted for healer creatures.
+    tibiaStats:
+      sourceClasses: [druid]
+      requiredLevel: 220
+      range: 5
+      averageAttack: 90
+      element: earth
+      magicLevel: 2
+      lifeLeechChancePercent: 100
+      lifeLeechAmountPercent: 18
+      weightOz: 25
+  - id: cobra-sword
+    name: Cobra Sword
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Sword
+    image: /assets/items/cobra-sword.gif
+    slot: weapon
+    allowedRoles: [tank]
+    description: Knight one-handed sword adapted for tank creatures.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 220
+      attack: 52
+      defense: 31
+      defenseBonus: 2
+      weaponHands: 1
+      skillBonuses: {sword: 3}
+      weightOz: 63
+  - id: cobra-wand
+    name: Cobra Wand
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Cobra_Wand
+    image: /assets/items/cobra-wand.gif
+    slot: weapon
+    allowedRoles: [mage]
+    description: Sorcerer wand adapted for mage creatures.
+    tibiaStats:
+      sourceClasses: [sorcerer]
+      requiredLevel: 270
+      range: 4
+      averageAttack: 95
+      element: energy
+      magicLevel: 2
+      criticalChancePercent: 5
+      criticalExtraDamagePercent: 25
+      weightOz: 19
+  - id: cobra-amulet
+    name: The Cobra Amulet
+    bossId: scarlett-etzel
+    sourceUrl: https://www.tibiawiki.com.br/wiki/The_Cobra_Amulet
+    image: /assets/items/cobra-amulet.gif
+    slot: amulet
+    allowedRoles: []
+    universal: true
+    description: Universal amulet usable by any creature.
+    tibiaStats:
+      sourceClasses: [all]
+      requiredLevel: 250
+      armor: 4
+      protectionPercent: {death: 9}
+      weightOz: 5.3
+  # Grand Master Oberon / Falcon items
+  - id: falcon-battleaxe
+    name: Falcon Battleaxe
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Battleaxe
+    image: /assets/items/falcon-battleaxe.gif
+    slot: weapon
+    allowedRoles: [tank]
+    description: Knight two-handed axe; Knight equipment maps to tank.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 300
+      attack: 10
+      elementalAttack: 47
+      element: energy
+      defense: 33
+      weaponHands: 2
+      skillBonuses: {axe: 4}
+      protectionPercent: {energy: 12}
+      weightOz: 95
+  - id: falcon-longsword
+    name: Falcon Longsword
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Longsword
+    image: /assets/items/falcon-longsword.gif
+    slot: weapon
+    allowedRoles: [tank]
+    description: Knight two-handed sword; Knight equipment maps to tank.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 300
+      attack: 56
+      defense: 34
+      weaponHands: 2
+      skillBonuses: {sword: 4}
+      protectionPercent: {earth: 10}
+      weightOz: 82
+  - id: falcon-mace
+    name: Falcon Mace
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Mace
+    image: /assets/items/falcon-mace.gif
+    slot: weapon
+    allowedRoles: [tank]
+    description: Knight one-handed mace; Knight equipment maps to tank.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 300
+      attack: 11
+      elementalAttack: 41
+      element: energy
+      defense: 33
+      defenseBonus: 3
+      weaponHands: 1
+      skillBonuses: {club: 3}
+      protectionPercent: {energy: 7}
+      weightOz: 68
+  - id: falcon-bow
+    name: Falcon Bow
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Bow
+    image: /assets/items/falcon-bow.gif
+    slot: weapon
+    allowedRoles: [shooter]
+    description: Paladin two-handed bow adapted for shooter creatures.
+    tibiaStats:
+      sourceClasses: [paladin]
+      requiredLevel: 300
+      attack: 6
+      range: 6
+      hitPercent: 5
+      weaponHands: 2
+      skillBonuses: {distance: 2}
+      protectionPercent: {fire: 5}
+      weightOz: 35
+  - id: falcon-circlet
+    name: Falcon Circlet
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Circlet
+    image: /assets/items/falcon-circlet.gif
+    slot: head
+    allowedRoles: [mage, healer]
+    description: Sorcerer and druid head equipment adapted to mage and healer roles.
+    tibiaStats:
+      sourceClasses: [sorcerer, druid]
+      requiredLevel: 300
+      armor: 8
+      magicLevel: 2
+      protectionPercent: {fire: 9}
+      weightOz: 13
+  - id: falcon-coif
+    name: Falcon Coif
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Coif
+    image: /assets/items/falcon-coif.gif
+    slot: head
+    allowedRoles: [tank, fighter, shooter]
+    description: Knight and paladin head equipment adapted to tank and shooter roles.
+    tibiaStats:
+      sourceClasses: [knight, paladin]
+      requiredLevel: 300
+      armor: 10
+      skillBonuses: {distance: 2, shielding: 2}
+      protectionPercent: {physical: 3, fire: 10}
+      weightOz: 28
+  - id: falcon-rod
+    name: Falcon Rod
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Rod
+    image: /assets/items/falcon-rod.gif
+    slot: weapon
+    allowedRoles: [healer]
+    description: Druid rod adapted for healer creatures.
+    tibiaStats:
+      sourceClasses: [druid]
+      requiredLevel: 300
+      range: 5
+      averageAttack: 90
+      element: earth
+      magicLevel: 3
+      protectionPercent: {energy: 8}
+      weightOz: 37
+  - id: falcon-wand
+    name: Falcon Wand
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Wand
+    image: /assets/items/falcon-wand.gif
+    slot: weapon
+    allowedRoles: [mage]
+    description: Sorcerer wand adapted for mage creatures.
+    tibiaStats:
+      sourceClasses: [sorcerer]
+      requiredLevel: 300
+      range: 5
+      averageAttack: 100
+      element: energy
+      magicLevel: 3
+      protectionPercent: {fire: 8}
+      weightOz: 33
+  - id: falcon-greaves
+    name: Falcon Greaves
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Greaves
+    image: /assets/items/falcon-greaves.gif
+    slot: legs
+    allowedRoles: [tank, fighter, shooter]
+    description: Knight and paladin leg equipment adapted to tank and shooter roles.
+    tibiaStats:
+      sourceClasses: [knight, paladin]
+      requiredLevel: 300
+      armor: 10
+      skillBonuses: {distance: 3, sword: 3, club: 3, axe: 3}
+      protectionPercent: {physical: 7, ice: 7}
+      weightOz: 36
+  - id: falcon-plate
+    name: Falcon Plate
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Plate
+    image: /assets/items/falcon-plate.gif
+    slot: body
+    allowedRoles: [tank, fighter]
+    description: Knight body equipment adapted for tank and fighter creatures.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 300
+      armor: 18
+      skillBonuses: {shielding: 4}
+      protectionPercent: {physical: 12}
+      weightOz: 188
+  - id: falcon-sai
+    name: Falcon Sai
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Sai
+    image: /assets/items/falcon-sai.gif
+    slot: weapon
+    allowedRoles: [fighter]
+    description: Monk two-handed weapon adapted for fighter creatures.
+    tibiaStats:
+      sourceClasses: [monk]
+      requiredLevel: 300
+      attack: 43
+      defense: 20
+      weaponHands: 2
+      skillBonuses: {fist: 4}
+      element: physical
+      weightOz: 82
+  - id: falcon-shield
+    name: Falcon Shield
+    bossId: grand-master-oberon
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Falcon_Shield
+    image: /assets/items/falcon-shield.gif
+    slot: shield
+    allowedRoles: [tank, shooter]
+    description: Knight shield maps to tank; paladin shield maps to shooter.
+    tibiaStats:
+      sourceClasses: [knight, paladin]
+      requiredLevel: 300
+      defense: 51
+      protectionPercent: {physical: 6, fire: 10}
+      weightOz: 57
+  # The Moonsnow Magnolia amulets
+  - id: enchanted-flamingo-amulet-destruction
+    name: Enchanted Flamingo Amulet of Destruction
+    bossId: moonsnow-magnolia
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Enchanted_Flamingo_Amulet_of_Destruction
+    image: /assets/items/enchanted-flamingo-amulet-destruction.gif
+    slot: amulet
+    allowedRoles: [mage]
+    description: Sorcerer amulet adapted for mage creatures.
+    tibiaStats:
+      sourceClasses: [sorcerer]
+      requiredLevel: 270
+      armor: 3
+      magicLevel: 3
+      elementMagicLevel: {energy: 1}
+      protectionPercent: {physical: 3, fire: 11}
+      durationMinutes: 180
+      weightOz: 4.7
+  - id: enchanted-flamingo-amulet-nature
+    name: Enchanted Flamingo Amulet of Nature
+    bossId: moonsnow-magnolia
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Enchanted_Flamingo_Amulet_of_Nature
+    image: /assets/items/enchanted-flamingo-amulet-nature.gif
+    slot: amulet
+    allowedRoles: [healer]
+    description: Druid amulet adapted for healer creatures.
+    tibiaStats:
+      sourceClasses: [druid]
+      requiredLevel: 270
+      armor: 3
+      magicLevel: 3
+      elementMagicLevel: {ice: 1}
+      protectionPercent: {physical: 3, fire: 11}
+      durationMinutes: 180
+      weightOz: 4.3
+  - id: enchanted-flamingo-amulet-precision
+    name: Enchanted Flamingo Amulet of Precision
+    bossId: moonsnow-magnolia
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Enchanted_Flamingo_Amulet_of_Precision
+    image: /assets/items/enchanted-flamingo-amulet-precision.gif
+    slot: amulet
+    allowedRoles: [shooter]
+    description: Paladin amulet adapted for shooter creatures.
+    tibiaStats:
+      sourceClasses: [paladin]
+      requiredLevel: 270
+      armor: 4
+      skillBonuses: {distance: 4}
+      elementMagicLevel: {holy: 1}
+      protectionPercent: {physical: 5, fire: 14}
+      durationMinutes: 180
+      weightOz: 4.6
+  - id: enchanted-flamingo-amulet-valor
+    name: Enchanted Flamingo Amulet of Valor
+    bossId: moonsnow-magnolia
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Enchanted_Flamingo_Amulet_of_Valor
+    image: /assets/items/enchanted-flamingo-amulet-valor.gif
+    slot: amulet
+    allowedRoles: [tank, fighter]
+    description: Knight amulet adapted for tank and fighter creatures.
+    tibiaStats:
+      sourceClasses: [knight]
+      requiredLevel: 270
+      armor: 4
+      skillBonuses: {sword: 4, axe: 4, club: 4, shielding: 1}
+      protectionPercent: {physical: 7, fire: 12}
+      durationMinutes: 180
+      weightOz: 5.1
+  - id: enchanted-swan-amulet-balance
+    name: Enchanted Swan Amulet of Balance
+    bossId: moonsnow-magnolia
+    sourceUrl: https://www.tibiawiki.com.br/wiki/Enchanted_Swan_Amulet_of_Balance
+    image: /assets/items/enchanted-swan-amulet-balance.gif
+    slot: amulet
+    allowedRoles: [fighter]
+    description: Monk amulet adapted for fighter creatures.
+    tibiaStats:
+      sourceClasses: [monk]
+      requiredLevel: 270
+      skillBonuses: {fist: 4}
+      magicLevel: 2
+      protectionPercent: {physical: 4, ice: 12}
+      durationMinutes: 180
+      weightOz: 5.3

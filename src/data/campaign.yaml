@@ -1,11 +1,8 @@
 campaign:
   title: The Shattered Paths
   startNodeId: crossroads
-  startingGold: 5
-  startingCreatures:
-    - falcon-knight
-    - dawnfire-asura
-    - druids-apparition
+  startingGold: 25
+  startingCreatures: []
   shopSize: 4
   nodes:
     - id: crossroads
@@ -142,6 +139,8 @@ campaign:
       name: Asura Vault
       region: Asura Palace
       stage: 3
+      bossId: moonsnow-magnolia
+      bossSprite: /assets/bosses/moonsnow-magnolia.png
       theme: palace
       routeReward: gold
       rewardGold: 11
@@ -151,8 +150,6 @@ campaign:
       description: An elite guard stands between you and the vault.
       enemies:
         - true-feverbloom-asura
-        - dawnfire-asura
-        - midnight-asura
       nextNodeIds:
         - mirror-catacombs
         - eclipse-garden
@@ -161,6 +158,8 @@ campaign:
       name: Noxious Court
       region: Ankrahmun
       stage: 3
+      bossId: scarlett-etzel
+      bossSprite: /assets/bosses/scarlett-etzel.png
       theme: desert
       routeReward: experience
       rewardGold: 1
@@ -170,8 +169,6 @@ campaign:
       description: Poisoned magic swirls through the Cobra court.
       enemies:
         - cobra-vizier
-        - cobra-scout
-        - cobra-assassin
       nextNodeIds:
         - mirror-catacombs
         - eclipse-garden
@@ -180,6 +177,8 @@ campaign:
       name: Falcon Outpost
       region: Falcon Bastion
       stage: 3
+      bossId: grand-master-oberon
+      bossSprite: /assets/bosses/grand-master-oberon.png
       theme: bastion
       routeReward: recruit
       rewardGold: 2
@@ -188,8 +187,6 @@ campaign:
       creatureOfferCount: 5
       description: Falcon sentries guard a fortified outpost above the steppes.
       enemies:
-        - falcon-knight
-        - falcon-paladin
         - falcon-knight
       nextNodeIds:
         - mirror-catacombs
@@ -319,6 +316,8 @@ campaign:
       name: Drowned Vault
       region: The Fractured Deep
       stage: 6
+      bossId: moonsnow-magnolia
+      bossSprite: /assets/bosses/moonsnow-magnolia.png
       theme: deep
       routeReward: gold
       rewardGold: 14
@@ -327,11 +326,7 @@ campaign:
       creatureOfferCount: 3
       description: The submerged vault is stuffed with old coins.
       enemies:
-        - druids-apparition
         - true-feverbloom-asura
-        - midnight-asura
-        - frost-flower-asura
-        - dawnfire-asura
       nextNodeIds:
         - last-rampart
         - heart-of-thorns
@@ -340,6 +335,8 @@ campaign:
       name: The Black Depths
       region: Mirrored Nightmare
       stage: 6
+      bossId: scarlett-etzel
+      bossSprite: /assets/bosses/scarlett-etzel.png
       theme: crypt
       routeReward: experience
       rewardGold: 1
@@ -348,10 +345,7 @@ campaign:
       creatureOfferCount: 3
       description: Apparitions and asuras haunt a lightless mirrored vault.
       enemies:
-        - druids-apparition
-        - midnight-asura
-        - frost-flower-asura
-        - dawnfire-asura
+        - cobra-vizier
       nextNodeIds:
         - last-rampart
         - heart-of-thorns
@@ -360,6 +354,8 @@ campaign:
       name: Crystal Den
       region: Asura Palace
       stage: 6
+      bossId: grand-master-oberon
+      bossSprite: /assets/bosses/grand-master-oberon.png
       theme: palace
       routeReward: recruit
       rewardGold: 2
@@ -368,11 +364,7 @@ campaign:
       creatureOfferCount: 5
       description: An asura armory promises valuable recruits.
       enemies:
-        - true-feverbloom-asura
-        - dawnfire-asura
-        - midnight-asura
-        - frost-flower-asura
-        - true-feverbloom-asura
+        - falcon-knight
       nextNodeIds:
         - last-rampart
         - heart-of-thorns
@@ -458,7 +450,7 @@ campaign:
         - druids-apparition
         - cobra-assassin
         - midnight-asura
-      nextNodeIds: []
+      nextNodeIds: [cobra-boss]
     - id: void-below
       name: The Void Below
       region: The Fractured Deep
@@ -477,7 +469,7 @@ campaign:
         - frost-flower-asura
         - dawnfire-asura
         - true-feverbloom-asura
-      nextNodeIds: []
+      nextNodeIds: [falcon-boss]
     - id: beast-king
       name: The Falcon King's Hold
       region: Falcon Bastion
@@ -496,4 +488,64 @@ campaign:
         - falcon-paladin
         - falcon-knight
         - falcon-paladin
+      nextNodeIds: [asura-boss]
+    - id: cobra-boss
+      name: Scarlett Etzel
+      region: Ankrahmun
+      stage: 9
+      theme: desert
+      bossId: scarlett-etzel
+      bossSprite: /assets/bosses/scarlett-etzel.png
+      routeReward: gold
+      rewardGold: 0
+      rewardExperience: 0
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Scarlett Etzel guards the Cobra family's final path.
+      enemies: [cobra-vizier]
+      nextNodeIds: [ferumbras]
+    - id: falcon-boss
+      name: Grand Master Oberon
+      region: Falcon Bastion
+      stage: 9
+      theme: bastion
+      bossId: grand-master-oberon
+      bossSprite: /assets/bosses/grand-master-oberon.png
+      routeReward: experience
+      rewardGold: 0
+      rewardExperience: 0
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: Grand Master Oberon blocks the Falcon family's final path.
+      enemies: [falcon-knight]
+      nextNodeIds: [ferumbras]
+    - id: asura-boss
+      name: The Moonsnow Magnolia
+      region: Forbidden Gardens
+      stage: 9
+      theme: garden
+      bossId: moonsnow-magnolia
+      bossSprite: /assets/bosses/moonsnow-magnolia.png
+      routeReward: recruit
+      rewardGold: 0
+      rewardExperience: 0
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The Moonsnow Magnolia stands between the Asuras and the final path.
+      enemies: [true-feverbloom-asura]
+      nextNodeIds: [ferumbras]
+    - id: ferumbras
+      name: Ferumbras
+      region: The Fractured Deep
+      stage: 10
+      theme: deep
+      bossId: ferumbras
+      bossSprite: /assets/bosses/ferumbras.png
+      routeReward: gold
+      rewardGold: 0
+      rewardExperience: 0
+      shopBonus: 0
+      creatureOfferCount: 3
+      description: The canonical final battle against Ferumbras.
+      enemies: [cobra-vizier]
       nextNodeIds: []

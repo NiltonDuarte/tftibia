@@ -335,7 +335,11 @@ export function BalanceLab({
           <h1>Campaign balance lab</h1>
           <p>
             Run complete seeded campaigns with fixed strategies and compare win
-            rates across vocations.
+            rates across vocations. Battles use the live shared-tick rules:
+            attacks every two ticks and movement every tick. Playback speed does
+            not affect simulation outcomes. Automated campaigns record a loss
+            after three failed retries so a fixed strategy cannot loop forever;
+            player retries remain unlimited.
           </p>
         </div>
         <button className={styles.backButton} type="button" onClick={onBack}>

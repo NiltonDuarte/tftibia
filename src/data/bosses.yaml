@@ -1,0 +1,53 @@
+bosses:
+  - id: scarlett-etzel
+    name: Scarlett Etzel
+    bestiaryClass: Boss
+    family: Order of the Cobra
+    role: fighter
+    cost: 1
+    health: 290
+    attack: 20
+    armor: 11
+    range: 1
+    image: /assets/bosses/scarlett-etzel.png
+    spriteSource: https://tibiadraptor.com/images/bosses/Scarlett_Etzel.png
+    description: The Cobra family's high priestess and blade master.
+  - id: grand-master-oberon
+    name: Grand Master Oberon
+    bestiaryClass: Boss
+    family: Order of the Falcon
+    role: tank
+    cost: 1
+    health: 390
+    attack: 18
+    armor: 15
+    range: 1
+    image: /assets/bosses/grand-master-oberon.png
+    spriteSource: https://tibiadraptor.com/images/bosses/Grand_Master_Oberon.png
+    description: The Falcon family's grand master, armored and relentless.
+  - id: moonsnow-magnolia
+    name: The Moonsnow Magnolia
+    bestiaryClass: Boss
+    family: Asuri
+    role: mage
+    cost: 1
+    health: 260
+    attack: 25
+    armor: 8
+    range: 4
+    image: /assets/bosses/moonsnow-magnolia.png
+    spriteSource: https://tibiadraptor.com/images/bosses/The_Moonsnow_Magnolia.png
+    description: The Asura family's moonlit sorceress.
+  - id: ferumbras
+    name: Ferumbras
+    bestiaryClass: Boss
+    family: The Fractured Deep
+    role: mage
+    cost: 1
+    health: 620
+    attack: 35
+    armor: 19
+    range: 7
+    image: /assets/bosses/ferumbras.png
+    spriteSource: https://tibiadraptor.com/images/bosses/Ferumbras.png
+    description: The final enemy and canonical ending of the campaign.

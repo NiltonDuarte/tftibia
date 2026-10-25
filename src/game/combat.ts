@@ -1,4 +1,4 @@
-import type { Creature, Effects, Synergy, Upgrade, Vocation } from '../content/schemas'
+import type { Creature, Effects, GameItem, Synergy, Upgrade, Vocation } from '../content/schemas'
 import { BattleResultSchema, type BattleResult, type UnitInstance } from './stateSchema'
 import { BOARD_LAYOUT } from './board'
 
@@ -12,13 +12,19 @@ type BattleUnit = {
   health: number
   maxHealth: number
   attack: number
+  range: number
   armor: number
   damageReduction: number
+  criticalMultiplier: number
+  accuracyMultiplier: number
+  lifeLeechFraction: number
   firstAttackBonus: number
   fighterAttackBonus: number
   healingFlat: number
   roundStartHeal: number
   attacksMade: number
+  attackCooldownTicks: number
+  targetId: string | null
 }
 
 export type ActiveSynergy = {
@@ -101,6 +107,7 @@ function instantiateUnit(
   upgrades: Upgrade[],
   star = 1,
   power = 1,
+  equipment: GameItem[] = [],
 ): BattleUnit {
   const effects = side === 'player' ? getCombinedEffects(creature, active, vocation, upgrades) : {}
   const healthPct = (effects.healthPct ?? 0) + (creature.role === 'tank' ? (effects.tankHealthPct ?? 0) : 0)
@@ -110,6 +117,31 @@ function instantiateUnit(
     (creature.role === 'mage' ? (effects.mageAttackPct ?? 0) : 0)
   const starMultiplier = star === 1 ? 1 : star === 2 ? 1.65 : 2.5
   const maxHealth = Math.round(creature.health * starMultiplier * power * (1 + healthPct))
+  const weapon = equipment.find((item) => item.slot === 'weapon')?.tibiaStats
+  const rawWeaponAttack = weapon
+    ? weapon.averageAttack ?? ((weapon.attack ?? 0) + (weapon.elementalAttack ?? 0))
+    : 0
+  const attackSkills = new Set(['axe', 'club', 'sword', 'distance', 'fist'])
+  const equipmentSkillBonus = equipment.reduce((total, item) =>
+    total + Object.entries(item.tibiaStats.skillBonuses)
+      .filter(([skill]) => attackSkills.has(skill))
+      .reduce((sum, [, bonus]) => sum + bonus, 0) +
+      (item.tibiaStats.magicLevel ?? 0) + Object.values(item.tibiaStats.elementMagicLevel).reduce((sum, bonus) => sum + bonus, 0), 0)
+  const equipmentShielding = equipment.reduce((total, item) => total + (item.tibiaStats.skillBonuses.shielding ?? 0), 0)
+  const equipmentArmor = equipment.reduce((total, item) =>
+    total + (item.tibiaStats.armor ?? 0) + (item.tibiaStats.defense ?? 0) + (item.tibiaStats.defenseBonus ?? 0), 0) + equipmentShielding
+  const protectionValues = equipment.flatMap((item) => Object.entries(item.tibiaStats.protectionPercent).map(([type, value]) => ({ type, value })))
+  const physicalProtection = protectionValues.filter((entry) => entry.type === 'physical').reduce((sum, entry) => sum + entry.value, 0)
+  const genericProtection = protectionValues.reduce((sum, entry) => sum + entry.value, 0) / Math.max(1, new Set(protectionValues.map((entry) => entry.type)).size)
+  const equipmentProtection = (physicalProtection || genericProtection) / 100
+  const expectedCriticalMultiplier = equipment.reduce((multiplier, item) => {
+    const chance = (item.tibiaStats.criticalChancePercent ?? 0) / 100
+    const extra = (item.tibiaStats.criticalExtraDamagePercent ?? 0) / 100
+    return multiplier * (1 + chance * extra)
+  }, 1)
+  const accuracyMultiplier = equipment.reduce((multiplier, item) => multiplier * (1 + (item.tibiaStats.hitPercent ?? 0) / 100), 1)
+  const expectedLifeLeech = equipment.reduce((fraction, item) =>
+    fraction + (item.tibiaStats.lifeLeechChancePercent ?? 0) / 100 * (item.tibiaStats.lifeLeechAmountPercent ?? 0) / 100, 0)
 
   return {
     id,
@@ -120,15 +152,21 @@ function instantiateUnit(
     star,
     maxHealth,
     health: maxHealth,
-    attack: creature.attack * starMultiplier * power * (1 + attackPct),
-    armor: creature.armor + (effects.armorFlat ?? 0) + (effects.teamArmor ?? 0),
-    damageReduction: Math.min(0.65, effects.teamDamageReductionPct ?? 0),
+    attack: (Math.max(creature.attack, rawWeaponAttack) + equipmentSkillBonus) * starMultiplier * power * (1 + attackPct),
+    range: Math.max(creature.range, ...equipment.map((item) => item.tibiaStats.range ?? 0)),
+    armor: creature.armor + (effects.armorFlat ?? 0) + (effects.teamArmor ?? 0) + equipmentArmor,
+    damageReduction: Math.min(0.65, (effects.teamDamageReductionPct ?? 0) + equipmentProtection),
+    criticalMultiplier: expectedCriticalMultiplier,
+    accuracyMultiplier,
+    lifeLeechFraction: expectedLifeLeech,
     firstAttackBonus: (effects.firstAttackBonusPct ?? 0) +
       (creature.role === 'shooter' ? (effects.shooterFirstAttackBonusPct ?? 0) : 0),
     fighterAttackBonus: effects.fighterAttackPct ?? 0,
     healingFlat: effects.healingFlat ?? 0,
     roundStartHeal: (effects.roundStartHeal ?? 0) + (effects.teamRoundStartHeal ?? 0),
     attacksMade: 0,
+    attackCooldownTicks: 2,
+    targetId: null,
   }
 }
 
@@ -146,6 +184,38 @@ function chooseTarget(actor: BattleUnit, candidates: BattleUnit[]): BattleUnit |
   return [...candidates].sort((a, b) => distance(actor, a) - distance(actor, b) || a.health - b.health)[0]
 }
 
+function nextStepToward(actor: BattleUnit, target: BattleUnit, units: BattleUnit[]): { x: number; y: number } | undefined {
+  const occupied = new Set(units.filter((unit) => unit.health > 0 && unit.id !== actor.id)
+    .map((unit) => `${unit.x}:${unit.y}`))
+  const visited = new Set([`${actor.x}:${actor.y}`])
+  const queue: { x: number; y: number; firstStep: { x: number; y: number } | null }[] = [
+    { x: actor.x, y: actor.y, firstStep: null },
+  ]
+  const directions = [-1, 0, 1].flatMap((dy) => [-1, 0, 1]
+    .filter((dx) => dx !== 0 || dy !== 0)
+    .map((dx) => ({ dx, dy })))
+
+  while (queue.length > 0) {
+    const point = queue.shift()
+    if (!point) break
+    if (point.firstStep && Math.max(Math.abs(point.x - target.x), Math.abs(point.y - target.y)) <= actor.range) {
+      return point.firstStep
+    }
+    const neighbors = directions.map(({ dx, dy }) => ({ x: point.x + dx, y: point.y + dy }))
+      .filter(({ x, y }) => x >= 0 && x <= 6 && y >= 0 && y <= 6)
+      .filter(({ x, y }) => !occupied.has(`${x}:${y}`) && !visited.has(`${x}:${y}`))
+      .sort((a, b) => Math.max(Math.abs(a.x - target.x), Math.abs(a.y - target.y)) - Math.max(Math.abs(b.x - target.x), Math.abs(b.y - target.y)))
+    for (const neighbor of neighbors) {
+      visited.add(`${neighbor.x}:${neighbor.y}`)
+      queue.push({
+        ...neighbor,
+        firstStep: point.firstStep ?? neighbor,
+      })
+    }
+  }
+  return undefined
+}
+
 function createPlayerSynergies(roster: UnitInstance[], creatures: Record<string, Creature>, definitions: Synergy[]): ActiveSynergy[] {
   const board = roster.filter((unit) => unit.slot !== null).map((unit) => creatures[unit.creatureId])
     .filter((creature): creature is Creature => Boolean(creature))
@@ -159,13 +229,16 @@ export function simulateBattle(options: {
   synergies: Synergy[]
   vocation?: Vocation
   upgrades: Upgrade[]
+  items: Record<string, GameItem>
+  bossIds?: ReadonlySet<string>
   enemyPower?: number
 }): BattleResult {
-  const { roster, enemies, creatures, synergies: synergyDefinitions, vocation, upgrades, enemyPower = 1 } = options
+  const { roster, enemies, creatures, synergies: synergyDefinitions, vocation, upgrades, items, bossIds = new Set<string>(), enemyPower = 1 } = options
   const active = createPlayerSynergies(roster, creatures, synergyDefinitions)
   const playerUnits = roster.filter((unit) => unit.slot !== null).map((unit) => {
     const creature = creatures[unit.creatureId]
-    return instantiateUnit(unit.instanceId, creature, 'player', 2 + unit.slot! % BOARD_LAYOUT.columns, 4 - Math.floor(unit.slot! / BOARD_LAYOUT.columns), active, vocation, upgrades, unit.star)
+    const equipment = Object.values(unit.equippedItems).map((itemId) => items[itemId]).filter((item): item is GameItem => Boolean(item))
+    return instantiateUnit(unit.instanceId, creature, 'player', unit.slot! % BOARD_LAYOUT.columns, 6 - Math.floor(unit.slot! / BOARD_LAYOUT.columns), active, vocation, upgrades, unit.star, 1, equipment)
   })
   const occupiedEnemySquares = new Set<string>()
   const enemyUnits = enemies.map((creature, index) => {
@@ -173,7 +246,7 @@ export function simulateBattle(options: {
     const candidates = rows.flatMap((y) => [1, 2, 3, 4, 5].map((x) => ({ x, y })))
     const point = candidates.find(({ x, y }) => !occupiedEnemySquares.has(`${x}:${y}`)) ?? { x: 1 + index % 5, y: Math.floor(index / 5) }
     occupiedEnemySquares.add(`${point.x}:${point.y}`)
-    const power = enemyPower * (creature.role === 'tank' ? 1.08 : 1)
+    const power = enemyPower * (creature.role === 'tank' ? 1.08 : 1) * (bossIds.has(creature.id) ? 1.2 : 1)
     return instantiateUnit(`enemy-${index}-${creature.id}`, creature, 'enemy', point.x, point.y, [], undefined, [], 1, power)
   })
   const units = [...playerUnits, ...enemyUnits]
@@ -190,7 +263,7 @@ export function simulateBattle(options: {
     defeats: 0,
   }]))
   const log: string[] = []
-  const rounds = 10
+  const rounds = 60
   let roundsPlayed = 0
   const record = (event: BattleResult['events'][number]) => {
     events.push(event)
@@ -200,7 +273,7 @@ export function simulateBattle(options: {
   for (let round = 1; round <= rounds; round += 1) {
     roundsPlayed = round
     for (const unit of living(playerUnits)) {
-      if (unit.roundStartHeal <= 0 || unit.health >= unit.maxHealth) continue
+      if (round % 2 === 0 || unit.roundStartHeal <= 0 || unit.health >= unit.maxHealth) continue
       const healed = Math.min(unit.roundStartHeal, unit.maxHealth - unit.health)
       unit.health = Math.min(unit.maxHealth, unit.health + unit.roundStartHeal)
       const stats = analytics.get(unit.id)!
@@ -219,13 +292,14 @@ export function simulateBattle(options: {
     }
     for (const actor of order) {
       if (actor.health <= 0) continue
+      actor.attackCooldownTicks = Math.min(2, actor.attackCooldownTicks + 1)
       const opponents = actor.side === 'player' ? living(enemyUnits) : living(playerUnits)
       if (opponents.length === 0) break
 
       if (actor.creature.role === 'healer' && actor.side === 'player') {
         const ally = living(playerUnits).filter((unit) => unit.health < unit.maxHealth)
           .sort((a, b) => a.health / a.maxHealth - b.health / b.maxHealth)[0]
-        if (ally) {
+        if (ally && actor.attackCooldownTicks >= 2) {
           const amount = actor.attack + actor.healingFlat
           const healed = Math.min(amount, ally.maxHealth - ally.health)
           ally.health = Math.min(ally.maxHealth, ally.health + amount)
@@ -233,47 +307,48 @@ export function simulateBattle(options: {
           analytics.get(ally.id)!.healingReceived += healed
           record({ round, type: 'heal', actorId: actor.id, actorX: actor.x, actorY: actor.y, targetId: ally.id, targetX: ally.x, targetY: ally.y,
             targetHealth: ally.health, text: `${actor.creature.name} restores ${Math.round(amount)} health to ${ally.creature.name}.` })
+          actor.attackCooldownTicks = 0
           continue
         }
+        if (ally) continue
       }
 
-      const target = chooseTarget(actor, opponents)
+      const target = opponents.find((opponent) => opponent.id === actor.targetId) ?? chooseTarget(actor, opponents)
       if (!target) continue
-      if (distance(actor, target) > actor.creature.range) {
-        const origin = { x: actor.x, y: actor.y }
-        const occupied = new Set(units.filter((unit) => unit.health > 0 && unit.id !== actor.id).map((unit) => {
-          return `${unit.x}:${unit.y}`
-        }))
-        const steps = [-1, 0, 1].flatMap((dy) => [-1, 0, 1]
-          .filter((dx) => dx !== 0 || dy !== 0)
-          .map((dx) => [origin.x + dx, origin.y + dy]))
-          .filter(([x, y]) => x !== undefined && y !== undefined && x >= 0 && x <= 6 && y >= 0 && y <= 4)
-          .filter(([x, y]) => !occupied.has(`${x}:${y}`))
-          .sort((a, b) => {
-            const distanceA = Math.max(Math.abs(a[0]! - target.x), Math.abs(a[1]! - target.y))
-            const distanceB = Math.max(Math.abs(b[0]! - target.x), Math.abs(b[1]! - target.y))
-            return distanceA - distanceB
-          })
-        const step = steps[0]
+      actor.targetId = target.id
+      if (distance(actor, target) > actor.range) {
+        const step = nextStepToward(actor, target, units)
         if (step) {
-          actor.x = step[0]!
-          actor.y = step[1]!
+          actor.x = step.x
+          actor.y = step.y
           record({ round, type: 'move', actorId: actor.id, actorX: actor.x, actorY: actor.y, targetId: null, targetX: null, targetY: null,
             targetHealth: null, text: `${actor.creature.name} advances into range.` })
         }
         continue
       }
 
+      // Each attack takes two shared combat ticks. Movement never resets this
+      // timer; a ready attack is held until a target enters range.
+      if (actor.attackCooldownTicks < 2) continue
+
       const bonus = actor.attacksMade === 0 ? actor.firstAttackBonus : 0
       const closeCombatBonus = actor.creature.role === 'fighter' && distance(actor, target) === 1 ? 0.35 + actor.fighterAttackBonus : 0
       const attackPower = actor.attack * (1 + bonus + closeCombatBonus)
-      const damage = Math.max(1, Math.round((attackPower - target.armor) * (1 - target.damageReduction)))
+      const damage = Math.max(1, Math.round((attackPower - target.armor) * (1 - target.damageReduction) * actor.criticalMultiplier * actor.accuracyMultiplier))
       const healthLost = Math.min(target.health, damage)
       analytics.get(actor.id)!.damageDone += healthLost
       analytics.get(target.id)!.damageTaken += healthLost
       analytics.get(target.id)!.damageReduced += Math.max(0, Math.round(attackPower) - damage)
       target.health = Math.max(0, target.health - damage)
+      const leeched = Math.min(actor.maxHealth - actor.health, damage * actor.lifeLeechFraction)
+      if (leeched > 0) {
+        actor.health = Math.min(actor.maxHealth, actor.health + leeched)
+        const actorStats = analytics.get(actor.id)!
+        actorStats.healingDone += leeched
+        actorStats.healingReceived += leeched
+      }
       actor.attacksMade += 1
+      actor.attackCooldownTicks = 0
       if (target.health === 0) analytics.get(actor.id)!.defeats += 1
       record({ round, type: target.health === 0 ? 'defeat' : 'attack', actorId: actor.id, actorX: actor.x, actorY: actor.y,
         targetId: target.id, targetX: target.x, targetY: target.y, targetHealth: target.health,

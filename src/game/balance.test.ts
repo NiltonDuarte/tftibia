@@ -17,7 +17,8 @@ describe("seeded campaign balance runner", () => {
       expect(["win", "lose"]).toContain(result.outcome);
       expect(result.encountersPlayed).toBeGreaterThan(0);
       expect(result.encountersPlayed).toBeLessThanOrEqual(10);
-      expect(result.encountersCleared).toBeLessThanOrEqual(8);
+      expect(result.encountersCleared).toBeLessThanOrEqual(10);
+      expect(result.encountersCleared).toBeLessThanOrEqual(result.encountersPlayed);
     }
   });
 
@@ -65,7 +66,7 @@ describe("seeded campaign balance runner", () => {
     expect(trace.at(-1)).toMatch(/^END: (WIN|LOSE)/);
   });
 
-  it("fills each formation with every eligible unit up to the dynamic board capacity", () => {
+  it("fills each formation up to its starting deployment limit", () => {
     const strategy = BALANCE_STRATEGIES.find(
       (candidate) => candidate.id === "random-baseline",
     );
@@ -79,14 +80,18 @@ describe("seeded campaign balance runner", () => {
     expect(formations.length).toBeGreaterThan(0);
     for (const formation of formations) {
       expect(formation.boardCapacity).toBe(BOARD_CAPACITY);
+      const deployableCapacity = Math.min(
+        formation.deploymentLimit,
+        formation.boardCapacity,
+      );
       expect(formation.deployedCount).toBe(
-        Math.min(formation.eligibleUnitCount, BOARD_CAPACITY),
+        Math.min(formation.eligibleUnitCount, deployableCapacity),
       );
       expect(new Set(formation.assignments.map(({ slot }) => slot)).size).toBe(
         formation.assignments.length,
       );
       expect(formation.unassignedUnitIds).toHaveLength(
-        Math.max(0, formation.eligibleUnitCount - BOARD_CAPACITY),
+        Math.max(0, formation.eligibleUnitCount - deployableCapacity),
       );
       expect(
         formation.assignments.every((assignment) =>
