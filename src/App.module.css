@@ -1131,7 +1131,9 @@
   background-repeat: no-repeat;
 }
 .appShell .sqmBoard {
-  inset: 0;
+  /* Scenario art includes walls, water, and props. Keep tactical SQMs over
+     the open courtyard floor shown by the battle scene, not the full image. */
+  inset: 18.8% 23.3% 18.5% 27.3%;
   background: transparent;
   box-shadow: none;
 }
