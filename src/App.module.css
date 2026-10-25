@@ -108,8 +108,8 @@
 .slotPlus { color: #69715b; font: 21px var(--mono); }
 .roleDot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: #78d0bb; }
 .role_tank { background: #798da6; }.role_shooter { background: #cfb8a5; }.role_mage { background: #69d283; }.role_healer { background: #b183bc; }
-.roleIcon { display: inline-block; width: 13px; height: 13px; flex: none; vertical-align: middle; }
-.roleIconTag { display: inline-grid; width: 19px; height: 17px; place-items: center; padding: 1px; }
+.roleIcon { display: block; width: 13px; height: 13px; flex: none; }
+.roleIconTag { box-sizing: border-box; display: inline-flex; width: 19px; height: 17px; align-items: center; justify-content: center; padding: 0; line-height: 0; }
 .roleIconTag .roleIcon { width: 12px; height: 12px; }
 .boardRoleIcon { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; color: #d2bd80; }
 .tag_fighter { border-color: #855446; color: #ffae93; }
