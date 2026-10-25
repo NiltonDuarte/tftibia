@@ -548,7 +548,7 @@
 /* The 7×7 board is a transparent tactical coordinate layer over the room art. */
 .arenaGrid[data-theme] { background-color: var(--room-floor); background-image: var(--battle-scene); background-position: center; background-size: 100% 100%; background-repeat: no-repeat; }
 .arenaGrid[data-theme='desert'] { --battle-scene: url('/assets/backgrounds/battle/cobra-bastion-v2.png'); }
-.arenaGrid[data-theme='garden'],.arenaGrid[data-theme='palace'] { --battle-scene: url('/assets/backgrounds/battle/asura-palace-v4.png'); }
+.arenaGrid[data-theme='garden'],.arenaGrid[data-theme='palace'] { --battle-scene: url('/assets/backgrounds/battle/asura-palace-v5.png'); }
 .arenaGrid[data-theme='bastion'],.arenaGrid[data-theme='hunt'] { --battle-scene: url('/assets/backgrounds/battle/falcon-bastion-v2.png'); }
 .arenaGrid[data-theme='crypt'],.arenaGrid[data-theme='mirror'] { --battle-scene: url('/assets/backgrounds/battle/mirrored-crypt-v3.png'); }
 .arenaGrid[data-theme='deep'],.arenaGrid[data-theme='throne'] { --battle-scene: url('/assets/backgrounds/battle/fractured-throne-v2.png'); }
