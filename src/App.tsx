@@ -245,28 +245,21 @@ function CampaignMap() {
   const encounterCount = state.completedNodeIds.length
   const routeNodeIds = [...new Set([campaign.startNodeId, ...Object.entries(state.routeEdges).flatMap(([from, to]) => [from, ...to])])]
   const routeNodes = routeNodeIds.map((id) => nodeById[id]).filter(Boolean)
-  const terrainPositions: Record<string, { x: number; y: number }> = {
-    crossroads: { x: 320, y: 146 },
-    garden: { x: 470, y: 90 },
-    desert: { x: 790, y: 230 },
-    bastion: { x: 765, y: 145 },
-    crypt: { x: 690, y: 260 },
-    palace: { x: 595, y: 75 },
-    mirror: { x: 465, y: 242 },
-    deep: { x: 210, y: 245 },
-    throne: { x: 890, y: 238 },
-    hunt: { x: 575, y: 250 },
-  }
   const mapPosition = (nodeId: string) => {
     const node = nodeById[nodeId]
-    const themeNodes = routeNodes.filter((entry) => entry.theme === node.theme)
-    const index = themeNodes.findIndex((entry) => entry.id === nodeId)
-    const angle = index * 2.399
-    const radius = 9 + Math.floor(index / 4) * 6
-    const anchor = terrainPositions[node.theme] ?? { x: 530, y: 158 }
-    return { x: anchor.x + Math.cos(angle) * radius, y: anchor.y + Math.sin(angle) * radius }
+    const stageNodes = routeNodes.filter((entry) => entry.stage === node.stage)
+    const lane = stageNodes.findIndex((entry) => entry.id === nodeId)
+    const y = stageNodes.length === 1 ? 160 : [74, 160, 246][lane] ?? 160
+    return { x: 80 + node.stage * 89, y }
   }
   const currentPoint = mapPosition(location.id)
+  const routeHistory = [campaign.startNodeId, ...state.completedNodeIds]
+  const takenEdges = new Set(routeHistory.slice(0, -1).map((from, index) => `${from}->${routeHistory[index + 1]}`))
+  const stagePaths = [...new Set(Object.keys(state.routeEdges).map((id) => nodeById[id].stage))].map((stage) => {
+    const sources = Object.entries(state.routeEdges).filter(([from]) => nodeById[from].stage === stage)
+    const targets = [...new Set(sources.flatMap(([, nextIds]) => nextIds))]
+    return { stage, sources, targets }
+  })
 
   return (
     <section className={styles.pageSection}>
@@ -295,59 +288,81 @@ function CampaignMap() {
       </div>
 
       <section className={styles.clientWindow} aria-label="Campaign route map">
-        <header className={styles.clientWindowTitle}><span>Cyclopedia Map</span><small>SURFACE · ALL ROUTES</small></header>
+        <header className={styles.clientWindowTitle}><span>Cyclopedia Map</span><small>STAGE-BY-STAGE · CAMPAIGN ROUTES</small></header>
         <div className={styles.routeMapViewport} aria-label="Campaign minimap showing the current location and available routes">
-        <svg className={styles.routeMapSvg} viewBox="0 0 1050 320" role="img" aria-labelledby="route-map-title">
+        <svg className={styles.routeMapSvg} viewBox="0 0 1050 320" role="group" aria-labelledby="route-map-title">
           <title id="route-map-title">Campaign minimap showing every possible route, current progress, and reachable destinations</title>
           <image href="/assets/backgrounds/campaign-world-map.png" x="-105" y="-32" width="1260" height="384" preserveAspectRatio="xMidYMid slice" />
           <rect className={styles.routeMapTint} width="1050" height="320" />
-          {Object.entries(state.routeEdges).flatMap(([from, nextIds]) => nextIds.map((to) => {
-            const start = mapPosition(from)
-            const end = mapPosition(to)
-            const bend = Math.round((start.x + end.x) / 2)
-            const lift = Math.sign(end.y - start.y) * Math.min(22, Math.abs(end.y - start.y) / 3)
-            const d = `M ${start.x} ${start.y} Q ${bend} ${(start.y + end.y) / 2 - lift} ${end.x} ${end.y}`
-            const taken = state.completedNodeIds.includes(to)
-            const available = from === location.id
-            return <path key={`${from}-${to}`} className={taken ? styles.mapRouteTaken : available ? styles.mapRouteAvailable : styles.mapRouteFuture} d={d} />
-          }))}
+          {stagePaths.flatMap(({ stage, sources, targets }) => {
+            const firstSource = sources[0]?.[0]
+            if (!firstSource) return []
+            const hubX = mapPosition(firstSource).x + 44.5
+            const hubY = 160
+            const sourcePaths = sources.map(([from]) => {
+              const start = mapPosition(from)
+              const wasTaken = routeHistory.slice(0, -1).includes(from)
+              const available = from === location.id
+              const d = `M ${start.x + 9} ${start.y} L ${hubX} ${hubY}`
+              return <path key={`${from}-junction`} className={available ? styles.mapRouteAvailable : wasTaken ? styles.mapRouteTaken : styles.mapRouteFuture} d={d} />
+            })
+            const targetPaths = targets.map((to) => {
+              const end = mapPosition(to)
+              const wasTaken = takenEdges.has(`${routeHistory[stage]}->${to}`)
+              const available = destinations.some((node) => node.id === to)
+              const d = `M ${hubX} ${hubY} L ${end.x - 9} ${end.y}`
+              return <path key={`${stage}-junction-${to}`} className={available ? styles.mapRouteAvailable : wasTaken ? styles.mapRouteTaken : styles.mapRouteFuture} d={d} />
+            })
+            return [...sourcePaths, ...targetPaths]
+          })}
           {routeNodes.map((node) => {
             if (node.id === location.id) return null
             const point = mapPosition(node.id)
             const available = destinations.some((entry) => entry.id === node.id)
             const completed = state.completedNodeIds.includes(node.id)
-            const reward = node.bossId ? 'B' : node.routeReward === 'gold' ? 'G' : node.routeReward === 'experience' ? 'X' : 'H'
-            return <g key={node.id} className={available ? styles.mapNodeAvailable : completed ? styles.mapNodeCompleted : styles.mapNodeFuture} transform={`translate(${point.x} ${point.y})`}>
+            const labelWidth = Math.min(190, Math.max(112, node.name.length * 6 + 20))
+            const visit = () => { if (available) commands.chooseRoute(node.id) }
+            return <g
+              key={node.id}
+              className={available ? styles.mapNodeAvailable : completed ? styles.mapNodeCompleted : styles.mapNodeFuture}
+              transform={`translate(${point.x} ${point.y})`}
+              role={available ? 'button' : undefined}
+              tabIndex={available ? 0 : undefined}
+              aria-label={available ? `Travel to ${node.name}` : undefined}
+              onClick={visit}
+              onKeyDown={(event) => {
+                if (available && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault()
+                  visit()
+                }
+              }}
+              style={{ cursor: available ? 'pointer' : 'default' }}
+            >
               <title>{node.name} — encounter {node.stage}, {node.bossId ? 'boss' : node.routeReward}</title>
-              <circle r={available ? 7 : 4.5} />
-              <text textAnchor="middle" dominantBaseline="central">{available ? String(node.stage) : reward}</text>
+              {available && <circle className={styles.mapNodeHit} r="22" />}
+              <circle className={styles.mapNodeCore} r={available ? 10 : completed ? 7 : 6} />
+              <text textAnchor="middle" dominantBaseline="central">{String(node.stage).padStart(2, '0')}</text>
+              {available && <g className={styles.mapNodeLabel} transform="translate(0 23)">
+                <rect x={-labelWidth / 2} y="-10" width={labelWidth} height="20" />
+                <text textAnchor="middle" dominantBaseline="middle">{node.name.toUpperCase()}</text>
+              </g>}
             </g>
           })}
           <g className={styles.mapCurrentMarker} transform={`translate(${currentPoint.x} ${currentPoint.y})`} aria-label={`Current location: ${location.name}`}>
             <circle r="12" />
             <path d="M-7 0h14M0-7v14" />
           </g>
-          <g className={styles.mapCurrentLabel} transform={`translate(${currentPoint.x} ${currentPoint.y + 24})`}>
-            <rect x="-57" y="-10" width="114" height="20" />
-            <text textAnchor="middle" dominantBaseline="middle">YOU · {location.name.toUpperCase()}</text>
+          <g className={styles.mapCurrentLabel} transform={`translate(${currentPoint.x} ${currentPoint.y - 23})`}>
+            <rect x="-24" y="-10" width="48" height="20" />
+            <text textAnchor="middle" dominantBaseline="middle">YOU</text>
           </g>
-          {destinations.map((node, index) => {
-            const point = mapPosition(node.id)
-            const labelWidth = Math.min(180, Math.max(94, node.name.length * 6 + 20))
-            return <g key={node.id} className={styles.mapDestinationMarker} transform={`translate(${point.x} ${point.y})`}>
-              <title>{node.name} — encounter {node.stage}{node.bossId ? ', boss' : ''}</title>
-              <g transform="translate(0 18)">
-                <rect x={-labelWidth / 2} y="-10" width={labelWidth} height="20" />
-                <text textAnchor="middle" dominantBaseline="middle">{String(index + 1).padStart(2, '0')} · {node.name.toUpperCase()}</text>
-              </g>
-            </g>
-          })}
         </svg>
         </div>
         <div className={styles.routeMapLegend} aria-label="Map legend">
           <span><i className={styles.mapLegendCurrent} /> Your position</span>
-          <span><i className={styles.mapLegendAvailable} /> Routes you can take now</span>
-          <span><i className={styles.mapLegendFuture} /> Later paths</span>
+          <span><i className={styles.mapLegendAvailable} /> Gold branches · choose now</span>
+          <span><i className={styles.mapLegendFuture} /> Pale branches · later</span>
+          <span>Node number · encounter stage</span>
         </div>
       </section>
 

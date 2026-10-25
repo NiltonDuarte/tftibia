@@ -30,9 +30,9 @@ The Tibia client is organized around a central Game Window with surrounding wind
 - Keep the campaign decision or play area central. Frame supporting information as distinct client windows with compact title bars, thin steel borders, and square corners.
 - Use the shared top chrome for commander level/experience, gold, current phase, and quick access to the Bestiary/Cyclopedia (codex), help, and replay tools. Keep these controls visibly button-like, as client controls.
 - Arrange supporting content in side-window patterns: formation and synergies beside the shop; battlefield beside party/opposition status; summary beside the event log; filters above the codex collection.
-- Use Tibia's restrained charcoal and blue-gray client chrome, dark game view, small gold accents, pixel creature art, and map tile cues. Use flat fills and thin borders; do not use gradients, glow, drop shadows, decorative textures, or generic full-page fantasy wallpaper. Keep colorful location artwork inside the play window.
-- Treat the campaign map like a Cyclopedia map: keep the terrain as the main view and draw every possible campaign route over it. Highlight the player's current mark and routes available now; keep later branches visible but subdued so players can compare the whole path before choosing.
-- Keep encounter-specific battleground art visible behind the square combat grid. Use a translucent tile wash for readability rather than replacing the scene with a solid floor.
+- Use Tibia's brutal charcoal and steel-gray client chrome: compact title bars, rough stone grain, hard bevels, square corners, pale text, and small gold accents. Keep gradients, glow, and soft shadows out of the interface; use texture as a restrained surface treatment, not wallpaper. Keep colorful location artwork inside the game/map windows.
+- Treat the campaign map like a Cyclopedia map: terrain is the full background, with routes drawn directly over it. Lay encounters out by stage so paths move forward in clear columns, show the current position and every available branch, and keep later branches subdued. Make available map markers selectable and explain the route line and stage-number cues in the legend.
+- Keep encounter-specific battleground art visible across the full play area. Combatants use a transparent 7×7 coordinate layer over that room; do not draw an extra floor grid or inset board over the scene.
 - Make every section read as a named client window. A short title bar should identify the content, with status/counts aligned to the same bar where useful. Avoid floating rounded cards, soft app-like gradients, oversized hero marketing layouts, and navigation that looks like a separate SaaS dashboard.
 - On narrow screens, stack client windows in the order needed for the decision and keep their title bars and frames consistent.
 
@@ -62,7 +62,7 @@ Use a plain sans-serif client font for controls and most text; reserve serif for
 
 Use a 4px spacing base: 4/8px inside controls and rows, 8/12px inside windows, and 16/24px between windows. Prefer compact client-like grouping over oversized card padding.
 
-Use flat charcoal/blue-gray client surfaces, pale text, small Tibia gold accents, and red/green health bars for combat status. Assign colors semantic roles: surface, raised surface, border, primary text, secondary text, action, reward, warning, and danger. Meet at least 4.5:1 contrast for normal text and 3:1 for large text; verify actual foreground/background pairs. Never communicate role, danger, selection, or success by color alone—pair color with labels, icons, shape, or text.
+Use textured charcoal/steel-gray client surfaces, pale text, small Tibia gold accents, and red/green health bars for combat status. Use solid fills with visible bevel edges; avoid gradients and soft shadows. Assign colors semantic roles: surface, raised surface, border, primary text, secondary text, action, reward, warning, and danger. Meet at least 4.5:1 contrast for normal text and 3:1 for large text; verify actual foreground/background pairs. Never communicate role, danger, selection, or success by color alone—pair color with labels, icons, shape, or text.
 
 ## Interaction states and accessibility
 
@@ -75,7 +75,7 @@ Use flat charcoal/blue-gray client surfaces, pale text, small Tibia gold accents
 
 ## Current UI audit anchors
 
-The current interface already has distinct phase views, creature and item art, route previews, formation/shop panels, reward choice cards, and a searchable codex. The revamp should remove its oversized hero layout, gradients, bevels, and card-heavy web styling. Keep a single compact client frame around useful information windows, preserving the party/opposition status lists in combat. Keep essential labels at 10px or larger and retain the visible focus outline in `src/index.css`.
+The current interface already has distinct phase views, creature and item art, route previews, formation/shop panels, reward choice cards, and a searchable codex. The revamp should remove oversized hero layout, gradients, soft shadows, and card-heavy web styling. Use hard gray client frames with subtle stone texture, preserve the party/opposition status lists in combat, and keep the campaign's route branches legible on the map. Keep essential labels at 10px or larger and retain the visible focus outline in `src/index.css`.
 
 ## Working workflow
 

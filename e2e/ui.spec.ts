@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('campaign route choice leads to a full-room transparent battlefield', async ({ page }) => {
+test('world map branches lead to playable full-room battles', async ({ page }) => {
   await page.goto('/')
 
   await expect(page.getByRole('heading', { name: 'Choose your vocation' })).toBeVisible()
@@ -11,9 +11,9 @@ test('campaign route choice leads to a full-room transparent battlefield', async
   await vocation.click()
 
   await expect(page.getByRole('heading', { name: 'Choose your next route' })).toBeVisible()
-  const travel = page.getByRole('button', { name: /Travel this route/ }).first()
-  await expect(travel).toBeVisible()
-  await travel.click()
+  const mapRoutes = page.getByRole('button', { name: /Travel to / })
+  await expect(mapRoutes).toHaveCount(2)
+  await mapRoutes.first().click()
 
   await page.getByRole('button', { name: /Recruit/ }).first().click()
 

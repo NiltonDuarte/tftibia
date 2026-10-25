@@ -1247,3 +1247,73 @@
   .battleRoster { padding: 5px; }
   .arenaPanel > .panelTopline { margin: 0 -7px 8px; }
 }
+
+/* Tibia client surfaces: rough stone grain, gray bevels, compact panel chrome. */
+.appShell {
+  color: #d0d0ca;
+  background-color: #202426;
+  background-image: url('/assets/ui/stone-grain.svg');
+}
+.topbar {
+  border-bottom: 2px solid #16191a;
+  background-color: #3b4042;
+  background-image: url('/assets/ui/stone-grain.svg');
+  box-shadow: inset 0 1px #777b79, inset 0 -1px #555a5b;
+}
+.mapCurrent, .progressCard, .clientWindow, .routeChoices, .routeCard,
+.boardFrame, .benchPanel, .synergyPanel, .shopPanel, .detailPanel,
+.reportPanel, .rewardBlock, .analysisPanel, .arenaPanel, .battleRoster {
+  border: 1px solid #686e6d;
+  border-radius: 0;
+  background-color: #353a3c;
+  background-image: url('/assets/ui/stone-grain.svg');
+  box-shadow: inset 1px 1px #858986, inset -1px -1px #202426, 0 0 0 1px #111415;
+}
+.clientWindowTitle, .rewardHeading, .panelTopline {
+  border-bottom: 1px solid #181b1c;
+  color: #e1e0d8;
+  background-color: #4a4f50;
+  background-image: url('/assets/ui/stone-grain.svg');
+  box-shadow: inset 1px 1px #858985, inset 0 -1px #303536;
+}
+.routeMapViewport {
+  border: 2px solid #191d1e;
+  box-shadow: inset 0 0 0 1px #777c77;
+}
+.routeMapTint { opacity: .1; }
+.mapRouteFuture { stroke: #e1dec9; stroke-width: 1.5; opacity: .52; }
+.mapRouteTaken { stroke: #e7cf82; stroke-width: 3.5; opacity: .96; }
+.mapRouteAvailable { stroke: #ffe06f; stroke-width: 4; stroke-linecap: square; stroke-dasharray: none; opacity: 1; }
+.mapNodeFuture circle:not(.mapNodeHit) { fill: #454b4b; stroke: #d0d0c3; stroke-width: 1.5; }
+.mapNodeFuture text { fill: #f0eee3; font: 700 8px Tahoma,Verdana,sans-serif; }
+.mapNodeCompleted circle:not(.mapNodeHit) { fill: #8f947d; stroke: #f2e6bd; stroke-width: 2; }
+.mapNodeCompleted text { fill: #1a1d1d; font: 700 8px Tahoma,Verdana,sans-serif; }
+.mapNodeAvailable circle:not(.mapNodeHit) { fill: #e1c15f; stroke: #fff0ac; stroke-width: 2.5; }
+.mapNodeAvailable text { fill: #252320; font: 700 8px Tahoma,Verdana,sans-serif; }
+.mapNodeHit { fill: transparent !important; stroke: transparent !important; stroke-width: 0 !important; pointer-events: all; }
+.mapNodeLabel rect { fill: #292e30; fill-opacity: .96; stroke: #d2bd72; stroke-width: 1; }
+.mapNodeLabel text { fill: #f3ebce; font: 700 8px Tahoma,Verdana,sans-serif; letter-spacing: .02em; }
+.mapNodeAvailable:focus { outline: none; }
+.mapNodeAvailable:focus .mapNodeHit { stroke: #fff0ac !important; stroke-width: 2 !important; }
+.mapCurrentMarker circle { fill: #282d2e; stroke: #f5eccd; stroke-width: 3; }
+.mapCurrentMarker path { stroke: #f5eccd; stroke-width: 2.5; }
+.mapCurrentLabel rect { fill: #262b2d; fill-opacity: .98; stroke: #f0e4bc; stroke-width: 1.5; }
+.routeMapLegend { border-top-color: #181b1c; color: #d0d1c9; background-color: #3a4041; background-image: url('/assets/ui/stone-grain.svg'); }
+.mapCurrent { border-color: #777c77; background-color: #3b4042; }
+.primaryButton, .secondaryButton, .battleButton, .buyButton,
+.routeCard, .boardSlot, .benchUnit, .shopCard, .battleRosterUnit,
+.rewardCard, .upgradeCard, .codexCard { border-radius: 0; }
+.primaryButton, .secondaryButton, .battleButton, .buyButton {
+  border-color: #858984;
+  background-color: #4a4f50;
+  background-image: url('/assets/ui/stone-grain.svg');
+  box-shadow: inset 1px 1px #9a9e98, inset -1px -1px #25292a;
+}
+.primaryButton:hover:not(:disabled), .battleButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled), .buyButton:hover:not(:disabled) {
+  border-color: #c5ae65;
+  background-color: #575b54;
+}
+.routeChoices .routeGrid { gap: 8px; }
+.routeCard { border-color: #666c6c; background-color: #34393b; }
+.routeMapLegend { min-height: 30px; }
