@@ -1297,6 +1297,7 @@ function GameWiki({ onBack }: { onBack: () => void }) {
         <button className={styles.secondaryButton} type="button" onClick={onBack}>← Return to campaign</button>
       </div>
       <div className={styles.wikiGrid}>
+        <div className={styles.wikiColumn}>
         <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Campaign loop</h2><ol>
           <li>Choose one of four vocations. Its passive applies automatically in every battle.</li>
           <li>Choose from a randomly generated sparse route map. Each node previews its encounter and reward type before you commit.</li>
@@ -1305,6 +1306,29 @@ function GameWiki({ onBack }: { onBack: () => void }) {
           <li>After victory, choose one free creature. XP is also paid only on victory. Every 100 XP grants a level and one vocation perk choice.</li>
           <li>Complete ten encounters to reach the canonical ending: the final battle against Ferumbras.</li>
         </ol></section>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Recruitment and formation</h2><ul>
+          <li>You begin with 5 gold, three creatures, and a deployment limit of five. The reserve has no size limit.</li>
+          <li>The player formation is three rows by seven columns. The combat room is seven by seven tiles.</li>
+          <li>Only one copy of a creature can be deployed at a time. Extra copies stay on the bench.</li>
+          <li>A Formation Permit costs 5 gold and permanently raises the run's deployment limit by one, up to all 21 formation spaces. It is available in preparation and does not change when creature offers reroll.</li>
+          <li>Three copies of the same creature at the same star rank merge into one creature of the next rank. Rank 2 and 3 multiply health and attack by 1.65 and 2.5.</li>
+          <li>Every creature remains in the shop pool, including creatures already owned and those at three stars. Copies can be bought repeatedly; three at the same star rank merge into the next rank, up to three stars. Buying removes that offer; when the list is exhausted, it refreshes from the full creature pool. Manual rerolls cost one gold.</li>
+          <li>Creature offers are weighted away from the current phase's main enemy family. In boss encounters, the boss's family is the phase family.</li>
+          <li>Hunt routes add two shop offers and offer five victory recruits instead of three.</li>
+        </ul></section>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Battle rules</h2><ul>
+          <li>All units start each encounter at full health. Health does not carry between encounters.</li>
+          <li>Boss encounters include the boss and the themed creatures shown on that route card. The boss is included in the displayed enemy count.</li>
+          <li>Combat advances in shared ticks. Every unit acts on the same clock, and the tick duration can be adjusted during playback.</li>
+          <li>Attacks have a two-tick cooldown. A ready attack is held while no opponent is in range and releases as soon as a target is nearby. Creatures keep their chosen target until it is defeated.</li>
+          <li>Range and distance use neighboring sqm steps; diagonal steps count as one. Units use the shortest clear path and move one free neighboring tile per tick. Moving does not reset attack cooldown.</li>
+          <li>Damage is at least 1 and is calculated from attack and bonuses, minus target armor, then reduced by damage-reduction effects. Fighters deal an additional 35% when adjacent.</li>
+          <li>Enemy power scales by encounter stage: 1 + max(0, stage − 1) × 12%; enemy tanks receive an additional 8% power and bosses receive 20% additional power.</li>
+          <li>Periodic healing resolves every two ticks. Healers use their action cooldown to heal the living ally with the lowest health percentage instead of attacking when possible. Healing cannot exceed max health.</li>
+          <li>Combat ends when a side is eliminated or after 60 ticks. If both sides remain, compare the sum of each side's survivors' health percentages. The higher total wins; a tie is a defeat.</li>
+        </ul></section>
+        </div>
+        <div className={styles.wikiColumn}>
         <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Bosses, loot, and equipment</h2><ul>
           <li>Boss battles appear at encounters 3, 6, and 9. The Cobra family is led by Scarlett Etzel, Falcon by Grand Master Oberon, and Asura by The Moonsnow Magnolia. Ferumbras is the final boss at encounter 10.</li>
           <li>The family bosses are the only source of equipment. Each family boss victory randomly drops one item from that boss's drop pool; it is added to the backpack automatically. Defeat grants no item. Defeating Ferumbras ends the campaign without loot.</li>
@@ -1323,16 +1347,6 @@ function GameWiki({ onBack }: { onBack: () => void }) {
               </div>
             </details>
           </li>
-        </ul></section>
-        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Recruitment and formation</h2><ul>
-          <li>You begin with 5 gold, three creatures, and a deployment limit of five. The reserve has no size limit.</li>
-          <li>The player formation is three rows by seven columns. The combat room is seven by seven tiles.</li>
-          <li>Only one copy of a creature can be deployed at a time. Extra copies stay on the bench.</li>
-          <li>A Formation Permit costs 5 gold and permanently raises the run's deployment limit by one, up to all 21 formation spaces. It is available in preparation and does not change when creature offers reroll.</li>
-          <li>Three copies of the same creature at the same star rank merge into one creature of the next rank. Rank 2 and 3 multiply health and attack by 1.65 and 2.5.</li>
-          <li>Every creature remains in the shop pool, including creatures already owned and those at three stars. Copies can be bought repeatedly; three at the same star rank merge into the next rank, up to three stars. Buying removes that offer; when the list is exhausted, it refreshes from the full creature pool. Manual rerolls cost one gold.</li>
-          <li>Creature offers are weighted away from the current phase's main enemy family. In boss encounters, the boss's family is the phase family.</li>
-          <li>Hunt routes add two shop offers and offer five victory recruits instead of three.</li>
         </ul></section>
         <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Roles and synergies</h2><ul>
           <li><b>Tank:</b> durable frontline. <b>Fighter:</b> melee attacker with bonus damage when adjacent. <b>Shooter</b> and <b>Mage:</b> ranged damage dealers. <b>Healer:</b> heals the most wounded ally instead of attacking when possible.</li>
@@ -1357,23 +1371,12 @@ function GameWiki({ onBack }: { onBack: () => void }) {
             </details>
           </li>
         </ul></section>
-        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Battle rules</h2><ul>
-          <li>All units start each encounter at full health. Health does not carry between encounters.</li>
-          <li>Boss encounters include the boss and the themed creatures shown on that route card. The boss is included in the displayed enemy count.</li>
-          <li>Combat advances in shared ticks. Every unit acts on the same clock, and the tick duration can be adjusted during playback.</li>
-          <li>Attacks have a two-tick cooldown. A ready attack is held while no opponent is in range and releases as soon as a target is nearby. Creatures keep their chosen target until it is defeated.</li>
-          <li>Range and distance use neighboring sqm steps; diagonal steps count as one. Units use the shortest clear path and move one free neighboring tile per tick. Moving does not reset attack cooldown.</li>
-          <li>Damage is at least 1 and is calculated from attack and bonuses, minus target armor, then reduced by damage-reduction effects. Fighters deal an additional 35% when adjacent.</li>
-          <li>Enemy power scales by encounter stage: 1 + max(0, stage − 1) × 12%; enemy tanks receive an additional 8% power and bosses receive 20% additional power.</li>
-          <li>Periodic healing resolves every two ticks. Healers use their action cooldown to heal the living ally with the lowest health percentage instead of attacking when possible. Healing cannot exceed max health.</li>
-          <li>Combat ends when a side is eliminated or after 60 ticks. If both sides remain, compare the sum of each side's survivors' health percentages. The higher total wins; a tie is a defeat.</li>
-        </ul></section>
         <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Rewards and retries</h2><ul>
           <li>Victory rewards include 3 base gold plus route gold, 25 base XP plus route XP, and one creature choice. These are all granted only after victory.</li>
           <li>Every loss grants no rewards and allows an unlimited retry of the same encounter.</li>
           <li>A retry keeps the same encounter and current shop state. Preparation actions remain available.</li>
           <li>Experience rolls over at 100. Each level grants one perk choice from the selected vocation's upgrades.</li>
-        </ul></section>
+        </ul></section>        </div>
       </div>
     </section>
   )

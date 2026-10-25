@@ -106,6 +106,10 @@ test('game wiki sections are organized and long references can be expanded', asy
   await expect(wiki.getByRole('heading', { name: 'Game wiki' })).toBeVisible()
   await expect(wiki.getByRole('heading', { name: 'Campaign loop' })).toBeVisible()
   await expect(wiki.getByRole('heading', { name: 'Rewards and retries' })).toBeVisible()
+  const wikiColumns = wiki.locator('[class*="wikiColumn"]')
+  await expect(wikiColumns).toHaveCount(2)
+  await expect(wikiColumns.nth(0).locator('h2')).toHaveText(['Campaign loop', 'Recruitment and formation', 'Battle rules'])
+  await expect(wikiColumns.nth(1).locator('h2')).toHaveText(['Bosses, loot, and equipment', 'Roles and synergies', 'Rewards and retries'])
 
   const dropTableSummary = wiki.locator('summary').filter({ hasText: 'Equipment drop table' })
   await expect(dropTableSummary).toContainText('26 items')
