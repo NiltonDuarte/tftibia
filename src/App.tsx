@@ -334,6 +334,12 @@ function CampaignMap() {
         <div className={styles.routeMapViewport} aria-label="Campaign map showing reachable routes and destinations">
         <svg className={styles.routeMapSvg} viewBox="0 0 1260 390" role="group" aria-labelledby="route-map-title">
           <title id="route-map-title">Campaign map showing the routes reachable in this run, their destinations, and each encounter type</title>
+          <defs>
+            <pattern id="route-label-stone" width="8" height="8" patternUnits="userSpaceOnUse">
+              <rect width="8" height="8" fill="#42484a" />
+              <path d="M0 2h3M5 1h3M2 6h4" stroke="#505658" strokeWidth="1" />
+            </pattern>
+          </defs>
           <image href="/assets/backgrounds/campaign-world-map.png" x="-126" y="-39" width="1512" height="468" preserveAspectRatio="xMidYMid slice" />
           <rect className={styles.routeMapTint} width="1260" height="390" />
           {routeConnections.map(({ from, to }) => {
@@ -384,14 +390,18 @@ function CampaignMap() {
               style={{ cursor: available ? 'pointer' : 'default' }}
             >
               <title>{node.name} — encounter {node.stage} — {kindLabel}</title>
-              {available && <circle className={styles.mapNodeHit} r="22" />}
-              <text className={styles.mapNodeStage} textAnchor="middle" dominantBaseline="central" y="-20">{String(node.stage).padStart(2, '0')}</text>
-              <circle className={styles.mapNodeCore} r={available ? 14 : completed ? 12 : 11} />
+              {available && <circle className={styles.mapNodeHit} r="28" />}
+              <text className={styles.mapNodeStage} textAnchor="middle" dominantBaseline="central" y="-25">{String(node.stage).padStart(2, '0')}</text>
+              <circle className={styles.mapNodeRim} r={available ? 23 : 21} />
+              <circle className={styles.mapNodeCore} r={available ? 19 : 17} />
               <text className={styles.mapNodeIcon} textAnchor="middle" dominantBaseline="central">{icon}</text>
-              <g className={styles.mapNodeLabel} transform="translate(0 19)">
-                <rect x="-53" y="0" width="106" height="34" />
-                <text className={styles.mapNodeName} textAnchor="middle" dominantBaseline="central" y="11" textLength="98" lengthAdjust="spacingAndGlyphs">{node.name}</text>
-                <text className={styles.mapNodeKind} textAnchor="middle" dominantBaseline="central" y="25">{kindLabel}</text>
+              <g className={styles.mapNodeLabel} transform="translate(0 24)">
+                <rect className={styles.mapNodeLabelRim} x="-55" y="-2" width="110" height="38" />
+                <rect className={styles.mapNodeLabelPlate} x="-53" y="0" width="106" height="34" />
+                <path className={styles.mapNodeLabelBevel} d="M-52 1H52M-52 33H52" />
+                <rect className={styles.mapNodeTypeBand} x="-52" y="19" width="104" height="14" />
+                <text className={styles.mapNodeName} textAnchor="middle" dominantBaseline="central" y="10">{node.name}</text>
+                <text className={styles.mapNodeKind} textAnchor="middle" dominantBaseline="central" y="26">{kindLabel}</text>
               </g>
             </g>
           })}

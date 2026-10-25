@@ -1204,26 +1204,31 @@
 .mapRouteFocus { fill: none; stroke: #fff0a0; stroke-width: 5.5; stroke-linecap: round; opacity: 1; }
 .mapRouteDimmed { fill: none; stroke: #bbb5a0; stroke-width: 1; stroke-linecap: round; opacity: .12; }
 .mapNode { cursor: default; }
-.mapNodeFocused .mapNodeCore { stroke: #fff3ad !important; stroke-width: 3 !important; filter: brightness(1.35); }
-.mapNodeFocused .mapNodeLabel rect { stroke: #fff0a0; stroke-width: 2; }
-.mapNodeCore { stroke-width: 2; }
-.mapNodeFuture .mapNodeCore { fill: #354a3a; stroke: #d1d7b2; }
-.mapNodeCompleted .mapNodeCore { fill: #8b9970; stroke: #e5dfbc; stroke-width: 2; }
-.mapNodeAvailable .mapNodeCore { fill: #e0bd54; stroke: #fff0a5; stroke-width: 2.5; }
-.mapNode[data-kind='cache'] .mapNodeCore { fill: #705824; stroke: #e7c363; }
-.mapNode[data-kind='shrine'] .mapNodeCore { fill: #4e426b; stroke: #bba5ef; }
-.mapNode[data-kind='hunt'] .mapNodeCore { fill: #385c43; stroke: #a4cd8d; }
-.mapNode[data-kind='boss'] .mapNodeCore { fill: #713d35; stroke: #f0a18a; }
-.mapNodeAvailable[data-kind] .mapNodeCore { filter: brightness(1.25); }
-.mapNodeStage { fill: #fff0c0; font: 700 8px Tahoma,Verdana,sans-serif; paint-order: stroke; stroke: #1b211d; stroke-width: 3px; }
-.mapNodeIcon { fill: #fff4d3; font: 700 13px Tahoma,Verdana,sans-serif; pointer-events: none; }
-.mapNodeLabel rect { fill: #262b2c; fill-opacity: .96; stroke: #a7a18a; stroke-width: 1; }
-.mapNodeName { fill: #f3ebce; font: 700 7px Tahoma,Verdana,sans-serif; }
-.mapNodeKind { fill: #d5d0bd; font: 700 6px Tahoma,Verdana,sans-serif; letter-spacing: .06em; }
-.mapNode[data-kind='cache'] .mapNodeKind { fill: #efd07a; }
-.mapNode[data-kind='shrine'] .mapNodeKind { fill: #d4c2ff; }
-.mapNode[data-kind='hunt'] .mapNodeKind { fill: #c5e0a9; }
-.mapNode[data-kind='boss'] .mapNodeKind { fill: #ffb29d; }
+.mapNodeRim { fill: #222729; stroke: #aaaead; stroke-width: 2; }
+.mapNodeCore { stroke-width: 1.5; }
+.mapNode[data-kind='cache'] .mapNodeRim { stroke: #d9ae55; }
+.mapNode[data-kind='shrine'] .mapNodeRim { stroke: #a99bd2; }
+.mapNode[data-kind='hunt'] .mapNodeRim { stroke: #a3c28d; }
+.mapNode[data-kind='boss'] .mapNodeRim { stroke: #d89982; }
+.mapNode[data-kind='cache'] .mapNodeCore { fill: #b27b26; stroke: #f0cc73; }
+.mapNode[data-kind='shrine'] .mapNodeCore { fill: #62518b; stroke: #c2b2ed; }
+.mapNode[data-kind='hunt'] .mapNodeCore { fill: #527a43; stroke: #c0d997; }
+.mapNode[data-kind='boss'] .mapNodeCore { fill: #994c3b; stroke: #f0b09a; }
+.mapNode.mapNodeAvailable .mapNodeRim { stroke: #fff1a6; stroke-width: 3; }
+.mapNode.mapNodeAvailable .mapNodeCore { stroke-width: 2; }
+.mapNodeFocused .mapNodeRim { stroke: #fff3ad !important; stroke-width: 3.5 !important; }
+.mapNodeFocused .mapNodeLabelPlate { stroke: #f1d879; stroke-width: 2; }
+.mapNode .mapNodeStage { fill: #fff0c0; font: 700 8px Tahoma,Verdana,sans-serif; paint-order: stroke; stroke: #1b211d; stroke-width: 3px; }
+.mapNode .mapNodeIcon { fill: #fff4d3; font: 700 20px Tahoma,Verdana,sans-serif; pointer-events: none; }
+.mapNode .mapNodeLabelRim { fill: #171a1b; stroke: #121516; stroke-width: 2; }
+.mapNode .mapNodeLabelPlate { fill: url(#route-label-stone); stroke: #929794; stroke-width: 1; }
+.mapNode .mapNodeLabelBevel { fill: none; stroke: #a3a7a2; stroke-width: 1; }
+.mapNode .mapNodeName { fill: #f0eee5; font: 700 8px Tahoma,Verdana,sans-serif; }
+.mapNode .mapNodeKind { fill: #fff0c4; font: 700 7px Tahoma,Verdana,sans-serif; letter-spacing: .04em; }
+.mapNode[data-kind='cache'] .mapNodeTypeBand { fill: #87601f; }
+.mapNode[data-kind='shrine'] .mapNodeTypeBand { fill: #4f426e; }
+.mapNode[data-kind='hunt'] .mapNodeTypeBand { fill: #3f5d37; }
+.mapNode[data-kind='boss'] .mapNodeTypeBand { fill: #763d32; }
 .mapCurrentMarker circle { fill: #10140f; stroke: #eee5c1; stroke-width: 3; }
 .mapCurrentMarker path { fill: none; stroke: #f2e8c6; stroke-width: 2; }
 .mapCurrentLabel rect, .mapDestinationMarker g rect { fill: #1c211b; fill-opacity: .9; stroke: #988553; stroke-width: 1; }
@@ -1326,7 +1331,7 @@
 .mapNodeAvailable:focus .mapNodeHit { stroke: #fff0ac !important; stroke-width: 2 !important; }
 .mapCurrentMarker circle { fill: #282d2e; stroke: #f5eccd; stroke-width: 3; }
 .mapCurrentMarker path { stroke: #f5eccd; stroke-width: 2.5; }
-.mapCurrentLabel rect { fill: #262b2d; fill-opacity: .98; stroke: #f0e4bc; stroke-width: 1.5; }
+.mapCurrentLabel rect { fill: url(#route-label-stone); fill-opacity: .98; stroke: #a3a7a2; stroke-width: 1.5; }
 .routeMapLegend { border-top-color: #181b1c; color: #d0d1c9; background-color: #3a4041; background-image: url('/assets/ui/stone-grain.svg'); }
 .mapCurrent { border-color: #777c77; background-color: #3b4042; }
 .primaryButton, .secondaryButton, .battleButton, .buyButton,
