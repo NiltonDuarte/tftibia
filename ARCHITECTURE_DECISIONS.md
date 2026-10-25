@@ -14,7 +14,7 @@ Implementation choices for the Tibia Tactics browser game. Gameplay rules and cr
 | Game content | YAML | Files under `src/data/`, parsed by `yaml` |
 | Content validation | Zod | Checked by the build script and again at runtime |
 | Combat | Plain TypeScript on the main thread | Kept independent from React UI |
-| Persistence | Browser local storage | Versioned JSON save format; version 6 stores campaign and PRNG state and migrates earlier saves |
+| Persistence | Browser local storage | Versioned JSON save format; version 7 stores campaign, PRNG state, and deployment limit and migrates earlier saves |
 | Backend | None | Client-only MVP |
 | Testing | Vitest + Playwright | Unit tests cover deterministic full-campaign runs; Playwright configuration is available for browser flows |
 | Code quality | ESLint + Prettier | npm scripts in `package.json` |
@@ -64,6 +64,7 @@ Versions are pinned by `package-lock.json`; the ranges below are declared in `pa
 | Date | Decision | Reason |
 |---|---|---|
 | 2026-10-24 | React + TypeScript + Vite + npm, rendered with HTML/CSS | Browser-first prototype with fast iteration and no dedicated game engine. |
+| 2026-10-24 | Seven-column formation with a five-unit starting deployment limit, raised by a shop permit | Match the seven-by-seven combat room while keeping the initial formation constrained and upgradeable. |
 | 2026-10-24 | YAML content validated by Zod at build time and runtime | Make balancing data editable while guarding against malformed content. |
 | 2026-10-24 | Reducer/context state and versioned local JSON saves | Keep the client-only campaign state predictable and reloadable. |
 | 2026-10-24 | Plain TypeScript automatic combat simulation on discrete sqm coordinates | Keep combat rules independent of rendering; each creature occupies one room tile and advances by neighboring tile steps. |

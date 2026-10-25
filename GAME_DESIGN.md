@@ -30,6 +30,7 @@ Named groups whose members are associated in Tibia, even when they do not fit on
 ### 3. Combat roles
 
 - **Tank:** absorbs pressure, protects allies, or controls space.
+- **Fighter:** melee attacker who benefits from fighting adjacent to a target.
 - **Shooter:** deals physical damage from range.
 - **Mage:** deals magical damage or area effects.
 - **Healer:** restores health, shields, or otherwise sustains allies.
@@ -56,7 +57,7 @@ Potential guardrails for a first prototype:
 - **Prototype UI:** The creature codex lists the recruit pool with search and role/family filters.
 - **Prototype decision:** The commander gains experience from encounters and route rewards. At 100 experience the commander levels up and chooses a vocation-specific perk from the reward pool.
 - **Prototype decision:** Every campaign map offers three route rewards: a gold cache, an experience shrine, or a hunt with extra shop and creature offers. Routes use distinct room biomes and enemy groups that fit the biome.
-- **Prototype decision:** Combat rooms use 32-pixel Tibia-style floor squares. Units can move through all six room rows; allies use cyan markers and enemies use coral markers.
+- **Prototype decision:** Combat rooms use 32-pixel Tibia-style floor squares on a 7×7 board. Units can move across all seven rows; allies use cyan markers and enemies use coral markers.
 - **Prototype decision:** Cobra Assassin is the first melee fighter. It has one-tile range and deals bonus damage when adjacent to a target.
 
 These are initial difficulty and pacing levers. Tune the encounter curve, loss penalty, rank multipliers, XP pace, and route rewards through play.
@@ -82,7 +83,7 @@ This sample is for exploring tag overlap, not a balanced or final recruit pool. 
 | Frost Flower Asura | Demon | Asuri | Shooter | Ice-associated ranged attacker; could slow enemies. |
 | Midnight Asura | Demon | Asuri | Mage | Asuri spellcaster; could disrupt or weaken enemies. |
 | True Feverbloom Asura | Demon | Asuri | Mage | Higher-tier Asura with fire/earth pressure; elite damage dealer. |
-| Cobra Assassin | Human | Order of the Cobra | Shooter | Fast, stealthy striker; could jump to or mark a backline target. |
+| Cobra Assassin | Human | Order of the Cobra | Fighter | Fast, stealthy melee striker who gains bonus damage while adjacent. |
 | Cobra Scout | Human | Order of the Cobra | Shooter | Recon/ranged attacker; could reveal or weaken a target. |
 | Cobra Vizier | Human | Order of the Cobra | Tank | Frontline protector; could use defensive magic or bodyguard effects to shield allies. |
 | Falcon Knight | Undead | Order of the Falcon | Tank | Armored melee fighter; holds the frontline. |
@@ -127,7 +128,7 @@ Reply with your picks, or answer in your own words. We can decide one layer at a
 - **Chosen campaign reward:** Player chooses from a selection of creatures
 - **Chosen combat ability control:** Creature abilities are passive or automatic; no manual activations
 - **Working synergy distinction:** Family is specific and stronger at lower counts; Bestiary class is broad and weaker at higher counts
-- **Current implementation:** A playable eight-encounter campaign with three route choices between encounters, 10 sample creatures, 12 synergy definitions, four vocations, animated automatic combat on a 7×7 sqm room, rank merges, commander XP/perks, three campaign lives, path-specific rewards, and local saves. Every encounter offers distinct room themes; enemy groups follow their route's creature family or regional theme. Shop and recruit rewards draw from the full creature pool. Combat creatures occupy discrete tiles and step to neighboring tiles, including diagonals. Treat roles, combat numbers, and effects as balance placeholders.
+- **Current implementation:** A playable eight-encounter campaign with three route choices between encounters, 10 sample creatures, 12 synergy definitions, four vocations, a three-row by seven-column player formation, and animated automatic combat on a 7×7 sqm room. The deployment limit starts at five and can be increased by buying Formation Permits in the shop. The game includes rank merges, commander XP/perks, three campaign lives, victory-only path rewards, and local saves. Every encounter offers distinct room themes; enemy groups follow their route's creature family or regional theme. Shop and recruit rewards draw from the full creature pool. Combat creatures occupy discrete tiles and step to neighboring tiles, including diagonals. Treat roles, combat numbers, and effects as balance placeholders.
 - **Next design task:** Tune the encounter curve, three-copy merge bonuses, and positioning rules through play; then expand the creature pool.
 
 ## Balance test strategies
