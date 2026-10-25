@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { GameStateSchema } from '../src/game/stateSchema'
 
 test('world map branches lead to playable full-room battles', async ({ page }) => {
   await page.goto('/')
@@ -11,8 +12,24 @@ test('world map branches lead to playable full-room battles', async ({ page }) =
   await vocation.click()
 
   await expect(page.getByRole('heading', { name: 'Choose your next route' })).toBeVisible()
+  const savedValue = await page.evaluate(() => window.localStorage.getItem('tibia-tactics-save'))
+  if (!savedValue) throw new Error('The campaign save was not written after vocation selection.')
+  const validState = GameStateSchema.parse(JSON.parse(savedValue) as unknown)
+  const staleRouteState = {
+    ...validState,
+    mapNodeId: 'retired-location',
+    routeEdges: {
+      ...validState.routeEdges,
+      crossroads: ['missing-route'],
+      'retired-location': ['missing-route'],
+    },
+  }
+  await page.evaluate((serialized) => window.localStorage.setItem('tibia-tactics-save', serialized), JSON.stringify(staleRouteState))
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Choose your next route' })).toBeVisible()
+
   const mapRoutes = page.getByRole('button', { name: /Travel to / })
-  await expect(mapRoutes).toHaveCount(2)
+  await expect(mapRoutes).toHaveCount(3)
   await mapRoutes.first().click()
 
   await page.getByRole('button', { name: /Recruit/ }).first().click()

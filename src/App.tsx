@@ -240,11 +240,18 @@ function vocationByIdList(): Vocation[] {
 
 function CampaignMap() {
   const { state, commands } = useGame()
-  const location = nodeById[state.mapNodeId]
-  const destinations = (state.routeEdges[state.mapNodeId] ?? location.nextNodeIds).map((id) => nodeById[id]).filter(Boolean)
+  const location = nodeById[state.mapNodeId] ?? nodeById[campaign.startNodeId]
+  const routeEdges = Object.fromEntries(campaign.nodes.map((node) => {
+    const configured = state.routeEdges[node.id] ?? node.nextNodeIds
+    const valid = configured.filter((id) => Boolean(nodeById[id]))
+    return [node.id, valid.length > 0 ? valid : node.nextNodeIds]
+  }))
+  const destinations = routeEdges[location.id].flatMap((id) => {
+    const node = nodeById[id]
+    return node ? [node] : []
+  })
   const encounterCount = state.completedNodeIds.length
-  const routeNodeIds = [...new Set([campaign.startNodeId, ...Object.entries(state.routeEdges).flatMap(([from, to]) => [from, ...to])])]
-  const routeNodes = routeNodeIds.map((id) => nodeById[id]).filter(Boolean)
+  const routeNodes = campaign.nodes
   const mapPosition = (nodeId: string) => {
     const node = nodeById[nodeId]
     const stageNodes = routeNodes.filter((entry) => entry.stage === node.stage)
@@ -253,11 +260,11 @@ function CampaignMap() {
     return { x: 80 + node.stage * 89, y }
   }
   const currentPoint = mapPosition(location.id)
-  const routeHistory = [campaign.startNodeId, ...state.completedNodeIds]
+  const routeHistory = [campaign.startNodeId, ...state.completedNodeIds.filter((id) => Boolean(nodeById[id]))]
   const takenEdges = new Set(routeHistory.slice(0, -1).map((from, index) => `${from}->${routeHistory[index + 1]}`))
-  const stagePaths = [...new Set(Object.keys(state.routeEdges).map((id) => nodeById[id].stage))].map((stage) => {
-    const sources = Object.entries(state.routeEdges).filter(([from]) => nodeById[from].stage === stage)
-    const targets = [...new Set(sources.flatMap(([, nextIds]) => nextIds))]
+  const stagePaths = [...new Set(routeNodes.map((node) => node.stage))].map((stage) => {
+    const sources = routeNodes.filter((node) => node.stage === stage && routeEdges[node.id].length > 0).map((node) => node.id)
+    const targets = [...new Set(sources.flatMap((from) => routeEdges[from]))]
     return { stage, sources, targets }
   })
 
@@ -295,11 +302,11 @@ function CampaignMap() {
           <image href="/assets/backgrounds/campaign-world-map.png" x="-105" y="-32" width="1260" height="384" preserveAspectRatio="xMidYMid slice" />
           <rect className={styles.routeMapTint} width="1050" height="320" />
           {stagePaths.flatMap(({ stage, sources, targets }) => {
-            const firstSource = sources[0]?.[0]
+            const firstSource = sources[0]
             if (!firstSource) return []
             const hubX = mapPosition(firstSource).x + 44.5
             const hubY = 160
-            const sourcePaths = sources.map(([from]) => {
+            const sourcePaths = sources.map((from) => {
               const start = mapPosition(from)
               const wasTaken = routeHistory.slice(0, -1).includes(from)
               const available = from === location.id
