@@ -1351,3 +1351,81 @@
 .routeChoices .routeGrid { gap: 8px; }
 .routeCard { border-color: #666c6c; background-color: #34393b; }
 .routeMapLegend { min-height: 30px; }
+
+.wikiGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 10px;
+  margin-top: 14px;
+}
+.wikiPanel {
+  min-width: 0;
+  padding: 0 10px 10px !important;
+  color: #d6dad7;
+  font: 11px/1.45 Tahoma,Verdana,sans-serif;
+}
+.wikiPanel h2 {
+  margin: 0 -10px 9px;
+  padding: 7px 9px;
+  border-bottom: 1px solid #1c2021;
+  color: #e1e0d8;
+  background-color: #4a4f50;
+  background-image: url('/assets/ui/stone-grain.svg');
+  box-shadow: inset 1px 1px #858985, inset 0 -1px #303536;
+  font: 700 12px/1.3 Tahoma,Verdana,sans-serif;
+}
+.wikiPanel > ol, .wikiPanel > ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0 3px 0 24px;
+  color: #d0d4d1;
+  font: 11px/1.45 Tahoma,Verdana,sans-serif;
+}
+.wikiPanel > ol > li, .wikiPanel > ul > li { padding-left: 2px; }
+.wikiPanel > ul > li::marker, .wikiPanel > ol > li::marker { color: #d0b95e; }
+.wikiPanel li > ul { margin: 5px 0 2px; padding-left: 17px; color: #bac1be; }
+.wikiDisclosureItem { margin-left: -21px; list-style: none; }
+.wikiDetails { border: 1px solid #555d5f; background: #2d3335; }
+.wikiDetails > summary {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  color: #e1e0d8;
+  background-color: #393f41;
+  background-image: url('/assets/ui/stone-grain.svg');
+  cursor: pointer;
+  font: 700 10px/1.35 Tahoma,Verdana,sans-serif;
+}
+.wikiDetails > summary::marker { color: #d2bd72; }
+.wikiDetails > summary small { flex: none; color: #d2bd72; font: 9px Tahoma,Verdana,sans-serif; }
+.wikiDetails[open] > summary { border-bottom: 1px solid #202526; }
+.wikiItemRows { display: grid; gap: 4px; padding: 6px; }
+.wikiItemRow {
+  display: grid;
+  grid-template-columns: minmax(100px, .65fr) minmax(0, 1.35fr);
+  gap: 3px 8px;
+  padding: 6px;
+  border: 1px solid #42494b;
+  background: #343a3c;
+}
+.wikiItemRow b { color: #e2dfd0; }
+.wikiItemRow > span { color: #c6c7bb; }
+.wikiItemRow p { grid-column: 1 / -1; margin: 0; color: #b8c0bd; }
+.wikiTierList { display: grid; gap: 4px; margin: 0 !important; padding: 6px !important; list-style: none; }
+.wikiTierList li { display: grid; grid-template-columns: minmax(100px, .55fr) minmax(0, 1.45fr); gap: 4px 8px; padding: 5px 6px; border: 1px solid #42494b; background: #343a3c; }
+.wikiTierList b { color: #e2dfd0; }
+.wikiTierList span { color: #c6cbc8; }
+.wikiSynergyItem .wikiDetails > summary { min-height: 34px; }
+.gameWiki .pageTitleRow { margin-bottom: 0; }
+@media (max-width: 760px) {
+  .wikiGrid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+}
+@media (max-width: 480px) {
+  .wikiItemRow, .wikiTierList li { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1291,13 +1291,13 @@ function CreatureCodex({ onBack }: { onBack: () => void }) {
 
 function GameWiki({ onBack }: { onBack: () => void }) {
   return (
-    <section className={styles.pageSection}>
+    <section className={`${styles.pageSection} ${styles.gameWiki}`} aria-label="Game wiki manual">
       <div className={styles.pageTitleRow}>
-        <div><div className={styles.eyebrow}>Field manual</div><h1>Game rules</h1><p className={styles.lede}>How to build a formation, earn rewards, and resolve battles.</p></div>
+        <div><div className={styles.eyebrow}>Field manual</div><h1>Game wiki</h1><p className={styles.lede}>Rules and references for routes, creatures, equipment, and combat.</p></div>
         <button className={styles.secondaryButton} type="button" onClick={onBack}>← Return to campaign</button>
       </div>
-      <div className={styles.reportGrid}>
-        <section className={styles.reportPanel}><h2>Campaign loop</h2><ol>
+      <div className={styles.wikiGrid}>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Campaign loop</h2><ol>
           <li>Choose one of four vocations. Its passive applies automatically in every battle.</li>
           <li>Choose from a randomly generated sparse route map. Each node previews its encounter and reward type before you commit.</li>
           <li>Prepare before the encounter: buy creatures, reroll creature offers for 1 gold, buy Formation Permits, and arrange units.</li>
@@ -1305,15 +1305,26 @@ function GameWiki({ onBack }: { onBack: () => void }) {
           <li>After victory, choose one free creature. XP is also paid only on victory. Every 100 XP grants a level and one vocation perk choice.</li>
           <li>Complete ten encounters to reach the canonical ending: the final battle against Ferumbras.</li>
         </ol></section>
-        <section className={styles.reportPanel}><h2>Bosses, loot, and equipment</h2><ul>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Bosses, loot, and equipment</h2><ul>
           <li>Boss battles appear at encounters 3, 6, and 9. The Cobra family is led by Scarlett Etzel, Falcon by Grand Master Oberon, and Asura by The Moonsnow Magnolia. Ferumbras is the final boss at encounter 10.</li>
           <li>The family bosses are the only source of equipment. Each family boss victory randomly drops one item from that boss's drop pool; it is added to the backpack automatically. Defeat grants no item. Defeating Ferumbras ends the campaign without loot.</li>
           <li>Items occupy one equipment slot per creature. Move loot freely between the backpack and any eligible creature. Equipping an item into an occupied slot returns the old item to the backpack.</li>
           <li>Druid gear is for healers, Sorcerer gear for mages, Paladin gear for shooters, and Monk gear for fighters. Knight weapons of either hand type and shields are tank-only; Knight armor and amulets can be used by tanks or fighters. The Cobra Amulet and Ferumbras' Hat are universal.</li>
           <li>Item YAML preserves Tibia attack, defense, armor, range, skill, protection, critical, leech, duration, level, and weight values. The game uses these as combat bonuses: weapon attack can replace lower creature attack, armor and defense add to armor, range extends attacks, protection reduces damage, and critical/leech values apply as expected-value bonuses.</li>
-          {items.map((item) => <li key={item.id}><b>{item.name}</b> ({item.slot}; {item.universal ? 'all roles' : item.allowedRoles.join(', ')}): dropped by {item.bossId}. Tibia stats: {itemStatSummary(item)}.</li>)}
+          <li className={styles.wikiDisclosureItem}>
+            <details className={styles.wikiDetails}>
+              <summary>Equipment drop table <small>{items.length} items</small></summary>
+              <div className={styles.wikiItemRows}>
+                {items.map((item) => <article className={styles.wikiItemRow} key={item.id}>
+                  <b>{item.name}</b>
+                  <span>{item.slot} · {item.universal ? 'all roles' : item.allowedRoles.join(', ')} · dropped by {item.bossId}</span>
+                  <p>Tibia stats: {itemStatSummary(item)}</p>
+                </article>)}
+              </div>
+            </details>
+          </li>
         </ul></section>
-        <section className={styles.reportPanel}><h2>Recruitment and formation</h2><ul>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Recruitment and formation</h2><ul>
           <li>You begin with 5 gold, three creatures, and a deployment limit of five. The reserve has no size limit.</li>
           <li>The player formation is three rows by seven columns. The combat room is seven by seven tiles.</li>
           <li>Only one copy of a creature can be deployed at a time. Extra copies stay on the bench.</li>
@@ -1323,15 +1334,30 @@ function GameWiki({ onBack }: { onBack: () => void }) {
           <li>Creature offers are weighted away from the current phase's main enemy family. In boss encounters, the boss's family is the phase family.</li>
           <li>Hunt routes add two shop offers and offer five victory recruits instead of three.</li>
         </ul></section>
-        <section className={styles.reportPanel}><h2>Roles and synergies</h2><ul>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Roles and synergies</h2><ul>
           <li><b>Tank:</b> durable frontline. <b>Fighter:</b> melee attacker with bonus damage when adjacent. <b>Shooter</b> and <b>Mage:</b> ranged damage dealers. <b>Healer:</b> heals the most wounded ally instead of attacking when possible.</li>
           <li>Each creature contributes one count to its role, family, and Bestiary class synergies while deployed. Benched units do not count. A creature can count once in each of those three categories.</li>
-          {synergies.map((synergy) => <li key={synergy.id}><b>{synergy.label}</b> ({synergy.category}: {synergy.tag})<ul>{synergy.breakpoints.map((tier) => <li key={tier.count}>{tier.count} units — {tier.title}: {tier.description}</li>)}</ul></li>)}
+          {synergies.map((synergy) => <li className={`${styles.wikiDisclosureItem} ${styles.wikiSynergyItem}`} key={synergy.id}>
+            <details className={styles.wikiDetails}>
+              <summary>{synergy.label}<small>{synergy.category} · {synergy.tag} · {synergy.breakpoints.length} tiers</small></summary>
+              <ul className={styles.wikiTierList}>{synergy.breakpoints.map((tier) => <li key={tier.count}><b>{tier.count} units · {tier.title}</b><span>{tier.description}</span></li>)}</ul>
+            </details>
+          </li>)}
           <li>Vocation passives, owned perks, and active synergies apply automatically. Perks stack; when multiple levels are earned together, a fresh set of three choices appears for each level. The same perk can be chosen more than once.</li>
-          {vocations.map((vocation) => <li key={vocation.id}><b>{vocation.name}:</b> {vocation.description}</li>)}
-          {upgrades.map((upgrade) => <li key={upgrade.id}><b>{upgrade.name} ({upgrade.vocation}):</b> {upgrade.description}</li>)}
+          <li className={styles.wikiDisclosureItem}>
+            <details className={styles.wikiDetails}>
+              <summary>Vocation passives <small>{vocations.length} vocations</small></summary>
+              <ul className={styles.wikiTierList}>{vocations.map((vocation) => <li key={vocation.id}><b>{vocation.name}</b><span>{vocation.description}</span></li>)}</ul>
+            </details>
+          </li>
+          <li className={styles.wikiDisclosureItem}>
+            <details className={styles.wikiDetails}>
+              <summary>Vocation perks <small>{upgrades.length} upgrades</small></summary>
+              <ul className={styles.wikiTierList}>{upgrades.map((upgrade) => <li key={upgrade.id}><b>{upgrade.name} · {upgrade.vocation}</b><span>{upgrade.description}</span></li>)}</ul>
+            </details>
+          </li>
         </ul></section>
-        <section className={styles.reportPanel}><h2>Battle rules</h2><ul>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Battle rules</h2><ul>
           <li>All units start each encounter at full health. Health does not carry between encounters.</li>
           <li>Boss encounters include the boss and the themed creatures shown on that route card. The boss is included in the displayed enemy count.</li>
           <li>Combat advances in shared ticks. Every unit acts on the same clock, and the tick duration can be adjusted during playback.</li>
@@ -1342,7 +1368,7 @@ function GameWiki({ onBack }: { onBack: () => void }) {
           <li>Periodic healing resolves every two ticks. Healers use their action cooldown to heal the living ally with the lowest health percentage instead of attacking when possible. Healing cannot exceed max health.</li>
           <li>Combat ends when a side is eliminated or after 60 ticks. If both sides remain, compare the sum of each side's survivors' health percentages. The higher total wins; a tie is a defeat.</li>
         </ul></section>
-        <section className={styles.reportPanel}><h2>Rewards and retries</h2><ul>
+        <section className={`${styles.reportPanel} ${styles.wikiPanel}`}><h2>Rewards and retries</h2><ul>
           <li>Victory rewards include 3 base gold plus route gold, 25 base XP plus route XP, and one creature choice. These are all granted only after victory.</li>
           <li>Every loss grants no rewards and allows an unlimited retry of the same encounter.</li>
           <li>A retry keeps the same encounter and current shop state. Preparation actions remain available.</li>

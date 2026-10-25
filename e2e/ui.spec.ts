@@ -97,3 +97,21 @@ test('creature codex search and filters remain usable', async ({ page }) => {
   await page.getByRole('combobox', { name: 'Filter by role' }).selectOption('mage')
   await expect(matchingCreatures).toHaveCount(3)
 })
+
+test('game wiki sections are organized and long references can be expanded', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Game wiki' }).click()
+
+  const wiki = page.locator('[aria-label="Game wiki manual"]')
+  await expect(wiki.getByRole('heading', { name: 'Game wiki' })).toBeVisible()
+  await expect(wiki.getByRole('heading', { name: 'Campaign loop' })).toBeVisible()
+  await expect(wiki.getByRole('heading', { name: 'Rewards and retries' })).toBeVisible()
+
+  const dropTableSummary = wiki.locator('summary').filter({ hasText: 'Equipment drop table' })
+  await expect(dropTableSummary).toContainText('26 items')
+  const dropTable = wiki.locator('details').filter({ hasText: 'Equipment drop table' })
+  expect(await dropTable.evaluate((element) => element.hasAttribute('open'))).toBe(false)
+  await dropTableSummary.click()
+  await expect(dropTable).toHaveAttribute('open', '')
+  await expect(dropTable.locator('article')).toHaveCount(26)
+})
