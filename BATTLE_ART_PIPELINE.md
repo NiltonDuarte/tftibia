@@ -9,7 +9,7 @@ The play area is the square under the guide. The other 30% of the canvas is scen
 ## Generate a background
 
 1. Start with a square canvas and the battle-grid guide as the composition reference. Keep a copy of the guide visible over the art during composition checks.
-2. Generate a full-frame, orthographic top-down room in Tibia-inspired pixel art. The central 70% square must be open, continuous, walkable floor. Put walls, water, vegetation, furniture, hazards, and other blocking scenery in the outer margins.
+2. Generate a full-frame, orthographic top-down room in Tibia-inspired pixel art. The central 70% square must be open, continuous, walkable floor with a plain, low-detail surface. Avoid obvious tile seams, square patterns, or any repeated floor marks that could conflict with the 7×7 runtime grid. Put walls, water, vegetation, furniture, hazards, and other blocking scenery in the outer margins.
 3. Match location materials and props to the encounter. Keep the visual density low enough that combat sprites, labels, and effects remain readable over every cell.
 4. Do not draw the guide, a grid, tile boundaries, board outlines, text, labels, characters, or UI into the exported image. The grid is a runtime analysis overlay, not part of the background.
 5. Export a square PNG. Do not crop or stretch a non-square result to make it square; regenerate or recompose it on the square canvas.
@@ -17,7 +17,7 @@ The play area is the square under the guide. The other 30% of the canvas is scen
 
 ### Prompt template
 
-> Create a square, full-frame, orthographic top-down pixel-art battle room for a Tibia-inspired browser game. Use the attached battle-grid guide only as a composition reference: keep the centered square area occupying the middle 70% of the canvas completely open and walkable, sized for a 7×7 combat grid. All walls, water, plants, furniture, hazards, and other obstacles must stay outside that square. Continue the room naturally through the outer margins. Match the requested location's architecture and palette. Keep floor details subtle and readable under small creature sprites. No grid lines, tile boundaries, board border, text, labels, characters, interface, or watermark. Export as a square image.
+> Create a square, full-frame, orthographic top-down pixel-art battle room for a Tibia-inspired browser game. Use the attached battle-grid guide only as a composition reference: keep the centered square area occupying the middle 70% of the canvas completely open and walkable, sized for a 7×7 combat grid. The play area floor must be plain, continuous, and low-detail, with no visible tile seams, square patterns, or repeated marks. All walls, water, plants, furniture, hazards, and other obstacles must stay outside that square. Continue the room naturally through the outer margins. Match the requested location's architecture and palette. No grid lines, tile boundaries, board border, text, labels, characters, interface, or watermark. Export as a square image.
 
 Append the location-specific architectural materials, palette, and landmark props to the prompt. Do not alter the footprint instructions.
 
@@ -25,7 +25,7 @@ Append the location-specific architectural materials, palette, and landmark prop
 
 - [ ] PNG is square; it is not a stretched or cropped landscape image.
 - [ ] The guide overlays the generated image with the grid centered and the same 70% square bounds.
-- [ ] All 49 cells contain continuous walkable floor; no water, walls, garden beds, furniture, hazards, or other blocking objects cross into the playable square.
+- [ ] All 49 cells contain continuous plain, low-detail walkable floor; no tile seams, square patterns, water, walls, garden beds, furniture, hazards, or other blocking objects cross into the playable square.
 - [ ] The play area is large enough for 7×7 cells and leaves room for creature sprites and labels.
 - [ ] No grid, board, text, UI, or characters are baked into the image.
 - [ ] With the in-game **Grid: on** toggle enabled, all four sides of the runtime grid match the guide and sit entirely on open floor.

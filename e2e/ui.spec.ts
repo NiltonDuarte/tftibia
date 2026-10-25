@@ -41,7 +41,7 @@ test('world map branches lead to playable full-room battles', async ({ page }) =
 
   const battlefield = page.locator('[class*="arenaGrid"][aria-label="Live tactical battlefield"]')
   await expect(battlefield).toBeVisible()
-  await expect(battlefield).toHaveCSS('background-image', /battle\/(cobra-bastion|asura-palace|falcon-bastion|mirrored-crypt|fractured-throne)-v2\.png/)
+  await expect(battlefield).toHaveCSS('background-image', /battle\/(cobra-bastion|asura-palace|falcon-bastion|mirrored-crypt|fractured-throne)-v[0-9]+\.png/)
   const playableGrid = battlefield.locator('[class*="sqmBoard"]')
   const playableBounds = await playableGrid.boundingBox()
   const scenarioBounds = await battlefield.boundingBox()
