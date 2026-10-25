@@ -6,7 +6,9 @@ The regional triptych in `public/assets/backgrounds/region-triptych.png` is orig
 
 The repeating stone grain in `public/assets/ui/stone-grain.svg` is an original procedural texture used for the gray client panels.
 
-The battle backgrounds in `public/assets/backgrounds/battle/` are original environment scenes made for this project and informed by Tibia location screenshots. The runtime draws combatants over the full room through a transparent 7×7 coordinate layer. Art and rendering rules are documented in [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md); reference research is in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md). No Tibia screenshots or map layouts are bundled.
+The battle backgrounds in `public/assets/backgrounds/battle/` are original environment scenes made for this project and informed by Tibia location screenshots. Each background reserves the same centered 70% square for the 7×7 playable floor; the remaining margin contains non-playable scenario elements. New files must be square PNGs and pass `npm run validate:battle-art`. Art and rendering rules are documented in [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md); reference research is in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md). No Tibia screenshots or map layouts are bundled.
+
+The active aligned battle backgrounds are the `-v2.png` files listed in [ART_DIRECTION_RESEARCH.md](ART_DIRECTION_RESEARCH.md). The original unversioned PNGs are retained as unmapped drafts for comparison.
 
 The item sprites in `public/assets/items/` are local 32×32 copies from the item file pages on Tibia Wiki. Each item's data entry links to its source page and references the corresponding local image.
 

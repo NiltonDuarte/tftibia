@@ -27,3 +27,5 @@ Use **Game wiki** in the top bar for the full campaign, economy, formation, syne
 Use **Balance lab** to simulate seeded full campaigns across vocations and strategies. The default run compares 1,000 seeds per combination and provides sortable per-seed results, grouped win rates, and CSV export.
 
 Creature, synergy, vocation, upgrade, and campaign content is stored in `src/data/*.yaml`. It is checked by Zod during build validation and when loaded in the browser. Creature image sources are listed in [ASSET_SOURCES.md](ASSET_SOURCES.md).
+
+Battle backgrounds use a centered, square 7×7 playable footprint. See [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md) for the image-generation guide and run `npm run validate:battle-art` to check mapped image dimensions.

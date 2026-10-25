@@ -1,18 +1,40 @@
-# Battle room art
+# Battle background art pipeline
 
-Battle scenes are full-frame, top-down rooms inspired by Tibia's map tiles. They provide the visible floor, walls, water, and props across the complete square battlefield. The game places its 7×7 combatants over the room as a transparent coordinate layer; it does not draw a second floor, tile seams, or a board frame.
+## Authoritative playable footprint
 
-## Art requirements
+Every battle image uses the same square, top-down canvas and the same centered playable footprint. The authoritative reference is [`docs/art/battle-grid-guide.png`](docs/art/battle-grid-guide.png): a 7-column by 7-row square covering 70% of the canvas, with equal margins on all four sides. Preserve the guide's proportions when generating at a different square resolution.
 
-- Use a square image and show the room edge to edge.
-- Keep the central floor mostly open so combatants and effects remain readable.
-- Use repeated square floor tiles and crisp overhead props to evoke Tibia's client view.
-- Put walls, furniture, plants, water, and hazards around the room with clear edges and walkable gaps.
-- Match each hunt to its own location: Falcon Castle uses gray stone corridors and sparse military props; Cobra Bastion uses pale sand, red masonry, and serpent details; Asura Palace uses cream palace tiles, garden beds, fountains, and red floor hazards.
-- Do not add a 7×7 board outline, a centered inset square, a checkerboard, interface panels, labels, or characters.
+The play area is the square under the guide. The other 30% of the canvas is scenario space for walls, water, garden beds, furniture, doors, and other non-playable elements. Keep all of those elements outside the 7×7 footprint. Do not change the footprint to fit a particular scene; compose the scene around it.
 
-## Runtime mapping
+## Generate a background
 
-Images live in `public/assets/backgrounds/battle/` and are mapped by campaign theme in `src/App.module.css`. `.sqmBoard` fills the entire `.arenaGrid` but has no visible floor styling. Its seven columns and rows still place combatants consistently over the room art. Keep unit names, health indicators, and combat effects above the scenery.
+1. Start with a square canvas and the battle-grid guide as the composition reference. Keep a copy of the guide visible over the art during composition checks.
+2. Generate a full-frame, orthographic top-down room in Tibia-inspired pixel art. The central 70% square must be open, continuous, walkable floor. Put walls, water, vegetation, furniture, hazards, and other blocking scenery in the outer margins.
+3. Match location materials and props to the encounter. Keep the visual density low enough that combat sprites, labels, and effects remain readable over every cell.
+4. Do not draw the guide, a grid, tile boundaries, board outlines, text, labels, characters, or UI into the exported image. The grid is a runtime analysis overlay, not part of the background.
+5. Export a square PNG. Do not crop or stretch a non-square result to make it square; regenerate or recompose it on the square canvas.
+6. Save as a new versioned file in `public/assets/backgrounds/battle/` and map it in `src/App.module.css`. Keep earlier art until the replacement is reviewed and accepted.
 
-Check the room at desktop and mobile sizes. Confirm the whole scene remains visible, combatants use the full field, labels stay readable, and the background is not covered by opaque tiles.
+### Prompt template
+
+> Create a square, full-frame, orthographic top-down pixel-art battle room for a Tibia-inspired browser game. Use the attached battle-grid guide only as a composition reference: keep the centered square area occupying the middle 70% of the canvas completely open and walkable, sized for a 7×7 combat grid. All walls, water, plants, furniture, hazards, and other obstacles must stay outside that square. Continue the room naturally through the outer margins. Match the requested location's architecture and palette. Keep floor details subtle and readable under small creature sprites. No grid lines, tile boundaries, board border, text, labels, characters, interface, or watermark. Export as a square image.
+
+Append the location-specific architectural materials, palette, and landmark props to the prompt. Do not alter the footprint instructions.
+
+## Acceptance checklist
+
+- [ ] PNG is square; it is not a stretched or cropped landscape image.
+- [ ] The guide overlays the generated image with the grid centered and the same 70% square bounds.
+- [ ] All 49 cells contain continuous walkable floor; no water, walls, garden beds, furniture, hazards, or other blocking objects cross into the playable square.
+- [ ] The play area is large enough for 7×7 cells and leaves room for creature sprites and labels.
+- [ ] No grid, board, text, UI, or characters are baked into the image.
+- [ ] With the in-game **Grid: on** toggle enabled, all four sides of the runtime grid match the guide and sit entirely on open floor.
+- [ ] Scene remains legible at desktop and mobile display sizes.
+
+Reject and regenerate any image that fails a check. Do not compensate with per-image runtime insets or background stretching.
+
+## Runtime and validation
+
+Battle PNGs are mapped by theme in `src/App.module.css`. The `.arenaGrid` background and `.sqmBoard` must both be square; the latter is centered at 15% inset on every side. Combat remains a 7×7 logical board. The analysis toggle shows the actual runtime SQM boundaries without adding floor texture or changing combat behavior.
+
+`npm run validate:battle-art` checks that every mapped battle background is a square PNG. Build runs this validation. The check catches dimension mismatches; a person must still review floor clearance and alignment with the guide using the analysis toggle.

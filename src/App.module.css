@@ -547,11 +547,11 @@
 
 /* The 7×7 board is a transparent tactical coordinate layer over the room art. */
 .arenaGrid[data-theme] { background-color: var(--room-floor); background-image: var(--battle-scene); background-position: center; background-size: 100% 100%; background-repeat: no-repeat; }
-.arenaGrid[data-theme='desert'] { --battle-scene: url('/assets/backgrounds/battle/cobra-bastion.png'); }
-.arenaGrid[data-theme='garden'],.arenaGrid[data-theme='palace'] { --battle-scene: url('/assets/backgrounds/battle/asura-palace.png'); }
-.arenaGrid[data-theme='bastion'],.arenaGrid[data-theme='hunt'] { --battle-scene: url('/assets/backgrounds/battle/falcon-bastion.png'); }
-.arenaGrid[data-theme='crypt'],.arenaGrid[data-theme='mirror'] { --battle-scene: url('/assets/backgrounds/battle/mirrored-crypt.png'); }
-.arenaGrid[data-theme='deep'],.arenaGrid[data-theme='throne'] { --battle-scene: url('/assets/backgrounds/battle/fractured-throne.png'); }
+.arenaGrid[data-theme='desert'] { --battle-scene: url('/assets/backgrounds/battle/cobra-bastion-v2.png'); }
+.arenaGrid[data-theme='garden'],.arenaGrid[data-theme='palace'] { --battle-scene: url('/assets/backgrounds/battle/asura-palace-v2.png'); }
+.arenaGrid[data-theme='bastion'],.arenaGrid[data-theme='hunt'] { --battle-scene: url('/assets/backgrounds/battle/falcon-bastion-v2.png'); }
+.arenaGrid[data-theme='crypt'],.arenaGrid[data-theme='mirror'] { --battle-scene: url('/assets/backgrounds/battle/mirrored-crypt-v2.png'); }
+.arenaGrid[data-theme='deep'],.arenaGrid[data-theme='throne'] { --battle-scene: url('/assets/backgrounds/battle/fractured-throne-v2.png'); }
 .arenaGrid::before { display: none; }
 .arenaGrid[data-theme='desert'] { --sqm-floor: #75654d; --sqm-floor-alt: #796b53; --sqm-line: rgba(231,195,131,.38); }
 .arenaGrid[data-theme='garden'],.arenaGrid[data-theme='palace'] { --sqm-floor: #586353; --sqm-floor-alt: #5c6858; --sqm-line: rgba(191,205,147,.34); }
@@ -1131,9 +1131,8 @@
   background-repeat: no-repeat;
 }
 .appShell .sqmBoard {
-  /* Scenario art includes walls, water, and props. Keep tactical SQMs over
-     the open courtyard floor shown by the battle scene, not the full image. */
-  inset: 18.8% 23.3% 18.5% 27.3%;
+  /* Match the canonical 70% centered square in docs/art/battle-grid-guide.png. */
+  inset: 15%;
   background: transparent;
   box-shadow: none;
 }

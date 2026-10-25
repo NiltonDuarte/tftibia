@@ -57,7 +57,7 @@ Potential guardrails for a first prototype:
 - **Prototype UI:** The creature codex lists the recruit pool with search and role/family filters.
 - **Prototype decision:** The commander gains experience from encounters and route rewards. At 100 experience the commander levels up and chooses a vocation-specific perk from the reward pool.
 - **Prototype decision:** Every campaign map offers three route rewards: a gold cache, an experience shrine, or a hunt with extra shop and creature offers. Routes use distinct room biomes and enemy groups that fit the biome.
-- **Prototype decision:** Combat rooms use 32-pixel Tibia-style floor squares on a 7×7 board. Units can move across all seven rows; allies use cyan markers and enemies use coral markers.
+- **Prototype decision:** Combat rooms use a centered 7×7 playable board over a square scenario image. The playable footprint covers 70% of the image; walls, water, props, and hazards remain outside it. Units can move across all seven rows; allies use cyan markers and enemies use coral markers. See [BATTLE_ART_PIPELINE.md](BATTLE_ART_PIPELINE.md).
 - **Prototype decision:** Cobra Assassin is the first melee fighter. It has one-tile range and deals bonus damage when adjacent to a target.
 
 These are initial difficulty and pacing levers. Tune the encounter curve, loss penalty, rank multipliers, XP pace, and route rewards through play.
