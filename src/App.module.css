@@ -550,7 +550,7 @@
 .arenaGrid[data-theme='desert'] { --battle-scene: url('/assets/backgrounds/battle/cobra-bastion-v2.png'); }
 .arenaGrid[data-theme='garden'],.arenaGrid[data-theme='palace'] { --battle-scene: url('/assets/backgrounds/battle/asura-palace-v4.png'); }
 .arenaGrid[data-theme='bastion'],.arenaGrid[data-theme='hunt'] { --battle-scene: url('/assets/backgrounds/battle/falcon-bastion-v2.png'); }
-.arenaGrid[data-theme='crypt'],.arenaGrid[data-theme='mirror'] { --battle-scene: url('/assets/backgrounds/battle/mirrored-crypt-v2.png'); }
+.arenaGrid[data-theme='crypt'],.arenaGrid[data-theme='mirror'] { --battle-scene: url('/assets/backgrounds/battle/mirrored-crypt-v3.png'); }
 .arenaGrid[data-theme='deep'],.arenaGrid[data-theme='throne'] { --battle-scene: url('/assets/backgrounds/battle/fractured-throne-v2.png'); }
 .arenaGrid::before { display: none; }
 .arenaGrid[data-theme='desert'] { --sqm-floor: #75654d; --sqm-floor-alt: #796b53; --sqm-line: rgba(231,195,131,.38); }
