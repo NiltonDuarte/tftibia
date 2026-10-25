@@ -9,13 +9,21 @@
 .goldPill { color: #75e2c6; background: rgba(214, 183, 107, .08); border-color: rgba(214, 183, 107, .25); }
 .newRunButton { padding: 8px 10px; background: transparent; border: 0; color: #959986; cursor: pointer; font: 10px var(--mono); }
 .newRunButton:hover { color: var(--gold); }
-.hiddenInput { display: none; }
 .replayToolButton { color: #b8d4d6; }
 .replayPlaybackBar { display: flex; align-items: center; gap: 8px; color: #c7b27c; font: 9px var(--mono); }
 .replayPlaybackBar label { display: flex; align-items: center; gap: 4px; }
 .replayPlaybackBar input { width: 75px; accent-color: #c7b27c; }
 .replayPlaybackBar small { white-space: nowrap; color: #aab5b4; font: 9px var(--mono); }
-.replayError { max-width: min(420px, 34vw); overflow: hidden; color: #f19a8f; font: 9px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.replayDataPanel { display: grid; gap: 10px; margin-top: 14px; padding: 0 10px 10px; }
+.replayDataHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -10px; padding: 8px 10px; border-bottom: 1px solid #1c2021; color: #e1e0d8; background: #3b4142; font: 700 11px Tahoma,Verdana,sans-serif; }
+.replayDataHeader span { color: #c5b16e; font: 9px Tahoma,Verdana,sans-serif; }
+.replayDataPanel textarea { box-sizing: border-box; width: 100%; min-height: min(62vh, 620px); resize: vertical; padding: 12px; border: 1px solid #555d5f; border-radius: 0; outline: none; color: #d3d8d5; background: #171b1d; font: 11px/1.5 Consolas,"Courier New",monospace; tab-size: 2; }
+.replayDataPanel textarea:focus { border-color: #c2a25d; box-shadow: 0 0 0 1px rgba(194,162,93,.25); }
+.replayDataPanel textarea::placeholder { color: #737b7b; }
+.replayDataPanel > .secondaryButton { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.replayDataPanel > .secondaryButton svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: square; stroke-linejoin: miter; }
+.replayDataPanel > .secondaryButton:disabled { cursor: not-allowed; opacity: .5; }
+.replayImportError { margin: 0; color: #e69782; font: 11px/1.5 Tahoma,Verdana,sans-serif; }
 .main { width: min(1200px, 100%); margin: 0 auto; padding: 36px clamp(16px, 4vw, 56px) 64px; flex: 1; }
 .footer { text-align: center; border-top: 1px solid rgba(173, 176, 143, .1); padding: 19px; color: #737966; font: 10px var(--mono); letter-spacing: .04em; }
 

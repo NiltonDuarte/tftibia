@@ -126,3 +126,24 @@ test('game wiki sections are organized and long references can be expanded', asy
   await expect(dropTable).toHaveAttribute('open', '')
   await expect(dropTable.locator('article')).toHaveCount(26)
 })
+
+test('replay export and import use visible text data', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: /Knight/ }).click()
+  await page.getByRole('button', { name: 'Export replay' }).click()
+
+  const exportPage = page.locator('[aria-label="Replay export"]')
+  await expect(exportPage.getByRole('heading', { name: 'Export replay' })).toBeVisible()
+  const replayData = exportPage.getByRole('textbox', { name: 'Replay export data' })
+  await expect(replayData).toHaveAttribute('readonly', '')
+  const serializedReplay = await replayData.inputValue()
+  expect(serializedReplay).toContain('"actions"')
+  await expect(exportPage.getByRole('button', { name: 'Download replay JSON' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Import replay' }).click()
+  const importPage = page.locator('[aria-label="Replay import"]')
+  await importPage.getByRole('textbox', { name: 'Replay import data' }).fill(serializedReplay)
+  await importPage.getByRole('button', { name: 'Import replay' }).click()
+  await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible()
+  await expect(page.locator('input[type="file"]')).toHaveCount(0)
+})

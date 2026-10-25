@@ -4,7 +4,7 @@ import { GameProvider } from './game/GameContext'
 import { useGame } from './game/useGame'
 import type { Creature, GameItem, Role, Vocation } from './content/schemas'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import type { DragEvent, ReactNode } from 'react'
+import type { DragEvent, FormEvent, ReactNode } from 'react'
 import styles from './App.module.css'
 import { parseGameReplay, type GameReplay } from './game/replay'
 import { BOARD_CAPACITY, BOARD_LAYOUT, BOARD_SLOTS, DEPLOYMENT_LIMIT_ITEM_COST } from './game/board'
@@ -93,23 +93,9 @@ function GameIcon({ name }: { name: string }) {
   return <svg aria-hidden="true" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{shape}</svg>
 }
 
-function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki }: { children: ReactNode; onOpenCompendium: () => void; onOpenBalance: () => void; onOpenWiki: () => void }) {
+function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki, onOpenReplayExport, onOpenReplayImport }: { children: ReactNode; onOpenCompendium: () => void; onOpenBalance: () => void; onOpenWiki: () => void; onOpenReplayExport: () => void; onOpenReplayImport: () => void }) {
   const { state, commands, replayData, playback } = useGame()
-  const replayInput = useRef<HTMLInputElement>(null)
-  const [replayError, setReplayError] = useState<string | null>(null)
   const showBar = state.phase !== 'vocation'
-
-  const importReplay = async (file: File | undefined) => {
-    if (!file) return
-    try {
-      const parsed: unknown = JSON.parse(await file.text())
-      commands.playReplay(parseGameReplay(parsed))
-      setReplayError(null)
-    } catch (error) {
-      setReplayError(error instanceof Error ? error.message : 'Invalid replay file.')
-    }
-    if (replayInput.current) replayInput.current.value = ''
-  }
 
   return (
     <div className={styles.appShell}>
@@ -126,16 +112,9 @@ function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki }: { chil
           <button className={`${styles.newRunButton} ${styles.codexButton} ${styles.wikiButton}`} type="button" onClick={onOpenWiki}>Game wiki</button>
           <button className={`${styles.newRunButton} ${styles.codexButton} ${styles.balanceButton}`} type="button" onClick={onOpenBalance}>Balance lab</button>
           {replayData.actions.length > 0 && (
-            <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={() => downloadReplay(replayData)}>Export replay</button>
+            <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={onOpenReplayExport}>Export replay</button>
           )}
-          <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={() => replayInput.current?.click()}>Import replay</button>
-          <input
-            ref={replayInput}
-            className={styles.hiddenInput}
-            type="file"
-            accept="application/json,.json"
-            onChange={(event) => void importReplay(event.currentTarget.files?.[0])}
-          />
+          <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={onOpenReplayImport}>Import replay</button>
           {playback && (
             <div className={styles.replayPlaybackBar} aria-label="Replay playback controls">
               <span>{playback.replay.source === 'simulation' ? 'SIM' : 'REPLAY'} {Math.min(playback.actionIndex, playback.replay.actions.length)}/{playback.replay.actions.length}</span>
@@ -159,7 +138,6 @@ function Shell({ children, onOpenCompendium, onOpenBalance, onOpenWiki }: { chil
               <button className={`${styles.newRunButton} ${styles.replayToolButton}`} type="button" onClick={commands.stopReplay}>Stop</button>
             </div>
           )}
-          {replayError && <span className={styles.replayError} role="alert" title={replayError}>Replay import failed: {replayError}</span>}
           {showBar && (
             <>
               <span className={styles.phasePill}>{phaseLabels[state.phase]}</span>
@@ -1382,16 +1360,76 @@ function GameWiki({ onBack }: { onBack: () => void }) {
   )
 }
 
+function ReplayExportPage({ replay, onBack }: { replay: GameReplay; onBack: () => void }) {
+  const replayText = JSON.stringify(replay, null, 2)
+  return (
+    <section className={`${styles.pageSection} ${styles.replayPage}`} aria-label="Replay export">
+      <div className={styles.pageTitleRow}>
+        <div><div className={styles.eyebrow}>Campaign record</div><h1>Export replay</h1><p className={styles.lede}>Copy this replay data or download it as a JSON file.</p></div>
+        <button className={styles.secondaryButton} type="button" onClick={onBack}>← Return to campaign</button>
+      </div>
+      <section className={`${styles.reportPanel} ${styles.replayDataPanel}`}>
+        <div className={styles.replayDataHeader}><strong>Replay data</strong><span>{replay.actions.length} actions · seed {replay.seed}</span></div>
+        <textarea aria-label="Replay export data" readOnly spellCheck={false} value={replayText} />
+        <button className={styles.secondaryButton} type="button" onClick={() => downloadReplay(replay)} aria-label="Download replay JSON">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m0 0 4-4m-4 4L6 8M3 13v4h14v-4" /></svg>
+          Download JSON
+        </button>
+      </section>
+    </section>
+  )
+}
+
+function ReplayImportPage({ onBack, onImport }: { onBack: () => void; onImport: (replay: GameReplay) => void }) {
+  const [replayText, setReplayText] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    try {
+      const parsed: unknown = JSON.parse(replayText)
+      onImport(parseGameReplay(parsed))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Invalid replay data.')
+    }
+  }
+
+  return (
+    <section className={`${styles.pageSection} ${styles.replayPage}`} aria-label="Replay import">
+      <div className={styles.pageTitleRow}>
+        <div><div className={styles.eyebrow}>Campaign record</div><h1>Import replay</h1><p className={styles.lede}>Paste replay JSON below to validate and play it.</p></div>
+        <button className={styles.secondaryButton} type="button" onClick={onBack}>← Return to campaign</button>
+      </div>
+      <form className={`${styles.reportPanel} ${styles.replayDataPanel}`} onSubmit={submit}>
+        <label className={styles.replayDataHeader} htmlFor="replay-import-data"><strong>Replay data</strong><span>Paste the complete JSON replay</span></label>
+        <button className={styles.secondaryButton} type="submit" disabled={!replayText.trim()}>Import replay</button>
+        <textarea id="replay-import-data" aria-label="Replay import data" autoCapitalize="off" autoComplete="off" autoCorrect="off" spellCheck={false} placeholder="Paste replay JSON here…" value={replayText} onChange={(event) => { setReplayText(event.target.value); setError(null) }} />
+        {error && <p className={styles.replayImportError} role="alert">Replay import failed: {error}</p>}
+      </form>
+    </section>
+  )
+}
+
 function GameScreen() {
-  const { state, commands, playback } = useGame()
+  const { state, commands, replayData, playback } = useGame()
   const [showCodex, setShowCodex] = useState(false)
   const [showBalance, setShowBalance] = useState(false)
   const [showWiki, setShowWiki] = useState(false)
+  const [showReplayExport, setShowReplayExport] = useState(false)
+  const [showReplayImport, setShowReplayImport] = useState(false)
   const [battlePlayed, setBattlePlayed] = useState(false)
   useEffect(() => setBattlePlayed(false), [state.battleResult])
   return (
-    <Shell onOpenCompendium={() => { setShowCodex(true); setShowBalance(false); setShowWiki(false) }} onOpenBalance={() => { setShowBalance(true); setShowCodex(false); setShowWiki(false) }} onOpenWiki={() => { setShowWiki(true); setShowCodex(false); setShowBalance(false) }}>
-      {playback ? <>
+    <Shell
+      onOpenCompendium={() => { setShowCodex(true); setShowBalance(false); setShowWiki(false); setShowReplayExport(false); setShowReplayImport(false) }}
+      onOpenBalance={() => { setShowBalance(true); setShowCodex(false); setShowWiki(false); setShowReplayExport(false); setShowReplayImport(false) }}
+      onOpenWiki={() => { setShowWiki(true); setShowCodex(false); setShowBalance(false); setShowReplayExport(false); setShowReplayImport(false) }}
+      onOpenReplayExport={() => { setShowReplayExport(true); setShowReplayImport(false); setShowCodex(false); setShowBalance(false); setShowWiki(false) }}
+      onOpenReplayImport={() => { setShowReplayImport(true); setShowReplayExport(false); setShowCodex(false); setShowBalance(false); setShowWiki(false) }}
+    >
+      {showReplayExport ? <ReplayExportPage replay={replayData} onBack={() => setShowReplayExport(false)} />
+        : showReplayImport ? <ReplayImportPage onBack={() => setShowReplayImport(false)} onImport={(replay) => { commands.playReplay(replay); setShowReplayImport(false) }} />
+        : playback ? <>
         {(state.phase === 'battle' || (state.battleResult && !battlePlayed && state.phase === 'defeat')) && <><BattlePlayback onFinished={() => setBattlePlayed(true)} />{battlePlayed && state.phase === 'battle' && <BattleReport />}</>}
         {state.phase === 'vocation' && <VocationSelection />}
         {state.phase === 'map' && <CampaignMap />}
