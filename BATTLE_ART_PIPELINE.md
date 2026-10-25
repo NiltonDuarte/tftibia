@@ -1,29 +1,18 @@
-# Battle background pipeline
+# Battle room art
 
-This process separates scenery from gameplay geometry. Generated images provide the room around the arena; React/CSS owns the actual SQM surface and unit coordinates.
+Battle scenes are full-frame, top-down rooms inspired by Tibia's map tiles. They provide the visible floor, walls, water, and props across the complete square battlefield. The game places its 7×7 combatants over the room as a transparent coordinate layer; it does not draw a second floor, tile seams, or a board frame.
 
-## Fixed layout
+## Art requirements
 
-- Guide image: `docs/art/battle-grid-guide.png`
-- Guide generator: `scripts/generate-battle-art-guide.mjs`
-- Canvas: 1280 × 1280 px, square
-- Playfield: x=192, y=192, width=896, height=896 px
-- Tile size: 128 × 128 px, seven columns by seven rows
-- Normalized playfield bounds: 15% on every side
+- Use a square image and show the room edge to edge.
+- Keep the central floor mostly open so combatants and effects remain readable.
+- Use repeated square floor tiles and crisp overhead props to evoke Tibia's client view.
+- Put walls, furniture, plants, water, and hazards around the room with clear edges and walkable gaps.
+- Match each hunt to its own location: Falcon Castle uses gray stone corridors and sparse military props; Cobra Bastion uses pale sand, red masonry, and serpent details; Asura Palace uses cream palace tiles, garden beds, fountains, and red floor hazards.
+- Do not add a 7×7 board outline, a centered inset square, a checkerboard, interface panels, labels, or characters.
 
-The browser scales each scene to the square arena canvas. The `.sqmBoard` uses those same normalized bounds. Its opaque, theme-colored tiles cover the guide area in the image, so generated seams and floor details cannot shift or double up with the live grid. Creature positions are percentages within this `.sqmBoard`.
+## Runtime mapping
 
-## Generate a regional background
+Images live in `public/assets/backgrounds/battle/` and are mapped by campaign theme in `src/App.module.css`. `.sqmBoard` fills the entire `.arenaGrid` but has no visible floor styling. Its seven columns and rows still place combatants consistently over the room art. Keep unit names, health indicators, and combat effects above the scenery.
 
-1. Recreate the guide with `node scripts/generate-battle-art-guide.mjs` if its layout needs updating. Treat a layout change as a gameplay coordinate change too.
-2. Submit the guide PNG as the image reference to the image generator.
-3. Keep the canvas square. Describe the regional walls, plants, lighting, stairs, banners, and props in the outside margins. Require a clear, empty central board and no props crossing into it.
-4. Copy the result to `public/assets/backgrounds/battle/<stable-region-slug>.png`. Do not crop or reposition it. The generated source may include a guide grid; the runtime tile layer covers it.
-5. Map the campaign theme to that image in `src/App.module.css`. Keep the source as `background-size: 100% 100%`; no per-image zoom or background-position adjustments.
-6. Inspect the battle at desktop and mobile sizes. Confirm the visible board is seven columns by seven rows, each creature stays inside one SQM while moving, and perimeter scenery remains outside the playfield.
-
-## Prompt pattern
-
-> Paint an original [region] battle-room background from this exact composition guide. Keep the square aspect ratio and exact layout: the centered 7-column by 7-row square-tile playfield is 70% of the image width and height. Preserve its placement. Keep the center empty and unobstructed. Place all regional environment storytelling in the outer margins only. No creatures, text, UI, columns, stairs, foliage, props, or shadows should cross into the board. [Describe landmarks, materials, atmosphere, palette, and pixel-art treatment.] No title, logo, inset frame, or HUD.
-
-The center of the generated image is only a composition guide. The game renders the authoritative stone SQMs over it. Do not rely on AI-generated tile edges for alignment.
+Check the room at desktop and mobile sizes. Confirm the whole scene remains visible, combatants use the full field, labels stay readable, and the background is not covered by opaque tiles.

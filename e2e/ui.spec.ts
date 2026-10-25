@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('campaign entry and route choice keep the primary action clear', async ({ page }) => {
+test('campaign route choice leads to a full-room transparent battlefield', async ({ page }) => {
   await page.goto('/')
 
   await expect(page.getByRole('heading', { name: 'Choose your vocation' })).toBeVisible()
@@ -15,7 +15,19 @@ test('campaign entry and route choice keep the primary action clear', async ({ p
   await expect(travel).toBeVisible()
   await travel.click()
 
-  await expect(page.getByRole('button', { name: /Begin automatic battle/ })).toBeVisible()
+  await page.getByRole('button', { name: /Recruit/ }).first().click()
+
+  const beginBattle = page.getByRole('button', { name: /Begin automatic battle/ })
+  await expect(beginBattle).toBeVisible()
+  await expect(beginBattle).toBeEnabled()
+  await beginBattle.click()
+
+  const battlefield = page.locator('[class*="arenaGrid"][aria-label="Live tactical battlefield"]')
+  await expect(battlefield).toBeVisible()
+  await expect(battlefield).toHaveCSS('background-image', /battle\/(cobra-bastion|asura-palace|falcon-bastion|mirrored-crypt|fractured-throne)\.png/)
+  const sqmTile = page.locator('[class*="sqmTile"]').first()
+  await expect(sqmTile).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(sqmTile).toHaveCSS('border-top-width', '0px')
 })
 
 test('creature codex search and filters remain usable', async ({ page }) => {

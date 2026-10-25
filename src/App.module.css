@@ -545,7 +545,7 @@
   .introScreen::before { inset: -20px -12px; }
 }
 
-/* The art guide and this playfield share one centered 7×7 board rectangle. */
+/* The 7×7 board is a transparent tactical coordinate layer over the room art. */
 .arenaGrid[data-theme] { background-color: var(--room-floor); background-image: var(--battle-scene); background-position: center; background-size: 100% 100%; background-repeat: no-repeat; }
 .arenaGrid[data-theme='desert'] { --battle-scene: url('/assets/backgrounds/battle/cobra-bastion.png'); }
 .arenaGrid[data-theme='garden'],.arenaGrid[data-theme='palace'] { --battle-scene: url('/assets/backgrounds/battle/asura-palace.png'); }
@@ -1127,14 +1127,23 @@
 .appShell .arenaGrid[data-theme] {
   background-image: var(--battle-scene);
   background-position: center;
-  background-size: cover;
+  background-size: 100% 100%;
   background-repeat: no-repeat;
 }
-.appShell .sqmBoard { background: transparent; }
-.appShell .sqmBoard > .sqmTile {
-  background-color: color-mix(in srgb, var(--sqm-floor,#5b584e) 56%, transparent);
+.appShell .sqmBoard {
+  inset: 0;
+  background: transparent;
+  box-shadow: none;
 }
-.appShell .sqmTile { background-color: #343a3d; }
+.appShell .sqmBoard > .sqmTile,
+.appShell .sqmTile,
+.appShell .sqmTile:nth-child(even) {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.appShell .playerArenaUnit { background-color: rgba(33,167,196,.08); }
+.appShell .enemyArenaUnit { background-color: rgba(211,93,92,.08); }
 .appShell .healthTrack i { background-color: #a65c4e; }
 .appShell .playerArenaUnit .healthTrack i { background-color: #81945b; }
 .appShell .expTrack i { background-color: #9a9d68; }
