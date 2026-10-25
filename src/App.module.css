@@ -825,3 +825,416 @@
   .shopSprite { width: 38px; height: 38px; }
   .benchSprite { width: 34px; height: 34px; }
 }
+
+/* Combat side window layout. */
+.battleStage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .32fr); align-items: stretch; gap: 12px; }
+.battleRoster { display: flex; min-width: 0; flex-direction: column; gap: 10px; }
+.battleSide { min-width: 0; }
+.battleSide + .battleSide { padding-top: 8px; border-top: 1px solid #444c4e; }
+.battleSideList { display: flex; flex-direction: column; gap: 5px; }
+.battleRosterUnit { display: grid; grid-template-columns: 36px minmax(0,1fr) auto; align-items: center; gap: 7px; min-width: 0; padding: 5px; }
+.battleRosterSprite { width: 34px; height: 34px; object-fit: contain; image-rendering: pixelated; }
+.battleRosterUnit > div { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.battleRosterUnit em { color: #d4bd64; font-size: 10px; font-style: normal; }
+.battleRosterDefeated { opacity: .54; }
+@media (max-width: 850px) {
+  .battleStage { grid-template-columns: minmax(0,1fr) 205px; gap: 8px; }
+  .battleRosterUnit { grid-template-columns: 30px minmax(0,1fr); gap: 5px; padding: 4px; }
+  .battleRosterSprite { width: 28px; height: 28px; }
+  .battleRosterUnit em { display: none; }
+}
+@media (max-width: 620px) {
+  .battleStage { grid-template-columns: minmax(0,1fr); }
+  .battleRoster { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+  .battleSide + .battleSide { padding-top: 0; border-top: 0; border-left: 1px solid #444c4e; padding-left: 7px; }
+  .battleSide > header { font-size: 10px; }
+  .battleRosterUnit { grid-template-columns: 28px minmax(0,1fr); }
+  .battleRosterUnit strong { font-size: 9px; }
+  .battleRosterUnit span { font-size: 8px; }
+}
+
+/* Lean client skin: flat graphite windows, familiar gold selection, no app chrome gradients. */
+.appShell {
+  --client-line: #4c5356;
+  --client-frame: #596064;
+  --client-window: #292e31;
+  --client-title: #373d40;
+  --client-text: #d6d8d6;
+  --client-muted: #aeb4b4;
+  --client-gold: #c9ae60;
+  color: var(--client-text);
+  background: #1d2225;
+  border: 0;
+  box-shadow: none;
+  font-family: Tahoma, Verdana, Arial, sans-serif;
+}
+.topbar {
+  min-height: 54px;
+  height: auto;
+  padding: 5px 12px;
+  border: 0;
+  border-bottom: 1px solid #15191b;
+  background: #303639;
+  box-shadow: none;
+}
+.brand { gap: 8px; }
+.brandMark {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #857449;
+  border-radius: 0;
+  color: #ddcc92;
+  background: #252a2c;
+  box-shadow: none;
+  font: 700 19px Georgia,serif;
+}
+.brand strong { color: #e0e2df; font: 700 14px Tahoma,Verdana,sans-serif; text-shadow: none; }
+.brand small { margin-top: 3px; color: #aaa88f; font: 8px Tahoma,Verdana,sans-serif; letter-spacing: .1em; }
+.headerStatus { gap: 3px; }
+.headerStatus .newRunButton {
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  color: #cbd0d0;
+  background: transparent;
+  box-shadow: none;
+  font: 11px Tahoma,Verdana,sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.headerStatus .newRunButton:hover { color: #f0d77e; border-color: #555b5c; background: #282e30; }
+.phasePill, .goldPill {
+  min-height: 30px;
+  padding: 6px 8px;
+  border: 1px solid #51585b;
+  border-radius: 0;
+  color: #cfd3d2;
+  background: #252b2e;
+  font: 10px Tahoma,Verdana,sans-serif;
+  letter-spacing: 0;
+}
+.goldPill { color: #e3ce83; border-color: #776642; background: #302d25; }
+.main { width: min(1500px,100%); padding: 20px clamp(12px,2vw,28px) 38px; }
+.footer { padding: 11px; border-color: #343a3d; color: #8d9697; background: #202629; font: 10px Tahoma,Verdana,sans-serif; letter-spacing: 0; }
+.commanderProgress { margin: 0; padding: 6px 12px; border: 0; border-bottom: 1px solid #111719; background: #252b2e; box-shadow: none; }
+.commanderIdentity { color: #d8dcda; }
+.commanderIdentity strong { font: 700 11px Tahoma,Verdana,sans-serif; }
+.commanderIdentity b { padding: 2px 5px; border: 1px solid #525a5c; color: #d6c276; background: #1c2225; font: 10px Tahoma,Verdana,sans-serif; }
+.commanderIcon { border-color: #5c6260; background: #292f31; }
+.expTrack { height: 6px; border: 0; background: #171d1f; }
+.expTrack i { background: #9a9d68; }
+.expReadout { color: #afb7b6; font: 10px Tahoma,Verdana,sans-serif; }
+
+.introScreen { min-height: calc(100vh - 145px); gap: 24px; }
+.introScreen::before { display: none; }
+.introCopy {
+  align-self: center;
+  display: block;
+  padding: 16px 10px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.introCopy h1 { margin: 12px 0; color: #e3e1d6; font: 700 clamp(32px,4vw,48px)/1.06 Georgia,'Times New Roman',serif; letter-spacing: -.02em; text-shadow: none; }
+.introCopy h1 em { color: #c4b87e; }
+.introCopy p { max-width: 440px; color: #bfc5c3; font: 14px/1.55 Tahoma,Verdana,sans-serif; }
+.introFacts { gap: 5px; margin-top: 20px; color: #b7bfbd; font: 10px Tahoma,Verdana,sans-serif; }
+.introFacts span { padding: 5px 0; border: 0; background: transparent; }
+.introFacts b { color: #d1b968; }
+
+.vocationPanel, .progressCard, .mapCurrent, .routeCard, .boardFrame, .benchPanel, .synergyPanel, .shopPanel, .detailPanel, .reportPanel, .rewardBlock, .analysisPanel, .arenaPanel, .battleRoster {
+  border: 1px solid var(--client-frame);
+  border-radius: 0;
+  outline: 0;
+  color: var(--client-text);
+  background: var(--client-window);
+  box-shadow: none;
+}
+.vocationPanel { padding: 0 12px 10px; }
+.panelHeading, .panelTopline {
+  min-height: 32px;
+  margin: 0 -11px 10px;
+  padding: 6px 9px;
+  border-bottom: 1px solid #202527;
+  background: var(--client-title);
+  box-shadow: none;
+}
+.panelHeading h2, .panelTopline h2, .panelTopline h3 { margin: 0; color: #e0e2df; font: 700 13px Tahoma,Verdana,sans-serif; }
+.panelHeading .eyebrow { margin-right: 5px; color: #c9b873; font: 9px Tahoma,Verdana,sans-serif; }
+.panelHeading > div { display: flex; align-items: baseline; gap: 5px; }
+.stepBadge { color: #b9c0bf; font: 10px Tahoma,Verdana,sans-serif; }
+.vocationGrid { gap: 5px; margin-top: 0; }
+.vocationCard {
+  min-height: 150px;
+  padding: 10px;
+  border: 1px solid #51595b;
+  border-radius: 0;
+  color: #dce0dd;
+  background: #303639;
+  box-shadow: none;
+  transition: border-color .12s, background-color .12s;
+}
+.vocationCard:hover { border-color: #a38c4b; background: #363b3d; }
+.vocationCard:active { border-color: #d1b968; box-shadow: inset 0 0 0 1px #d1b968; }
+.vocationIcon { width: 28px; height: 28px; display: grid; place-items: center; margin-bottom: 6px; border: 1px solid #575a50; background: #252b2d; color: #d2bb6e; }
+.vocationTitle { color: #e4e2d8; font: 700 16px Georgia,'Times New Roman',serif; }
+.vocationSubtitle { color: #c6b66e; font: 9px Tahoma,Verdana,sans-serif; }
+.vocationDesc { min-height: 38px; margin-top: 6px; color: #c1c7c5; font: 12px/1.4 Tahoma,Verdana,sans-serif; }
+.cardArrow { margin-top: 7px; padding-top: 5px; border-top-color: #484f51; color: #c6ccca; font: 10px Tahoma,Verdana,sans-serif; }
+.cardArrow b { color: #dcc46f; }
+.panelFootnote { margin-top: 9px; color: #aeb5b3; font: 10px Tahoma,Verdana,sans-serif; }
+
+.pageTitleRow { align-items: center; margin-bottom: 12px; padding: 0 0 10px; border: 0; border-bottom: 1px solid #50585a; background: transparent; box-shadow: none; }
+.pageTitleRow h1 { margin: 3px 0; color: #e3e1d6; font: 700 clamp(23px,2.5vw,30px)/1.15 Georgia,'Times New Roman',serif; letter-spacing: 0; text-shadow: none; }
+.eyebrow { color: #cdb968; font: 9px Tahoma,Verdana,sans-serif; letter-spacing: .1em; }
+.lede { color: #b9c0bf; font: 13px/1.45 Tahoma,Verdana,sans-serif; }
+.progressCard { min-width: 190px; padding: 8px 10px; border-width: 1px; outline: 0; background: #272d30; }
+.progressCard > span { color: #aeb6b5; font: 9px Tahoma,Verdana,sans-serif; }
+.progressCard > strong { margin: 5px 0; color: #d1bd70; font: 700 19px Georgia,serif; }
+.progressCard > strong small { color: #aeb6b5; font: 10px Tahoma,Verdana,sans-serif; }
+.progressTrack { height: 5px; border: 0; background: #181e20; }
+.progressTrack i { background: #999c68; }
+.mapCurrent { padding: 8px 10px; border-width: 1px; outline: 0; background: #2e3537; }
+.mapPin { border: 1px solid #5b5b4c; border-radius: 0; color: #d1bd70; background: #252b2d; }
+.mapKicker { color: #c7b975; font: 9px Tahoma,Verdana,sans-serif; }
+.mapCurrent strong { color: #e0e2dc; font: 700 15px Georgia,serif; }
+.mapCurrent small, .routeCount { color: #afb8b7; font: 10px Tahoma,Verdana,sans-serif; }
+.routeMapViewport { border: 1px solid #4b5553; outline: 0; background: #202a26; background-image: none; box-shadow: none; }
+.routeMapPath { stroke: #5c513a; stroke-width: 7; stroke-linecap: square; stroke-linejoin: miter; }
+.routeMapPathActive { stroke: #d3ad4d; stroke-width: 8; stroke-linecap: square; stroke-linejoin: miter; }
+.routeMapNode rect { fill: #3c4940; stroke: #d0c59b; stroke-width: 2; }
+.routeMapNode text { fill: #b2bbb4; font: 9px Tahoma,Verdana,sans-serif; }
+.routeMapNodeAvailable rect { fill: #ad8c3f; stroke: #f0d984; stroke-width: 2; }
+.routeMapNodeAvailable text { fill: #e1cf8a; font: bold 9px Tahoma,Verdana,sans-serif; }
+.routeMapNode .routeMapDone { fill: #afc193; }
+.routeMapSvg { image-rendering: pixelated; }
+.mapLandmarkLabels { fill: #e1d5a7; font: 8px Tahoma,Verdana,sans-serif; letter-spacing: .08em; paint-order: stroke; stroke: #29291f; stroke-width: 2.5px; }
+.mapCompass text { fill: #e4d9b5; font: 9px Tahoma,Verdana,sans-serif; }
+.routeCard { border-width: 1px; background: #292f32; }
+.routeImage { height: 130px; border-bottom: 1px solid #535b59; background-image: url('/assets/backgrounds/region-triptych.png'); background-size: 300% auto; background-position: var(--region-art-x,50%) 48%; }
+.routeImage::before, .routeImage::after { display: none; }
+.routeStage, .routeIndex { color: #f0e7c9; font: 10px Tahoma,Verdana,sans-serif; text-shadow: 1px 1px #111; }
+.routeBody { padding: 12px; }
+.routeMeta { color: #cabb79; font: 9px Tahoma,Verdana,sans-serif; }
+.routeBody h2 { margin: 4px 0; color: #e3e1d6; font: 700 18px Georgia,'Times New Roman',serif; }
+.routeBody p { min-height: 0; color: #b9c0bf; font: 12px/1.45 Tahoma,Verdana,sans-serif; }
+.routeReward { font: 10px Tahoma,Verdana,sans-serif; }
+.enemyPreview > span { color: #b7c0bd; font: 10px Tahoma,Verdana,sans-serif; }
+.primaryButton, .secondaryButton, .battleButton, .buyButton {
+  min-height: 34px;
+  padding: 8px 10px;
+  border: 1px solid #6a7058;
+  border-radius: 0;
+  color: #e3e2d8;
+  background: #454a39;
+  box-shadow: none;
+  font: 700 11px Tahoma,Verdana,sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.primaryButton:hover:not(:disabled), .battleButton:hover:not(:disabled) { border-color: #c4ac5e; color: #f3e6b1; background: #50533f; }
+.secondaryButton, .buyButton { color: #d0d5d3; border-color: #565f61; background: #373e41; }
+.secondaryButton:hover:not(:disabled), .buyButton:hover:not(:disabled) { border-color: #a28b4b; background: #41484a; }
+.buyButton:disabled { opacity: .5; }
+.prepHeaderStats span { color: #c4cac8; border-color: #4e5759; background: #292f32; font: 10px Tahoma,Verdana,sans-serif; }
+.panelTopline h3 small { color: #aeb6b4; font: 10px Tahoma,Verdana,sans-serif; }
+.boardFrame { padding: 10px; background: #292f31; }
+.boardSlot { border: 1px solid #505b5b; background: #22292b; }
+.occupiedSlot { border-color: #8d895d; background: #333b35; }
+.selectedSlot { border: 2px solid #d4bd64; outline: 0; box-shadow: none; }
+.boardCreatureName { color: #e4e1d1; font: 700 10px Tahoma,Verdana,sans-serif; }
+.boardTraits { color: #b7c1bd; font: 9px Tahoma,Verdana,sans-serif; }
+.benchPanel, .synergyPanel, .shopPanel, .detailPanel, .reportPanel, .rewardBlock { padding: 0 10px 10px; }
+.panelTopline { margin: 0 -9px 9px; }
+.benchUnit { color: #d9ddda; border: 1px solid #535d5f; background: #343b3e; font: 10px Tahoma,Verdana,sans-serif; }
+.benchUnit:hover, .selectedBench { border-color: #c9b45f; background: #3b4036; }
+.selectionHint, .selectionHint b { color: #c4d0b4; font: 10px Tahoma,Verdana,sans-serif; }
+.synergyRow { border-color: #485254; background: #2c3335; }
+.synergyText strong { color: #e0e2dc; font: 700 11px Tahoma,Verdana,sans-serif; }
+.synergyText span, .synergyNote { color: #b5bdbc; font: 10px/1.4 Tahoma,Verdana,sans-serif; }
+.shopDesc { color: #b8c0be; font: 11px/1.45 Tahoma,Verdana,sans-serif; }
+.shopCard { border-color: #4d5759; background: #2d3437; }
+.shopCardInfo strong { color: #e2e3dd; font: 700 11px Tahoma,Verdana,sans-serif; }
+.shopCardInfo > span { color: #b2bcba; font: 9px Tahoma,Verdana,sans-serif; }
+.tag { padding: 2px 5px; color: #c8cfcc; border-color: #566063; background: #333b3d; font: 8px Tahoma,Verdana,sans-serif; }
+.detailPanel h3 { color: #e1dfd4; font: 700 15px Georgia,serif; }
+.detailPanel p { color: #bbc2c0; font: 11px/1.45 Tahoma,Verdana,sans-serif; }
+.statsLine { color: #c3cdca; font: 10px Tahoma,Verdana,sans-serif; }
+.rewardHeading { margin: 0 -9px 9px; padding: 7px 9px; border-bottom: 1px solid #202527; background: #373d40; }
+.rewardHeading h2 { color: #e1e2dc; font: 700 13px Tahoma,Verdana,sans-serif; }
+.rewardHeading p { color: #b7bfbd; font: 10px Tahoma,Verdana,sans-serif; }
+.rewardCard, .upgradeCard { border: 1px solid #535d5f; border-radius: 0; background: #303739; }
+.rewardCard:hover, .upgradeCard:hover { border-color: #a48d4d; background: #363d3d; }
+.rewardSelected { border: 2px solid #d1b95e !important; outline: 0; background: #3e4034 !important; box-shadow: none !important; }
+.rewardName { color: #e3e3dc; font: 700 11px Tahoma,Verdana,sans-serif; }
+.rewardFamily { color: #b7bfbd; font: 9px Tahoma,Verdana,sans-serif; }
+.rewardSelect { color: #dbca82; font: 9px Tahoma,Verdana,sans-serif; }
+.upgradeCard strong { color: #e2e3dc; font: 700 12px Tahoma,Verdana,sans-serif; }
+.upgradeCard p { color: #bac2bf; font: 11px/1.4 Tahoma,Verdana,sans-serif; }
+.codexFilters input, .codexFilters select { border: 1px solid #596366; border-radius: 0; color: #e0e2df; background: #252c2f; font: 11px Tahoma,Verdana,sans-serif; }
+.codexCard { border: 1px solid #525c5f; border-radius: 0; background: #2b3235; }
+.codexBody h2 { color: #e1e1d8; font: 700 15px Georgia,serif; }
+.codexBody > p { color: #bbc2c0; font: 11px/1.4 Tahoma,Verdana,sans-serif; }
+.codexStats { color: #d2c17d; font: 9px Tahoma,Verdana,sans-serif; }
+
+/* Keep the combat side lists; flatten the frame around them. */
+.arenaPanel { border: 1px solid #555e61; outline: 0; background: #282f32; }
+.arenaPanel > .panelTopline { margin: 0 -17px 8px; padding: 7px 10px; background: #373e41; }
+.arenaPanel > .panelTopline h2 { color: #e5dfc7; font: 700 18px Georgia,serif; }
+.playbackControls .roundPill { border: 1px solid #565e60; color: #d5d9d6; background: #282e31; font: 10px Tahoma,Verdana,sans-serif; }
+.battleRoster { border: 1px solid #525b5e; outline: 0; padding: 7px; background: #2d3437; }
+.battleSide > header { padding: 5px 6px; border: 0; border-bottom: 1px solid #596164; color: #e2e3dd; background: transparent; font: 700 11px Tahoma,Verdana,sans-serif; }
+.battleSide > header b { border-color: #50595b; color: #d3c179; background: #22282b; font: 9px Tahoma,Verdana,sans-serif; }
+.battleRosterUnit { border: 1px solid #485255; background: #252c2f; }
+.battleRosterUnit strong { color: #e2e4dd; font: 700 10px Tahoma,Verdana,sans-serif; }
+.battleRosterUnit span { color: #adb7b5; font: 9px Tahoma,Verdana,sans-serif; }
+.battleRosterUnit i { border: 0; background: #1c2224; }
+.battleRosterUnit i b { background: #a65c4e; }
+.battleSide:first-child .battleRosterUnit i b { background: #81945b; }
+.arenaEvent { border: 1px solid #50595b; background: #242b2e; }
+.arenaEvent p { color: #d6dad7; font: 11px/1.4 Tahoma,Verdana,sans-serif; }
+.arenaGrid { box-shadow: none; }
+.sqmBoard { box-shadow: none; }
+.sqmBoard > .sqmTile { border: 1px solid var(--sqm-line,rgba(208,199,165,.25)); background-image: none; box-shadow: none; }
+.sqmTile { background-image: none; box-shadow: none; }
+.introScreen::before { display: none; }
+.introScreen { min-height: 0; align-items: start; padding: 8px 0; gap: 16px; }
+.introCopy h1 { margin: 7px 0; color: #e0dfd6; font: 700 25px/1.2 Georgia,'Times New Roman',serif; }
+.introCopy h1 em { color: #c5b871; }
+.introCopy p { max-width: 400px; font-size: 12px; }
+.introFacts { flex-direction: row; flex-wrap: wrap; gap: 5px 12px; margin-top: 12px; }
+.introFacts span { color: #abb3b2; font-size: 9px; }
+.cardArrow { text-transform: none; letter-spacing: 0; }
+.arenaPanel[data-theme] { background-color: #282f32; background-image: none; }
+.routeImage[data-theme] { background-image: url('/assets/backgrounds/region-triptych.png'); background-size: 300% auto; }
+.battleBanner { border-color: #4c5356; background: #2a3033; }
+.defeatBanner { border-color: #61443f; background: #332a29; }
+.battleAction, .arenaContinue { border-color: #65614d; background: #282e30; box-shadow: none; }
+.battleAction strong { color: #e0dfd6; }
+.battleAction span { color: #b6bfbd; }
+.shopSymbol, .synergyIcon { border-radius: 0; box-shadow: none; }
+.analysisPanel, .reportPanel, .arenaEvent, .roundPill { box-shadow: none; }
+.routeCard, .rewardCard, .upgradeCard, .codexCard, .shopCard, .benchUnit, .synergyRow, .survivorRow { box-shadow: none; }
+
+/* Remove the inherited promotional gradients and glossy effects from the old skin. */
+.appShell :global(*) { text-shadow: none; }
+.appShell :global(*) { background-image: none; box-shadow: none; }
+.appShell .routeImage[data-theme] {
+  background-color: #252b2d;
+  background-image: url('/assets/backgrounds/region-triptych.png');
+}
+.appShell .arenaGrid[data-theme] {
+  background-image: var(--battle-scene);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.appShell .sqmBoard { background: transparent; }
+.appShell .sqmBoard > .sqmTile {
+  background-color: color-mix(in srgb, var(--sqm-floor,#5b584e) 56%, transparent);
+}
+.appShell .sqmTile { background-color: #343a3d; }
+.appShell .healthTrack i { background-color: #a65c4e; }
+.appShell .playerArenaUnit .healthTrack i { background-color: #81945b; }
+.appShell .expTrack i { background-color: #9a9d68; }
+.appShell .progressTrack i { background-color: #999c68; }
+.appShell .brandMark { background-color: #252a2c; }
+.appShell .vocationIcon { background-color: #252b2d; }
+.appShell .boardSlot { background-color: #22292b; }
+.appShell .occupiedSlot { background-color: #333b35; }
+.appShell .codexArt { background-color: #252c2f; }
+.appShell .spellProjectile, .appShell .healProjectile { display: none; }
+.clientWindow, .routeChoices { min-width: 0; margin-top: 12px; border: 1px solid #4c5356; background: #292e31; }
+.clientWindowTitle {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 9px;
+  border-bottom: 1px solid #1e2325;
+  color: #e0e2df;
+  background: #373d40;
+  font: 700 11px Tahoma,Verdana,sans-serif;
+}
+.clientWindowTitle small { color: #b9b079; font: 9px Tahoma,Verdana,sans-serif; letter-spacing: .06em; }
+.clientWindow .routeMapViewport { margin: 0; border: 0; background: #252d2a; }
+.routeChoices { padding-bottom: 9px; }
+.routeChoices .routeGrid { grid-template-columns: repeat(2,minmax(0,1fr)); margin: 8px; }
+.pageTitleRow h1 { font: 700 clamp(22px,2.2vw,27px)/1.2 Tahoma,Verdana,sans-serif; }
+.mapCurrent strong, .routeBody h2, .detailPanel h3, .codexBody h2 { font-family: Tahoma,Verdana,sans-serif; }
+.routeBody h2 { font-size: 15px; }
+.introCopy h1, .vocationTitle { font-family: Tahoma,Verdana,sans-serif; }
+.introCopy h1 { font-size: 28px; }
+.vocationTitle { font-size: 14px; }
+.routeMapViewport {
+  overflow: auto;
+  margin: 0;
+  border: 0;
+  background: #334335;
+}
+.routeMapSvg {
+  display: block;
+  width: 100%;
+  min-width: 760px;
+  height: auto;
+  overflow: hidden;
+  image-rendering: auto;
+}
+.routeMapSvg > image { image-rendering: pixelated; }
+.routeMapTint { fill: #11150f; opacity: .18; }
+.mapRouteFuture { fill: none; stroke: #e4d9bb; stroke-width: 1.2; stroke-linecap: round; opacity: .34; }
+.mapRouteTaken { fill: none; stroke: #d7c27b; stroke-width: 2.5; stroke-linecap: round; opacity: .92; }
+.mapRouteAvailable { fill: none; stroke: #f3d66c; stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 6 4; }
+.mapNodeFuture circle { fill: #354a3a; stroke: #d1d7b2; stroke-width: 1; }
+.mapNodeFuture text { fill: #f0e7c9; font: 700 6px Tahoma,Verdana,sans-serif; }
+.mapNodeCompleted circle { fill: #8b9970; stroke: #e5dfbc; stroke-width: 1.2; }
+.mapNodeCompleted text { fill: #1d271d; font: 700 6px Tahoma,Verdana,sans-serif; }
+.mapNodeAvailable circle { fill: #e0bd54; stroke: #fff0a5; stroke-width: 2; }
+.mapNodeAvailable text { fill: #302813; font: 700 7px Tahoma,Verdana,sans-serif; }
+.mapCurrentMarker circle { fill: #10140f; stroke: #eee5c1; stroke-width: 3; }
+.mapCurrentMarker path { fill: none; stroke: #f2e8c6; stroke-width: 2; }
+.mapCurrentLabel rect, .mapDestinationMarker g rect { fill: #1c211b; fill-opacity: .9; stroke: #988553; stroke-width: 1; }
+.mapCurrentLabel text { fill: #f0e7c9; font: 700 9px Tahoma,Verdana,sans-serif; letter-spacing: .05em; }
+.mapDestinationMarker text { fill: #f1e5be; font: 700 9px Tahoma,Verdana,sans-serif; letter-spacing: .02em; }
+.routeMapLegend {
+  display: flex;
+  min-height: 27px;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 9px;
+  border-top: 1px solid #1e2325;
+  color: #bac0b9;
+  background: #292e31;
+  font: 10px Tahoma,Verdana,sans-serif;
+}
+.routeMapLegend span { display: inline-flex; align-items: center; gap: 5px; }
+.routeMapLegend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.mapLegendCurrent { border: 2px solid #eee5c1; background: #10140f; }
+.mapLegendAvailable { border: 2px solid #fff0a5; background: #e0bd54; }
+.mapLegendFuture { width: 14px !important; height: 2px !important; border-radius: 0 !important; background: #b3b795; }
+@media (max-width: 620px) {
+  .routeMapLegend { flex-wrap: wrap; gap: 5px 12px; font-size: 9px; }
+}
+
+@media (max-width: 760px) {
+  .topbar { border-right: 0; border-left: 0; }
+  .headerStatus { gap: 2px; }
+  .introScreen { min-height: 0; }
+  .introFacts { flex-direction: row; flex-wrap: wrap; }
+}
+@media (max-width: 620px) {
+  .routeChoices .routeGrid { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 620px) {
+  .commanderProgress { margin: 0; padding: 5px 7px; }
+  .main { padding: 14px 8px 28px; }
+  .introCopy { padding: 8px 4px; }
+  .introCopy h1 { font-size: 25px; }
+  .vocationPanel { padding: 0 8px 8px; }
+  .panelHeading { margin-right: -7px; margin-left: -7px; }
+  .pageTitleRow { padding: 0 0 8px; }
+  .progressCard { width: 100%; }
+  .battleRoster { padding: 5px; }
+  .arenaPanel > .panelTopline { margin: 0 -7px 8px; }
+}

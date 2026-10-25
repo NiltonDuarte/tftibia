@@ -193,16 +193,15 @@ function VocationSelection() {
   return (
     <section className={styles.introScreen}>
       <div className={styles.introCopy}>
-        <div className={styles.eyebrow}>A creature tactics campaign</div>
-        <h1>Build your team.<br /><em>Survive the frontier.</em></h1>
+        <div className={styles.eyebrow}>The Shattered Paths</div>
+        <h1>Campaign setup</h1>
         <p>
-          Choose a vocation, recruit creatures, and send your formation into automatic battles. Every route changes the
-          fight ahead.
+          Choose a vocation, follow the route map, and prepare your creature party for each encounter.
         </p>
         <div className={styles.introFacts}>
-          <span><b>01</b> Pick a path</span>
-          <span><b>02</b> Shape your formation</span>
-          <span><b>03</b> Watch the clash</span>
+          <span><b>01</b> Vocation</span>
+          <span><b>02</b> Route map</span>
+          <span><b>03</b> Formation</span>
         </div>
       </div>
       <div className={styles.vocationPanel}>
@@ -244,16 +243,30 @@ function CampaignMap() {
   const location = nodeById[state.mapNodeId]
   const destinations = (state.routeEdges[state.mapNodeId] ?? location.nextNodeIds).map((id) => nodeById[id]).filter(Boolean)
   const encounterCount = state.completedNodeIds.length
-  const graphIds = [...new Set([campaign.startNodeId, ...Object.entries(state.routeEdges).flatMap(([from, to]) => [from, ...to])])]
-  const graphNodes = graphIds.map((id) => nodeById[id]).filter(Boolean)
-  const graphLayers = Array.from({ length: 11 }, (_, stage) => graphNodes.filter((node) => node.stage === stage))
-  const graphPosition = (id: string) => {
-    const node = nodeById[id]
-    if (!node) return { x: 0, y: 0 }
-    const layer = graphLayers[node.stage] ?? []
-    const index = layer.findIndex((entry) => entry.id === id)
-    return { x: 42 + node.stage * 99, y: layer.length <= 1 ? 145 : 28 + index * (234 / (layer.length - 1)) }
+  const routeNodeIds = [...new Set([campaign.startNodeId, ...Object.entries(state.routeEdges).flatMap(([from, to]) => [from, ...to])])]
+  const routeNodes = routeNodeIds.map((id) => nodeById[id]).filter(Boolean)
+  const terrainPositions: Record<string, { x: number; y: number }> = {
+    crossroads: { x: 320, y: 146 },
+    garden: { x: 470, y: 90 },
+    desert: { x: 790, y: 230 },
+    bastion: { x: 765, y: 145 },
+    crypt: { x: 690, y: 260 },
+    palace: { x: 595, y: 75 },
+    mirror: { x: 465, y: 242 },
+    deep: { x: 210, y: 245 },
+    throne: { x: 890, y: 238 },
+    hunt: { x: 575, y: 250 },
   }
+  const mapPosition = (nodeId: string) => {
+    const node = nodeById[nodeId]
+    const themeNodes = routeNodes.filter((entry) => entry.theme === node.theme)
+    const index = themeNodes.findIndex((entry) => entry.id === nodeId)
+    const angle = index * 2.399
+    const radius = 9 + Math.floor(index / 4) * 6
+    const anchor = terrainPositions[node.theme] ?? { x: 530, y: 158 }
+    return { x: anchor.x + Math.cos(angle) * radius, y: anchor.y + Math.sin(angle) * radius }
+  }
+  const currentPoint = mapPosition(location.id)
 
   return (
     <section className={styles.pageSection}>
@@ -281,31 +294,65 @@ function CampaignMap() {
         <span className={styles.routeCount}>{destinations.length} routes ahead</span>
       </div>
 
-      <div className={styles.routeMapViewport} aria-label="Generated ten-encounter route map">
-        <svg className={styles.routeMapSvg} viewBox="0 0 1050 290" role="img" aria-labelledby="route-map-title">
-          <title id="route-map-title">Random sparse campaign map with visible encounters and rewards</title>
+      <section className={styles.clientWindow} aria-label="Campaign route map">
+        <header className={styles.clientWindowTitle}><span>Cyclopedia Map</span><small>SURFACE · ALL ROUTES</small></header>
+        <div className={styles.routeMapViewport} aria-label="Campaign minimap showing the current location and available routes">
+        <svg className={styles.routeMapSvg} viewBox="0 0 1050 320" role="img" aria-labelledby="route-map-title">
+          <title id="route-map-title">Campaign minimap showing every possible route, current progress, and reachable destinations</title>
+          <image href="/assets/backgrounds/campaign-world-map.png" x="-105" y="-32" width="1260" height="384" preserveAspectRatio="xMidYMid slice" />
+          <rect className={styles.routeMapTint} width="1050" height="320" />
           {Object.entries(state.routeEdges).flatMap(([from, nextIds]) => nextIds.map((to) => {
-            const start = graphPosition(from)
-            const end = graphPosition(to)
-            return <path key={`${from}-${to}`} className={state.completedNodeIds.includes(from) || from === state.mapNodeId ? styles.routeMapPathActive : styles.routeMapPath} d={`M ${start.x + 10} ${start.y} C ${start.x + 48} ${start.y}, ${end.x - 48} ${end.y}, ${end.x - 10} ${end.y}`} />
+            const start = mapPosition(from)
+            const end = mapPosition(to)
+            const bend = Math.round((start.x + end.x) / 2)
+            const lift = Math.sign(end.y - start.y) * Math.min(22, Math.abs(end.y - start.y) / 3)
+            const d = `M ${start.x} ${start.y} Q ${bend} ${(start.y + end.y) / 2 - lift} ${end.x} ${end.y}`
+            const taken = state.completedNodeIds.includes(to)
+            const available = from === location.id
+            return <path key={`${from}-${to}`} className={taken ? styles.mapRouteTaken : available ? styles.mapRouteAvailable : styles.mapRouteFuture} d={d} />
           }))}
-          {graphNodes.map((node) => {
-            const point = graphPosition(node.id)
-            const isCurrent = node.id === state.mapNodeId
-            const isDone = state.completedNodeIds.includes(node.id)
-            const canChoose = destinations.some((entry) => entry.id === node.id)
-            const rewardLabel = node.bossId ? 'BOSS' : node.routeReward === 'gold' ? 'GOLD' : node.routeReward === 'experience' ? 'XP' : 'HUNT'
-            return <g key={node.id} className={canChoose ? styles.routeMapNodeAvailable : styles.routeMapNode}>
-              <circle cx={point.x} cy={point.y} r={isCurrent ? 11 : 8} />
-              <text x={point.x} y={point.y - 15} textAnchor="middle">{node.stage === 0 ? 'START' : `${node.stage} · ${rewardLabel}`}</text>
-              <title>{node.name} — encounter {node.stage}, {rewardLabel.toLowerCase()}{node.bossId ? ' boss' : ''}</title>
-              {isDone && <text className={styles.routeMapDone} x={point.x} y={point.y + 25} textAnchor="middle">CLEARED</text>}
-              {isCurrent && <text className={styles.routeMapDone} x={point.x} y={point.y + 25} textAnchor="middle">CURRENT</text>}
+          {routeNodes.map((node) => {
+            if (node.id === location.id) return null
+            const point = mapPosition(node.id)
+            const available = destinations.some((entry) => entry.id === node.id)
+            const completed = state.completedNodeIds.includes(node.id)
+            const reward = node.bossId ? 'B' : node.routeReward === 'gold' ? 'G' : node.routeReward === 'experience' ? 'X' : 'H'
+            return <g key={node.id} className={available ? styles.mapNodeAvailable : completed ? styles.mapNodeCompleted : styles.mapNodeFuture} transform={`translate(${point.x} ${point.y})`}>
+              <title>{node.name} — encounter {node.stage}, {node.bossId ? 'boss' : node.routeReward}</title>
+              <circle r={available ? 7 : 4.5} />
+              <text textAnchor="middle" dominantBaseline="central">{available ? String(node.stage) : reward}</text>
+            </g>
+          })}
+          <g className={styles.mapCurrentMarker} transform={`translate(${currentPoint.x} ${currentPoint.y})`} aria-label={`Current location: ${location.name}`}>
+            <circle r="12" />
+            <path d="M-7 0h14M0-7v14" />
+          </g>
+          <g className={styles.mapCurrentLabel} transform={`translate(${currentPoint.x} ${currentPoint.y + 24})`}>
+            <rect x="-57" y="-10" width="114" height="20" />
+            <text textAnchor="middle" dominantBaseline="middle">YOU · {location.name.toUpperCase()}</text>
+          </g>
+          {destinations.map((node, index) => {
+            const point = mapPosition(node.id)
+            const labelWidth = Math.min(180, Math.max(94, node.name.length * 6 + 20))
+            return <g key={node.id} className={styles.mapDestinationMarker} transform={`translate(${point.x} ${point.y})`}>
+              <title>{node.name} — encounter {node.stage}{node.bossId ? ', boss' : ''}</title>
+              <g transform="translate(0 18)">
+                <rect x={-labelWidth / 2} y="-10" width={labelWidth} height="20" />
+                <text textAnchor="middle" dominantBaseline="middle">{String(index + 1).padStart(2, '0')} · {node.name.toUpperCase()}</text>
+              </g>
             </g>
           })}
         </svg>
-      </div>
+        </div>
+        <div className={styles.routeMapLegend} aria-label="Map legend">
+          <span><i className={styles.mapLegendCurrent} /> Your position</span>
+          <span><i className={styles.mapLegendAvailable} /> Routes you can take now</span>
+          <span><i className={styles.mapLegendFuture} /> Later paths</span>
+        </div>
+      </section>
 
+      <section className={styles.routeChoices} aria-label="Available routes">
+      <header className={styles.clientWindowTitle}><span>Available Routes</span><small>{destinations.length} DESTINATIONS</small></header>
       <div className={styles.routeGrid}>
         {destinations.map((node, index) => {
           const enemyUnits = node.enemies.map((id) => creatureById[id]).filter(Boolean)
@@ -347,6 +394,7 @@ function CampaignMap() {
           )
         })}
       </div>
+      </section>
 
       <div className={styles.mapTip}><span>✧</span> Ten encounters. Bosses appear at milestones. Ferumbras guards the final node.</div>
     </section>
@@ -786,45 +834,68 @@ function BattlePlayback({ onFinished }: { onFinished: () => void }) {
         )}
       </div>}
       <div className={styles.arenaLabels}><span>HOSTILE · CORAL</span><span>ALLY · CYAN</span></div>
-      <div className={styles.arenaGrid} data-theme={battleNode?.theme}>
-        <div className={styles.sqmBoard}>
-          {Array.from({ length: 49 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
-          <div className={styles.combatEffects} aria-hidden="true">
-            {eventsThisTick.map((event, index) => {
-              if (event.targetX === null || event.targetY === null || (event.type !== 'attack' && event.type !== 'defeat' && event.type !== 'heal')) return null
-              const actor = shownUnits.find((unit) => unit.id === event.actorId)
-              const actorCreature = actor ? creatureById[actor.creatureId] ?? bossById[actor.creatureId] : undefined
-              if (!actorCreature) return null
-              const kind = event.type === 'heal' ? 'heal' : actorCreature.role === 'shooter' ? 'arrow' : actorCreature.role === 'mage' || actorCreature.role === 'healer' ? 'spell' : 'melee'
-              return <CombatProjectile key={`${event.round}-${event.actorId}-${event.targetId}-${index}`} event={event} kind={kind} durationMs={Math.max(140, Math.round(tickDuration * 0.85))} paused={paused} />
+      <div className={styles.battleStage}>
+        <div className={styles.arenaGrid} data-theme={battleNode?.theme} aria-label="Live tactical battlefield">
+          <div className={styles.sqmBoard}>
+            {Array.from({ length: 49 }, (_, index) => <span aria-hidden="true" className={styles.sqmTile} key={`sqm-${index}`} />)}
+            <div className={styles.combatEffects} aria-hidden="true">
+              {eventsThisTick.map((event, index) => {
+                if (event.targetX === null || event.targetY === null || (event.type !== 'attack' && event.type !== 'defeat' && event.type !== 'heal')) return null
+                const actor = shownUnits.find((unit) => unit.id === event.actorId)
+                const actorCreature = actor ? creatureById[actor.creatureId] ?? bossById[actor.creatureId] : undefined
+                if (!actorCreature) return null
+                const kind = event.type === 'heal' ? 'heal' : actorCreature.role === 'shooter' ? 'arrow' : actorCreature.role === 'mage' || actorCreature.role === 'healer' ? 'spell' : 'melee'
+                return <CombatProjectile key={`${event.round}-${event.actorId}-${event.targetId}-${index}`} event={event} kind={kind} durationMs={Math.max(140, Math.round(tickDuration * 0.85))} paused={paused} />
+              })}
+            </div>
+            {shownUnits.map((unit) => {
+              const creature = creatureById[unit.creatureId] ?? bossById[unit.creatureId]
+              if (!creature) return null
+              const point = position(unit)
+              const isActor = currentEvent?.actorId === unit.id
+              const isTarget = currentEvent?.targetId === unit.id && currentEvent.type !== 'heal'
+              const alive = unit.health > 0
+              const lastAttackTick = shownEvents.filter((event) => event.actorId === unit.id && (event.type === 'attack' || event.type === 'defeat' || (event.type === 'heal' && event.targetId !== unit.id))).at(-1)?.round ?? currentTick - 2
+              return (
+                <div
+                  key={unit.id}
+                  className={`${styles.arenaUnit} ${unit.side === 'player' ? styles.playerArenaUnit : styles.enemyArenaUnit} ${isActor ? styles.actingUnit : ''} ${isTarget ? styles.hitUnit : ''} ${!alive ? styles.defeatedUnit : ''}`}
+                  style={{ left: `${point.x * 100 / 7}%`, top: `${point.y * 100 / 7}%`, transitionDuration: `${tickDuration}ms` }}
+                  title={`${creature.name} · ${Math.ceil(unit.health)} / ${unit.maxHealth} health`}
+                >
+                  <CreatureImage creature={creature} className={styles.arenaSprite} />
+                  <span className={styles.factionLabel}>{unit.side === 'player' ? 'ALLY' : 'ENEMY'}</span>
+                  <span className={styles.arenaUnitName}>{creature.name}</span>
+                  {unit.side === 'player' && unit.star > 1 && <span className={styles.arenaStars}>{'★'.repeat(unit.star)}</span>}
+                  <span className={styles.healthTrack}><i style={{ width: `${Math.max(0, unit.health / unit.maxHealth * 100)}%` }} /></span>
+                  <span className={styles.attackCooldownTrack} title="Action cooldown · two ticks"><i key={lastAttackTick} className={lastAttackTick > 0 ? styles.cooldownCharging : undefined} style={lastAttackTick > 0 ? { animationDuration: `${tickDuration * 2}ms`, animationPlayState: paused ? 'paused' : 'running' } : { width: '100%' }} /></span>
+                  <small>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth}</small>
+                </div>
+              )
             })}
           </div>
-          {shownUnits.map((unit) => {
-            const creature = creatureById[unit.creatureId] ?? bossById[unit.creatureId]
-            if (!creature) return null
-            const point = position(unit)
-            const isActor = currentEvent?.actorId === unit.id
-            const isTarget = currentEvent?.targetId === unit.id && currentEvent.type !== 'heal'
-            const alive = unit.health > 0
-            const lastAttackTick = shownEvents.filter((event) => event.actorId === unit.id && (event.type === 'attack' || event.type === 'defeat' || (event.type === 'heal' && event.targetId !== unit.id))).at(-1)?.round ?? currentTick - 2
-            return (
-              <div
-                key={unit.id}
-                className={`${styles.arenaUnit} ${unit.side === 'player' ? styles.playerArenaUnit : styles.enemyArenaUnit} ${isActor ? styles.actingUnit : ''} ${isTarget ? styles.hitUnit : ''} ${!alive ? styles.defeatedUnit : ''}`}
-                style={{ left: `${point.x * 100 / 7}%`, top: `${point.y * 100 / 7}%`, transitionDuration: `${tickDuration}ms` }}
-                title={`${creature.name} · ${Math.ceil(unit.health)} / ${unit.maxHealth} health`}
-              >
-                <CreatureImage creature={creature} className={styles.arenaSprite} />
-                <span className={styles.factionLabel}>{unit.side === 'player' ? 'ALLY' : 'ENEMY'}</span>
-                <span className={styles.arenaUnitName}>{creature.name}</span>
-                {unit.side === 'player' && unit.star > 1 && <span className={styles.arenaStars}>{'★'.repeat(unit.star)}</span>}
-                <span className={styles.healthTrack}><i style={{ width: `${Math.max(0, unit.health / unit.maxHealth * 100)}%` }} /></span>
-                <span className={styles.attackCooldownTrack} title="Action cooldown · two ticks"><i key={lastAttackTick} className={lastAttackTick > 0 ? styles.cooldownCharging : undefined} style={lastAttackTick > 0 ? { animationDuration: `${tickDuration * 2}ms`, animationPlayState: paused ? 'paused' : 'running' } : { width: '100%' }} /></span>
-                <small>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth}</small>
-              </div>
-            )
-          })}
         </div>
+        <aside className={styles.battleRoster} aria-label="Combatant status">
+          {(['player', 'enemy'] as const).map((side) => {
+            const roster = shownUnits.filter((unit) => unit.side === side)
+            const active = roster.filter((unit) => unit.health > 0).length
+            return <section className={styles.battleSide} key={side}>
+              <header><span>{side === 'player' ? 'Your party' : 'Opposition'}</span><b>{active} / {roster.length}</b></header>
+              <div className={styles.battleSideList}>
+                {roster.map((unit) => {
+                  const creature = creatureById[unit.creatureId] ?? bossById[unit.creatureId]
+                  if (!creature) return null
+                  const healthPercent = Math.max(0, unit.health / unit.maxHealth * 100)
+                  return <div className={`${styles.battleRosterUnit} ${unit.health <= 0 ? styles.battleRosterDefeated : ''}`} key={unit.id}>
+                    <CreatureImage creature={creature} className={styles.battleRosterSprite} />
+                    <div><strong>{creature.name}</strong><span>{Math.max(0, Math.ceil(unit.health))} / {unit.maxHealth} health</span><i><b style={{ width: `${healthPercent}%` }} /></i></div>
+                    {unit.side === 'player' && unit.star > 1 && <em>{'★'.repeat(unit.star)}</em>}
+                  </div>
+                })}
+              </div>
+            </section>
+          })}
+        </aside>
       </div>
       <div className={`${styles.arenaEvent} ${currentEvent?.type === 'attack' || currentEvent?.type === 'defeat' ? styles.attackEvent : ''}`}>
         <span>{currentEvent?.type === 'move' ? '↗' : currentEvent?.type === 'heal' ? '✚' : currentEvent?.type === 'defeat' ? '✦' : '⚔'}</span>
